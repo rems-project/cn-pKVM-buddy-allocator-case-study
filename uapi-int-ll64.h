@@ -8,5 +8,7 @@
  * for 64-bit types.
  */
 
+typedef unsigned char __u8;
+
 typedef unsigned long long __u64;
 typedef signed /* __signed__ */ long long __s64;

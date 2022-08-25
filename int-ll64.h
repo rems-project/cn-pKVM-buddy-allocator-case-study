@@ -8,5 +8,6 @@
  * for 64-bit types.
  */
 
+typedef __u8 u8;
 typedef __u64 u64;
 typedef __s64 s64;
