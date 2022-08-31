@@ -1,7 +1,6 @@
 /* define intptr_t a hacky way, for lemmas */
 /*CN*/ typedef u64 intptr_t;
 
-
 void lemma_order_dec_inv (phys_addr_t pool_range_end,
                           u64 pfn,
                           unsigned int order1,
@@ -28,9 +27,6 @@ void lemma_order_dec_inv_ (phys_addr_t pool_range_end,
   lemma_order_dec_inv(pool_range_end, pfn, order1, order2);
 }
 
-
-
-
 void lemma2 (intptr_t p_i, unsigned int order)
 /*@ trusted @*/
 /*@ requires order >= 0 @*/
@@ -46,7 +42,6 @@ void lemma2 (intptr_t p_i, unsigned int order)
 /*@ ensures (p_phys + (page_size_of_order(order)) == buddy_phys) || (p_phys - (page_size_of_order(order)) == buddy_phys) @*/
 {}
 
-
 void lemma_extract (intptr_t p_i, unsigned int order)
 /*@ trusted @*/
 /*@ requires order >= 0 @*/
@@ -59,19 +54,11 @@ void lemma_extract (intptr_t p_i, unsigned int order)
 /*@ ensures page_aligned(buddy_phys, order) @*/
 {}
 
-
-
 void lemma_page_size_of_order_inc (unsigned int order) 
 /*@ trusted @*/
 /*@ requires order >= 0 @*/
 /*@ ensures (page_size_of_order(order+1)) == 2*(page_size_of_order(order)) @*/
 {}
-
-
-
-
-
-
 
 void lemma4 (intptr_t p_i, unsigned int order)
 /*@ trusted @*/
@@ -88,9 +75,6 @@ void lemma4 (intptr_t p_i, unsigned int order)
 /*@ ensures (order_align(buddy_i, order)) == p_i @*/
 {}
 
-
-
-
 void lemma_order_align_inv_loop (struct hyp_pool pool,
                                  struct hyp_page* p) 
 /*@ trusted @*/
@@ -99,14 +83,14 @@ void lemma_order_align_inv_loop (struct hyp_pool pool,
 /*@ requires let p_i = (((integer) p) - __hyp_vmemmap) / 32 @*/
 /*@ requires let start_i = (pool).range_start / 4096 @*/
 /*@ requires let end_i = (pool).range_end / 4096 @*/
-/*@ requires let V = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*32))} @*/
+/*@ requires let V = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*4))} @*/
 /*@ requires let p_order = (V.value[p_i]).order @*/
 /*@ requires p_order >= 1; p_order < 11 @*/
 /*@ requires order_aligned(p_i, p_order) @*/
 /*@ requires cellPointer(hyp_vmemmap, 32, start_i, end_i, p) @*/
 /*@ requires let buddy_i = pfn_buddy(p_i, p_order - 1) @*/
 /*@ requires each(integer i; start_i <= i && i < end_i) { page_group_ok(i, hyp_vmemmap, V.value, pool) } @*/
-/*@ ensures let V = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*32))} @*/
+/*@ ensures let V = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*4))} @*/
 /*@ ensures V.value == {V.value}@start @*/
 /*@ ensures let p_new_page = (V.value[p_i]){.order = (p_order - 1)} @*/
 /*@ ensures let buddy_new_page = (V.value[buddy_i]){.order = (p_order - 1)} @*/
@@ -114,16 +98,15 @@ void lemma_order_align_inv_loop (struct hyp_pool pool,
 /*@ ensures {__hyp_vmemmap} unchanged @*/
 {}
 
-
 void lemma_page_group_ok_easy (struct hyp_pool pool) 
 /*@ trusted @*/
 /*@ accesses __hyp_vmemmap @*/
 /*@ requires let hyp_vmemmap = (pointer) __hyp_vmemmap @*/
 /*@ requires let start_i = (pool).range_start / 4096 @*/
 /*@ requires let end_i = (pool).range_end / 4096 @*/
-/*@ requires let V = each (integer i; start_i <= i && i < end_i) { Owned<struct hyp_page>(hyp_vmemmap+(i*32)) } @*/
+/*@ requires let V = each (integer i; start_i <= i && i < end_i) { Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
 /*@ requires each (integer i; start_i <= i && i < end_i) { (V.value[i]).order == 0 } @*/
-/*@ ensures let V = each (integer i; start_i <= i && i < end_i) { Owned<struct hyp_page>(hyp_vmemmap+(i*32)) } @*/
+/*@ ensures let V = each (integer i; start_i <= i && i < end_i) { Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
 /*@ ensures V.value == {V.value}@start @*/
 /*@ ensures each(integer i; start_i <= i && i < end_i) { page_group_ok(i, hyp_vmemmap, V.value, pool) } @*/
 /*@ ensures {__hyp_vmemmap} unchanged @*/
@@ -139,9 +122,6 @@ void lemma_page_size_of_order ()
 /*@ ensures (page_size_of_order(0)) == 4096 @*/
 {}
 
-
-
-
 void lemma_attach_inc_loop (struct hyp_pool pool,
                             struct hyp_page* p,
                             unsigned int order) 
@@ -151,7 +131,7 @@ void lemma_attach_inc_loop (struct hyp_pool pool,
 /*@ requires let start_i = (pool).range_start / 4096 @*/
 /*@ requires let end_i = (pool).range_end / 4096 @*/
 /*@ requires cellPointer(hyp_vmemmap, 32, start_i, end_i, p) @*/
-/*@ requires let V = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*32)) } @*/
+/*@ requires let V = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
 /*@ requires let p_i = (((integer) p) - __hyp_vmemmap) / 32 @*/
 /*@ requires let buddy_i = pfn_buddy(p_i, order) @*/
 /*@ requires let buddy_order = (V.value[buddy_i]).order @*/
@@ -165,12 +145,11 @@ void lemma_attach_inc_loop (struct hyp_pool pool,
 /*@ requires let min_i = (p_i < buddy_i) ? p_i : buddy_i @*/
 /*@ requires let min_page = (V.value[min_i]){.order = (order + 1)} @*/
 /*@ requires let buddy_page = (V.value[buddy_i]){.order = 4294967295} @*/
-/*@ ensures let V2 = each(integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*32)) } @*/
+/*@ ensures let V2 = each(integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
 /*@ ensures V2.value == {V.value}@start @*/
 /*@ ensures each(integer i; start_i <= i && i < end_i) { page_group_ok(i, hyp_vmemmap, (V2.value[buddy_i = buddy_page])[min_i = min_page], pool) } @*/
 /*@ ensures {__hyp_vmemmap} unchanged @*/
 {}
-
 
 void find_buddy_xor_lemma(intptr_t addr_i, unsigned int order)
 /*@ trusted @*/
@@ -189,8 +168,6 @@ void find_buddy_xor_lemma(intptr_t addr_i, unsigned int order)
 /*@ ensures addr_i != buddy_i @*/
 {}
 
-
-
 void page_size_of_order_lemma(unsigned int order)
 /*@ trusted @*/
 /*@ requires 0 <= order; order < 11 @*/
@@ -199,5 +176,4 @@ void page_size_of_order_lemma(unsigned int order)
 /*@ ensures let size = 4096 * (power_uf(2, order)) @*/
 /*@ ensures size == (page_size_of_order(order)) @*/
 {}
-
 
