@@ -45,7 +45,7 @@ function (boolean) init_vmemmap_page (integer page_index, pointer vmemmap_pointe
   let page_pointer = ((pointer) (
     ((integer)vmemmap_pointer) + (hp_sz * page_index)));
   let page = vmemmap[page_index];
-  let self_node_pointer = (pointer)(((integer)page_pointer) + (offsetof (hyp_page, node)));
+  // let self_node_pointer = (pointer)(((integer)page_pointer) + (offsetof (hyp_page, node)));
   return (
     (page.order == 0)
     && (page.refcount == 1)
@@ -75,7 +75,7 @@ function (boolean) vmemmap_wf (integer page_index, pointer vmemmap_pointer,
   let hp_sz = (sizeof <struct hyp_page>);
   let page_pointer = ((pointer) (
     ((integer)vmemmap_pointer) + (hp_sz * page_index)));
-  let self_node_pointer = (pointer)(((integer)page_pointer) + (offsetof (hyp_page, node)));
+  // let self_node_pointer = (pointer)(((integer)page_pointer) + (offsetof (hyp_page, node)));
   let page = vmemmap[page_index];
   // let prev = page.node.prev;
   // let next = page.node.next;
@@ -94,50 +94,50 @@ function (boolean) vmemmap_wf (integer page_index, pointer vmemmap_pointer,
 }
 
 
-function (boolean) vmemmap_l_wf (integer page_index, pointer vmemmap_pointer,
-        map <integer, struct hyp_page> vmemmap, pointer pool_pointer, struct hyp_pool pool)
-{
-  let hp_sz = (sizeof <struct hyp_page>);
-  let page_pointer = ((pointer) (
-    ((integer)vmemmap_pointer) + (hp_sz * page_index)));
-  let page = vmemmap[page_index];
-  let self_node_pointer = (pointer)(((integer)page_pointer) + (offsetof (hyp_page, node)));
-  let pool_free_area_arr_pointer = (pointer)(((integer)pool_pointer) +
-    (offsetof (hyp_pool, free_area)));
-  let l_sz = sizeof <struct list_head>;
-  let pool_free_area_pointer = ((pointer) (
-    ((integer)pool_free_area_arr_pointer) + (page.order * l_sz)));
-  // let prev = page.node.prev;
-  // let next = page.node.next;
-  let free_area_entry = ((pool.free_area)[page.order]);
-  // let prev_page_pointer = (pointer)(((integer)prev) - (offsetof (hyp_page, node)));
-  // let prev_page_index = (((integer) prev_page_pointer) - ((integer) vmemmap_pointer)) / hp_sz;
-  // let prev_page = vmemmap[prev_page_index];
-  // let next_page_pointer = (pointer)(((integer)next) - (offsetof (hyp_page, node)));
-  // let next_page_index = (((integer) next_page_pointer) - ((integer) vmemmap_pointer)) / hp_sz;
-  // let next_page = vmemmap[next_page_index];
-  // let prev_clause = (prev == self_node_pointer)
-  //   || ((prev == pool_free_area_pointer) && (free_area_entry.next == self_node_pointer))
-  //   || (vmemmap_good_pointer (vmemmap_pointer, prev_page_pointer, pool.range_start, pool.range_end)
-  //       && (prev_page.node.next == self_node_pointer)
-  //       && (prev_page.order == page.order));
-  let prev_clause =
-    vmemmap_good_pointer (vmemmap_pointer, (pointer) 0, pool.range_start, pool.range_end);
-  // let next_clause = (next == self_node_pointer)
-  //   || ((next == pool_free_area_pointer) && (free_area_entry.prev == self_node_pointer))
-  //   || (vmemmap_good_pointer (vmemmap_pointer, next_page_pointer, pool.range_start, pool.range_end)
-  //       && (next_page.node.prev == self_node_pointer)
-  //       && (next_page.order == page.order));
-  let next_clause =
-    vmemmap_good_pointer (vmemmap_pointer, (pointer) 0, pool.range_start, pool.range_end);
-  return (prev_clause && next_clause);
-}
+// function (boolean) vmemmap_l_wf (integer page_index, pointer vmemmap_pointer,
+//         map <integer, struct hyp_page> vmemmap, pointer pool_pointer, struct hyp_pool pool)
+// {
+//   let hp_sz = (sizeof <struct hyp_page>);
+//   let page_pointer = ((pointer) (
+//     ((integer)vmemmap_pointer) + (hp_sz * page_index)));
+//   let page = vmemmap[page_index];
+//   // let self_node_pointer = (pointer)(((integer)page_pointer) + (offsetof (hyp_page, node)));
+//   let pool_free_area_arr_pointer = (pointer)(((integer)pool_pointer) +
+//     (offsetof (hyp_pool, free_area)));
+//   let l_sz = sizeof <struct list_head>;
+//   let pool_free_area_pointer = ((pointer) (
+//     ((integer)pool_free_area_arr_pointer) + (page.order * l_sz)));
+//   // let prev = page.node.prev;
+//   // let next = page.node.next;
+//   let free_area_entry = ((pool.free_area)[page.order]);
+//   // let prev_page_pointer = (pointer)(((integer)prev) - (offsetof (hyp_page, node)));
+//   // let prev_page_index = (((integer) prev_page_pointer) - ((integer) vmemmap_pointer)) / hp_sz;
+//   // let prev_page = vmemmap[prev_page_index];
+//   // let next_page_pointer = (pointer)(((integer)next) - (offsetof (hyp_page, node)));
+//   // let next_page_index = (((integer) next_page_pointer) - ((integer) vmemmap_pointer)) / hp_sz;
+//   // let next_page = vmemmap[next_page_index];
+//   // let prev_clause = (prev == self_node_pointer)
+//   //   || ((prev == pool_free_area_pointer) && (free_area_entry.next == self_node_pointer))
+//   //   || (vmemmap_good_pointer (vmemmap_pointer, prev_page_pointer, pool.range_start, pool.range_end)
+//   //       && (prev_page.node.next == self_node_pointer)
+//   //       && (prev_page.order == page.order));
+//   let prev_clause =
+//     vmemmap_good_pointer (vmemmap_pointer, (pointer) 0, pool.range_start, pool.range_end);
+//   // let next_clause = (next == self_node_pointer)
+//   //   || ((next == pool_free_area_pointer) && (free_area_entry.prev == self_node_pointer))
+//   //   || (vmemmap_good_pointer (vmemmap_pointer, next_page_pointer, pool.range_start, pool.range_end)
+//   //       && (next_page.node.prev == self_node_pointer)
+//   //       && (next_page.order == page.order));
+//   let next_clause =
+//     vmemmap_good_pointer (vmemmap_pointer, (pointer) 0, pool.range_start, pool.range_end);
+//   return (prev_clause && next_clause);
+// }
 
 function (boolean) vmemmap_b_wf (integer page_index, pointer vmemmap_pointer,
         map <integer, struct hyp_page> vmemmap, pointer pool_pointer, struct hyp_pool pool)
 {
   return (vmemmap_wf (page_index, vmemmap_pointer, vmemmap, pool_pointer, pool)
-    && vmemmap_l_wf (page_index, vmemmap_pointer, vmemmap, pool_pointer, pool)
+    //&& vmemmap_l_wf (page_index, vmemmap_pointer, vmemmap, pool_pointer, pool)
   );
 }
 
@@ -152,25 +152,26 @@ function (boolean) freeArea_cell_wf (integer cell_index, pointer vmemmap_pointer
   let cell_pointer = ((pointer) (((integer)pool_free_area_arr_pointer) + (cell_index * l_sz)));
   let prev = cell.prev;
   let next = cell.next;
-  let prev_page_pointer = (pointer)(((integer)prev)); // - (offsetof (hyp_page, node)));
-  let prev_page_index = (((integer) prev_page_pointer) - ((integer) vmemmap_pointer)) / hp_sz;
-  let prev_page = vmemmap[prev_page_index];
-  let next_page_pointer = (pointer)(((integer)next)); // - (offsetof (hyp_page, node)));
-  let next_page_index = (((integer) next_page_pointer) - ((integer) vmemmap_pointer)) / hp_sz;
-  let next_page = vmemmap[next_page_index];
+  // let prev_page_pointer = (pointer)(((integer)prev)); // - (offsetof (hyp_page, node)));
+  // let prev_page_index = (((integer) prev_page_pointer) - ((integer) vmemmap_pointer)) / hp_sz;
+  // let prev_page = vmemmap[prev_page_index];
+  // let next_page_pointer = (pointer)(((integer)next)); // - (offsetof (hyp_page, node)));
+  // let next_page_index = (((integer) next_page_pointer) - ((integer) vmemmap_pointer)) / hp_sz;
+  // let next_page = vmemmap[next_page_index];
   return (
     ((prev == cell_pointer) == (next == cell_pointer))
-    && ((prev == cell_pointer) || (
-        (vmemmap_good_pointer (vmemmap_pointer, prev_page_pointer, pool.range_start, pool.range_end))
-        && (prev_page.order == cell_index)
-        && (prev_page.refcount == 0)
-        // && (prev_page.node.next == cell_pointer)
-        && (vmemmap_good_pointer (vmemmap_pointer, next_page_pointer, pool.range_start, pool.range_end))
-        && (next_page.order == cell_index)
-        && (next_page.refcount == 0)
-        // && (next_page.node.prev == cell_pointer)
-    ))
-  );
+    && ((prev == cell_pointer)));
+  //  && ((prev == cell_pointer) || (
+  //      (vmemmap_good_pointer (vmemmap_pointer, prev_page_pointer, pool.range_start, pool.range_end))
+  //      && (prev_page.order == cell_index)
+  //      && (prev_page.refcount == 0)
+  //      // && (prev_page.node.next == cell_pointer)
+  //      && (vmemmap_good_pointer (vmemmap_pointer, next_page_pointer, pool.range_start, pool.range_end))
+  //      && (next_page.order == cell_index)
+  //      && (next_page.refcount == 0)
+  //      // && (next_page.node.prev == cell_pointer)
+  //  ))
+  //);
 }
 
 function (boolean) hyp_pool_wf (pointer pool_pointer, struct hyp_pool pool,
@@ -267,7 +268,7 @@ predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap}
   let end_i = P.value.range_end / 4096;
   let off_i = physvirt_offset / 4096;
   let V = each(integer i; (start_i <= i) && (i < end_i))
-              {Owned<struct hyp_page>(vmemmap_l + i*32)};
+              {Owned<struct hyp_page>(vmemmap_l + i*(sizeof <struct hyp_page>))};
   assert (each(integer i; (start_i <= i) && (i < end_i))
               {vmemmap_b_wf (i, vmemmap_l, V.value, pool_l, P.value)});
   assert (each(integer i; (0 <= i) && (i < P.value.max_order))

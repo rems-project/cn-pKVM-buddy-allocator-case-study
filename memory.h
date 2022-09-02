@@ -92,12 +92,12 @@ static inline int hyp_page_count(struct hyp_pool *pool, void *addr)
         return ret;
 }
 
-#define BUG_ON(condition) assert(condition)
+#define BUG_ON(condition) assert(!(condition))
 #define USHRT_MAX ((unsigned short)~0U)
 
 static inline void hyp_page_ref_inc(struct hyp_page *p)
 /*@ requires let O = Owned(p) @*/
-/*@ requires (*p).refcount <= ((power(2,31)) - 1) @*/
+/*@ requires (*p).refcount < ((power(2,16)) - 1) @*/
 /*@ ensures let OR = Owned(p) @*/
 /*@ ensures {(*p).order} unchanged @*/
 /*@ ensures (*p).refcount == {(*p).refcount}@start + 1 @*/
@@ -107,6 +107,11 @@ static inline void hyp_page_ref_inc(struct hyp_page *p)
 }
 
 static inline void hyp_page_ref_dec(struct hyp_page *p)
+/*@ requires let O = Owned(p) @*/
+/*@ requires (*p).refcount > 0 @*/
+/*@ ensures let OR = Owned(p) @*/
+/*@ ensures {(*p).order} unchanged @*/
+/*@ ensures (*p).refcount == {(*p).refcount}@start - 1 @*/
 {
 	BUG_ON(!p->refcount);
 	p->refcount--;

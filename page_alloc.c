@@ -190,7 +190,6 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 /*@ requires let p_i = (((integer) p) - __hyp_vmemmap) / 4 @*/
 /*@ requires let V = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
 /*@ requires each (integer i; start_i <= i && i < end_i){vmemmap_wf(i, hyp_vmemmap, V.value, pool, *pool)} @*/
-/*@ requires each (integer i; i != p_i && start_i <= i && i < end_i){vmemmap_l_wf(i, hyp_vmemmap, V.value, pool, *pool)} @*/
 /*@ requires each (integer i; 0 <= i && i < ((*pool).max_order)){freeArea_cell_wf(i, hyp_vmemmap, V.value, pool, (*pool))} @*/
 /*@ requires hyp_pool_wf(pool, *pool, (pointer) __hyp_vmemmap, hyp_physvirt_offset) @*/
 /*@ requires let Zs = each (integer i; (i + off_i) != p_i && start_i <= (i + off_i) && (i + off_i) < end_i && (V.value[(i + off_i)]).refcount == 0 && (V.value[(i + off_i)]).order != (hyp_no_order ())) { ZeroPage(((pointer) 0) + (i*4096), 1, (V.value[(i + off_i)]).order) } @*/
@@ -299,7 +298,7 @@ static void hyp_attach_page(struct hyp_pool *pool, struct hyp_page *p)
 /*@ requires let p_i = (((integer) p) - __hyp_vmemmap) / 4 @*/
 /*@ requires let V = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
 /*@ requires each (integer i; start_i <= i && i < end_i){vmemmap_wf(i, hyp_vmemmap, V.value, pool, *pool)} @*/
-/*@ requires each (integer i; (i != p_i) && start_i <= i && i < end_i){vmemmap_l_wf(i, hyp_vmemmap, V.value, pool, *pool)} @*/
+/*! requires each (integer i; (i != p_i) && start_i <= i && i < end_i){vmemmap_l_wf(i, hyp_vmemmap, V.value, pool, *pool)} !*/
 /*@ requires each (integer i; 0 <= i && i < ((*pool).max_order)){freeArea_cell_wf(i, hyp_vmemmap, V.value, pool, (*pool))} @*/
 /*@ requires hyp_pool_wf(pool, *pool, (pointer) __hyp_vmemmap, hyp_physvirt_offset) @*/
 /*@ requires let Zs = each (integer i; (i+off_i) != p_i && start_i <= (i+off_i) && (i+off_i) < end_i && (V.value[(i+off_i)]).refcount == 0 && (V.value[(i+off_i)]).order != (hyp_no_order ())) { ZeroPage(((pointer) 0) + (i*4096), 1, (V.value[(i+off_i)]).order) } @*/
@@ -426,7 +425,24 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 }
 
 static void __hyp_put_page(struct hyp_pool *pool, struct hyp_page *p)
+/*@ accesses hyp_physvirt_offset; __hyp_vmemmap @*/
+/*@ requires let hyp_vmemmap = (pointer) __hyp_vmemmap @*/
+/*@ requires let H = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
+/*@ requires let page_i = (((integer) p) - __hyp_vmemmap) / 4 @*/
+/*@ requires let phys = page_i * (page_size ()) @*/
+/*@ requires H.pool.range_start <= phys; phys < H.pool.range_end @*/
+/*@ requires let refcount = (H.vmemmap[page_i]).refcount @*/
+/*@ requires let order = (H.vmemmap[page_i]).order @*/
+/*@ requires refcount > 0 @*/
+/*@ requires let virt = (pointer)(phys - hyp_physvirt_offset) @*/
+/*@ requires let P = Page(virt, (refcount == 1) ? 1 : 0, order) @*/
+/*@ ensures let H2 = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
+/*@ ensures {hyp_physvirt_offset} unchanged; {__hyp_vmemmap} unchanged @*/
+/*@ ensures H2.pool.range_start == {H.pool.range_start}@start @*/
+/*@ ensures H2.pool.range_end == {H.pool.range_end}@start @*/
+/*@ ensures H2.pool.max_order == {H.pool.max_order}@start @*/
 {
+        /*CN*/unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);
         /*CN*/instantiate vmemmap_wf, hyp_page_to_pfn(p);
 	if (hyp_page_ref_dec_and_test(p)) {
 		__hyp_attach_page(pool, p);
@@ -476,10 +492,10 @@ void hyp_get_page(struct hyp_pool *pool, void *addr)
 /*@ accesses hyp_physvirt_offset; __hyp_vmemmap @*/
 /*@ requires let H = Hyp_pool(pool, (pointer) __hyp_vmemmap, hyp_physvirt_offset) @*/
 /*@ requires let phys = ((integer) addr) + hyp_physvirt_offset @*/
-/*@ requires let page_i =phys / 4096 @*/
+/*@ requires let page_i = phys / 4096 @*/
 /*@ requires H.pool.range_start <= phys; phys < H.pool.range_end @*/
 /*@ requires (H.vmemmap[page_i]).refcount > 0 @*/
-/*@ requires (H.vmemmap[page_i]).refcount <= ((power(2,31)) - 2) @*/
+/*@ requires (H.vmemmap[page_i]).refcount <= ((power(2,16)) - 2) @*/
 /*@ ensures let H2 = Hyp_pool(pool, (pointer) __hyp_vmemmap, hyp_physvirt_offset) @*/
 /*@ ensures {hyp_physvirt_offset} unchanged; {__hyp_vmemmap} unchanged @*/
 /*@ ensures {H2.pool}@end == {H.pool}@start @*/
@@ -494,19 +510,19 @@ void hyp_get_page(struct hyp_pool *pool, void *addr)
 	/* hyp_spin_unlock(&pool->lock); */
 }
 
-void hyp_split_page(struct hyp_page *p)
-{
-	u8 order = p->order;
-	unsigned int i;
-
-	p->order = 0;
-	for (i = 1; i < (1 << order); i++) {
-		struct hyp_page *tail = p + i;
-
-		tail->order = 0;
-		hyp_set_page_refcounted(tail);
-	}
-}
+// void hyp_split_page(struct hyp_page *p)
+// {
+// 	u8 order = p->order;
+// 	unsigned int i;
+//
+// 	p->order = 0;
+// 	for (i = 1; i < (1 << order); i++) {
+// 		struct hyp_page *tail = p + i;
+//
+// 		tail->order = 0;
+// 		hyp_set_page_refcounted(tail);
+// 	}
+// }
 
 void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 /*@ accesses hyp_physvirt_offset; __hyp_vmemmap @*/
@@ -563,7 +579,8 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 
 	/* Extract it from the tree at the right order */
         /*CN*/instantiate freeArea_cell_wf, i;
-	p = node_to_page(pool->free_area[i].next);
+	// FIXME restore this -- p = node_to_page(pool->free_area[i].next);
+	p = hyp_virt_to_page(pool->free_area[i].next);
         /* the refcount==0 precondition needs to know wellformedness facts about the free area cell that link it to the vmemmap; */
         /*CN*/instantiate vmemmap_b_wf, hyp_page_to_pfn(p);
         /*CN*/lemma_order_dec_inv(pool->range_end, (u64) hyp_page_to_pfn(p), p->order, order);
