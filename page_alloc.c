@@ -614,7 +614,7 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
 /*@ requires start_i >= 0 @*/
 /*@ requires let end_i = start_i + nr_pages; let end = end_i * 4096 @*/
 /*@ requires let off_i = hyp_physvirt_offset / 4096 @*/
-/*@ requires nr_pages * 4096 < (power(2,32)) @*/ /* because of nr_pages << PAGE_SHIFT */
+/*@ requires (nr_pages + 1) * 4096 < (power(2,32)) @*/ /* because of (nr_pages + 1) << PAGE_SHIFT */
 /*@ requires reserved_pages < nr_pages @*/
 /* The hyp_pool_wf below does not mention the free area. So the
    hyp_pool_wf constraint is just a short-hand for asking start,
@@ -647,7 +647,7 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
              /*@ inv each(integer j; 0 <= j && j < i){((*pool).free_area[j]).next == ((pointer) (((integer) pool) + (j * 16)))} @*/
              /*@ inv {__hyp_vmemmap} unchanged; {pool} unchanged; {hyp_physvirt_offset} unchanged; {pfn} unchanged; {nr_pages} unchanged; {reserved_pages} unchanged @*/
              /*@ inv 0 <= i; i <= (*pool).max_order; (*pool).max_order > 0; (*pool).max_order <= 11 @*/
-             /*@ inv (*pool).max_order == ((11 < (get_order_uf(nr_pages*4096))) ? 11 : (get_order_uf(nr_pages*4096))) @*/
+             /*@ inv (*pool).max_order == ((11 < (get_order_uf((nr_pages + 1)*4096))) ? 11 : (get_order_uf((nr_pages + 1)*4096))) @*/
              /*@ inv phys == pfn * 4096 @*/
         {
 		INIT_LIST_HEAD(&pool->free_area[i]);
@@ -672,7 +672,7 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
              /*@ inv (*pool).range_end == {end}@start @*/
              /*@ inv (*pool).max_order > 0 @*/
              /*@ inv (*pool).max_order <= 11 @*/
-             /*@ inv (*pool).max_order == ((11 < (get_order_uf(nr_pages*4096))) ? 11 : (get_order_uf(nr_pages*4096))) @*/
+             /*@ inv (*pool).max_order == ((11 < (get_order_uf((nr_pages + 1)*4096))) ? 11 : (get_order_uf((nr_pages + 1)*4096))) @*/
              /*@ inv hyp_pool_wf(pool, (*pool), {hyp_vmemmap}@start, {hyp_physvirt_offset}@start) @*/
              /*@ inv p == ((pointer) (__hyp_vmemmap + (pfn*4))) @*/
              /*@ inv 0 <= i; i <= nr_pages @*/
