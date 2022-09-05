@@ -88,7 +88,7 @@ function (boolean) vmemmap_wf (integer page_index, pointer vmemmap_pointer,
     // && ((next == self_node_pointer) == (prev == self_node_pointer))
     // && ((next == self_node_pointer)
     //     || ((page.refcount == 0) && ((page.order != (hyp_no_order ())))))
-    && ((page.refcount == 0) && ((page.order != (hyp_no_order ()))))
+    // && ((page.refcount == 0) && ((page.order != (hyp_no_order ()))))
     && (page_group_ok(page_index, vmemmap_pointer, vmemmap, pool))
   );
 }

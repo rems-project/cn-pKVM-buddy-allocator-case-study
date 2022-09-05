@@ -677,7 +677,12 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
              /*@ inv p == ((pointer) (__hyp_vmemmap + (pfn*4))) @*/
              /*@ inv 0 <= i; i <= nr_pages @*/
         {
+		/*CN*/instantiate good, hyp_page_to_pfn(&p[i]);
+		p[i].refcount = 0; /* added for formalisation */
+		p[i].order = 0;    /* added for formalisation */
 		hyp_set_page_refcounted(&p[i]);
+		/*CN*/lemma_order_aligned_init(pfn+i);
+		/*CN*/lemma_page_size_of_order ();
 	}
 
         /*CN*/lemma_page_group_ok_easy(*pool);
