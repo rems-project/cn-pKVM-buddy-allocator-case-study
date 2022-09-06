@@ -24,7 +24,7 @@ function (boolean) vmemmap_good_pointer (pointer vmemmap_pointer, pointer p,
 }
 
 
-function (boolean) page_group_ok (integer page_index, pointer vmemmap_pointer,
+function (boolean) page_group_ok (integer page_index,
         map <integer, struct hyp_page> vmemmap, struct hyp_pool pool)
 {
   let page = vmemmap[page_index];
@@ -80,8 +80,8 @@ function (boolean) vmemmap_wf (integer page_index, pointer vmemmap_pointer,
   // let prev = page.node.prev;
   // let next = page.node.next;
   return (
-    /* representable as a signed int */
-    (0 <= page.refcount) && (page.refcount < (power(2, 31)))
+    /* representable as an unsigned short */
+    (0 <= page.refcount) && (page.refcount < (power(2, 16)))
     // && (page.pool == pool_pointer)
     && ((page.order == (hyp_no_order ())) || vmemmap_normal_order_wf(page_index, page, pool))
     && ((page.order != (hyp_no_order ())) || (page.refcount == 0))
@@ -256,8 +256,23 @@ predicate {} ZeroPage (pointer vbase, integer guard, integer order)
   }
 }
 
-
-
+predicate {pointer prev, pointer next} AllocatorPage
+    (pointer vbase, integer guard, integer order)
+{
+  if (guard == 0) {
+    return {prev = (pointer) 0, next = (pointer) 0};
+  }
+  else {
+    assert(((integer) vbase) > 0);
+    let region_length = (page_size_of_order(order));
+    let vbaseI = (((integer) vbase) + (sizeof <struct list_head>));
+    let length = (region_length - (sizeof <struct list_head>));
+    let Bytes = each (integer i; (vbaseI <= i) && (i < (vbaseI + length)))
+        {ByteV((pointer)(((integer)((pointer) 0)) + (i * 1)), 0)};
+    let Node = Owned<struct list_head>(vbase);
+    return {prev = Node.value.prev, next = Node.value.next};
+  }
+}
 
 
 predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap}
@@ -269,15 +284,15 @@ predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap}
   let off_i = physvirt_offset / 4096;
   let V = each(integer i; (start_i <= i) && (i < end_i))
               {Owned<struct hyp_page>(vmemmap_l + i*(sizeof <struct hyp_page>))};
+  let APs = each(integer i; (start_i <= i + off_i) && (i + off_i < end_i)
+                && (((V.value)[i+off_i]).refcount == 0)
+                && (((V.value)[i+off_i]).order != (hyp_no_order ())))
+              {AllocatorPage(((pointer) 0) + i*4096, 1, ((V.value)[i+off_i]).order)};
   assert (each(integer i; (start_i <= i) && (i < end_i))
-              {vmemmap_b_wf (i, vmemmap_l, V.value, pool_l, P.value)});
+              {vmemmap_b_wf (i, vmemmap_l, V.value, APs.prev, APs.next, pool_l, P.value)});
   assert (each(integer i; (0 <= i) && (i < P.value.max_order))
               {freeArea_cell_wf (i, vmemmap_l, V.value, pool_l, P.value)});
   assert (hyp_pool_wf (pool_l, P.value, vmemmap_l, physvirt_offset));
-  let R = each(integer i; (start_i <= i + off_i) && (i + off_i < end_i)
-                && (((V.value)[i+off_i]).refcount == 0)
-                && (((V.value)[i+off_i]).order != (hyp_no_order ())))
-              {ZeroPage(((pointer) 0) + i*4096, 1, ((V.value)[i+off_i]).order)};
   return {pool = P.value, vmemmap = V.value};
 }
 
