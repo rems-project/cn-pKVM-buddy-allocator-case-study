@@ -84,7 +84,7 @@ static inline int hyp_page_count(struct hyp_pool *pool, void *addr)
         /*CN*/unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);
 	struct hyp_page *p = hyp_virt_to_page(addr);
         /*CN*/instantiate good, hyp_page_to_pfn(p);
-        /*CN*/instantiate vmemmap_b_wf, hyp_page_to_pfn(p);
+        /*CN*/instantiate vmemmap_wf, hyp_page_to_pfn(p);
 	/* TODO originally: return p->refcount.  Introducing 'ret' here, so we can pack resources before returning; */
 	int ret = p->refcount;
 
