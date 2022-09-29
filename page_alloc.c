@@ -349,10 +349,10 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
             /*@ inv order_aligned(p_i, order) @*/
             /*@ inv (V3.value[p_i]).refcount == 0 @*/
             /*@ inv let virt = (pointer)((p_i * (page_size ())) - hyp_physvirt_offset) @*/
-            /*@ inv (APsI.next[p_i]) == virt; (APsI.prev[p_i]) == virt @*/
+            // /*@ inv (APsI.next[p_i]) == virt; (APsI.prev[p_i]) == virt @*/
             /*@ inv let p_order = (V3.value[p_i]).order @*/
             /*@ inv let ZI = ZeroPage(virt, 1, p_order) @*/
-            /*@ inv 0 <= order; order <= p_order; p_order != (hyp_no_order ()) @*/
+            /*@ inv 0 <= order; order <= p_order; p_order < (*pool).max_order; p_order != (hyp_no_order ()) @*/
             /*@ inv {p} unchanged @*/
             /*@ inv {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
             /*@ inv {pool} unchanged; {order} unchanged @*/
@@ -364,11 +364,11 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 		 * __find_buddy_nocheck() to find it and inject it in the
 		 * free_list[n - 1], effectively splitting @p in half.
 		 */
-                /*CN*/instantiate vmemmap_b_wf, hyp_page_to_pfn(p);
+                /*CN*/instantiate vmemmap_wf, hyp_page_to_pfn(p);
                 /*CN*/lemma_order_dec_inv_(pool->range_end, (u64) hyp_page_to_pfn(p), p->order);
 		/*CN*/struct hyp_page *cn_buddy = __find_buddy_nocheck(pool, p, p->order - 1);
                 /*CN*/lemma4(hyp_page_to_pfn(p), p->order);
-                /*CN*/instantiate vmemmap_b_wf, hyp_page_to_pfn(cn_buddy);
+                /*CN*/instantiate vmemmap_wf, hyp_page_to_pfn(cn_buddy);
                 /*CN*/instantiate freeArea_cell_wf, p->order - 1;
                 /*CN*/unpack ZeroPage(hyp_page_to_virt(p), 1, p->order);
                 /*CN*/lemma_order_align_inv_loop(*pool, p);
@@ -385,7 +385,7 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 		page_add_to_list(buddy, &pool->free_area[buddy->order]);
 	}
 
-        /*CN*/instantiate vmemmap_b_wf, hyp_page_to_pfn(p);
+        /*CN*/instantiate vmemmap_wf, hyp_page_to_pfn(p);
 	return p;
 }
 
