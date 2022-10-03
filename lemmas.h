@@ -80,7 +80,7 @@ void lemma_order_align_inv_loop (struct hyp_pool pool,
 /*@ trusted @*/
 /*@ accesses __hyp_vmemmap @*/
 /*@ requires let hyp_vmemmap = (pointer) __hyp_vmemmap @*/
-/*@ requires let p_i = (((integer) p) - __hyp_vmemmap) / 32 @*/
+/*@ requires let p_i = (((integer) p) - __hyp_vmemmap) / 4 @*/
 /*@ requires let start_i = (pool).range_start / 4096 @*/
 /*@ requires let end_i = (pool).range_end / 4096 @*/
 /*@ requires let V = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*4))} @*/
@@ -132,7 +132,7 @@ void lemma_attach_inc_loop (struct hyp_pool pool,
 /*@ requires let end_i = (pool).range_end / 4096 @*/
 /*@ requires cellPointer(hyp_vmemmap, 4, start_i, end_i, p) @*/
 /*@ requires let V = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
-/*@ requires let p_i = (((integer) p) - __hyp_vmemmap) / 32 @*/
+/*@ requires let p_i = (((integer) p) - __hyp_vmemmap) / 4 @*/
 /*@ requires let buddy_i = pfn_buddy(p_i, order) @*/
 /*@ requires let buddy_order = (V.value[buddy_i]).order @*/
 /*@ requires start_i <= buddy_i; buddy_i < end_i @*/
