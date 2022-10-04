@@ -132,9 +132,10 @@ static struct hyp_page *__find_buddy_avail(struct hyp_pool *pool,
 /*@ ensures let buddy_i = pfn_buddy(p_i, order) @*/
 /*@ ensures let addr = buddy_i * (page_size ()) @*/
 /*@ ensures let same_order = (Vmemmap2.value[buddy_i]).order == order @*/
+/*@ ensures let zero_refcount = (Vmemmap2.value[buddy_i]).refcount == 0 @*/
 /*@ ensures let buddy = (pointer)(__hyp_vmemmap + (buddy_i * 4)) @*/
 /*@ ensures let in_range_buddy = addr >= (*pool).range_start && addr < (*pool).range_end @*/
-/*@ ensures let good_buddy = in_range_buddy && same_order @*/
+/*@ ensures let good_buddy = in_range_buddy && same_order && zero_refcount @*/
 /*@ ensures return == (good_buddy ? buddy : NULL) @*/
 /*@ ensures (return == NULL) || (cellPointer(hyp_vmemmap, 4, start_i, end_i, buddy) && order_aligned(buddy_i, order) && p != buddy) @*/
 {
@@ -405,6 +406,7 @@ static void __hyp_put_page(struct hyp_pool *pool, struct hyp_page *p)
 /*@ ensures H2.pool.range_start == {H.pool.range_start}@start @*/
 /*@ ensures H2.pool.range_end == {H.pool.range_end}@start @*/
 /*@ ensures H2.pool.max_order == {H.pool.max_order}@start @*/
+/*@ ensures each (integer i; p_i < i && i < end_i){(({H.vmemmap[i]}@start).refcount == 0) || ((H2.vmemmap[i]) == {H.vmemmap[i]}@start)} @*/
 {
         /*CN*/unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);
         /*CN*/instantiate vmemmap_wf, hyp_page_to_pfn(p);
