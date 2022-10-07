@@ -177,3 +177,9 @@ void page_size_of_order_lemma(unsigned int order)
 /*@ ensures size == (page_size_of_order(order)) @*/
 {}
 
+void struct_list_head_to_bytes_lemma(struct list_head *node)
+/*@ trusted @*/
+/*@ requires let Node = Owned(node) @*/
+/*@ ensures let B = each (integer i; ((integer) node) <= i && i < (((integer) node) + (sizeof_struct_list_head()))){Byte(((pointer) 0)+(i*1))} @*/
+{}
+
