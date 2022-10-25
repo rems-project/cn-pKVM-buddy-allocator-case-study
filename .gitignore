@@ -1,0 +1,14 @@
+# Mac files
+**/.DS_Store
+
+# coq various build and temp files
+*.vo
+*.vos
+*.vok
+*.glob
+.*.aux
+
+coq_lemmas/Makefile.coq*
+coq_lemmas/CoqMakefile.conf
+coq_lemmas/.Makefile.coq.d
+
