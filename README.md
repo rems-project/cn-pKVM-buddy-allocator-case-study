@@ -11,6 +11,8 @@ the Linux source tree, retaining the original license/copyright
 headers. Comments in the files point out where the code has been
 modified (minor edits and additions).
 
+The directory contains the license file `GPL-2.0` and the note
+`Linux-syscall-note`.
 
 
 
