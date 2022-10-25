@@ -1,0 +1,9 @@
+
+-Q theories CN_Lemmas
+
+theories/Gen_Spec.v
+theories/Buddy_Aligned.v
+theories/Pages_Aligned.v
+theories/Inst_Spec.v
+
+
