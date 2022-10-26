@@ -73,6 +73,7 @@ u64 __hyp_vmemmap;
 
 
 
+#include "defs.h"
 #include "lemmas.h"
 
 static struct hyp_page *__find_buddy_nocheck(struct hyp_pool *pool,
