@@ -1,7 +1,7 @@
 (* Definitions and lemmas about the buddy allocator example
    invariants, independent of the CN output. *)
 
-Require Import ZArith Bool.
+Require Import ZArith Bool Lia.
 Require Import CN_Lemmas.Buddy_Aligned.
 
 Open Scope Z.
@@ -37,7 +37,7 @@ Lemma page_size_of_order_mono:
 Proof.
   intros.
   unfold page_size_of_order.
-  apply Z.pow_le_mono_r_iff; omega.
+  apply Z.pow_le_mono_r_iff; lia.
 Qed.
 
 Lemma page_size_of_order_times_4096:
@@ -45,7 +45,7 @@ Lemma page_size_of_order_times_4096:
 Proof.
   unfold page_size_of_order.
   intros.
-  rewrite Z.pow_add_r by omega.
+  rewrite Z.pow_add_r by lia.
   cbv; auto.
 Qed.
 
@@ -58,7 +58,7 @@ Proof.
   intros.
   rewrite<- page_size_of_order_times_4096 by auto.
   apply Z.mul_divide_cancel_r; auto.
-  omega.
+  lia.
 Qed.
 
 Lemma pfn_add_sub_eq_pfn_times_4096:
@@ -80,7 +80,7 @@ Lemma page_size_of_order_inc:
 Proof.
   intros.
   unfold page_size_of_order.
-  repeat rewrite Z.pow_add_r by omega.
+  repeat rewrite Z.pow_add_r by lia.
   rewrite Z.pow_1_r.
   ring.
 Qed.
@@ -91,7 +91,7 @@ Lemma page_size_of_order_inc2:
   page_size_of_order (order + 1) = page_size_of_order order * 2.
 Proof.
   intros.
-  rewrite page_size_of_order_inc by omega.
+  rewrite page_size_of_order_inc by lia.
   ring.
 Qed.
 
@@ -101,7 +101,7 @@ Lemma page_size_of_order_pos:
 Proof.
   intros.
   unfold page_size_of_order.
-  apply Z.pow_pos_nonneg; omega.
+  apply Z.pow_pos_nonneg; lia.
 Qed.
 
 Ltac split_if nm :=
@@ -121,10 +121,10 @@ Proof.
   - rewrite<- Z.add_cancel_r with (p := 2 ^ order).
     rewrite Z.add_nocarry_lxor.
       rewrite Z.lxor_assoc, Z.lxor_nilpotent, Z.lxor_0_r.
-      omega.
+      lia.
       apply Z.bits_inj_0.
       intros.
-      rewrite Z.land_spec, Z.lxor_spec, Z.pow2_bits_eqb by omega.
+      rewrite Z.land_spec, Z.lxor_spec, Z.pow2_bits_eqb by lia.
       destruct (order =? n) eqn: x; try rewrite andb_false_r; auto.
       rewrite Z.eqb_eq in x.
       rewrite<- x.
@@ -133,7 +133,7 @@ Proof.
   - rewrite<- Z.add_nocarry_lxor; auto.
     apply Z.bits_inj_0.
     intros.
-    rewrite Z.land_spec, Z.pow2_bits_eqb by omega.
+    rewrite Z.land_spec, Z.pow2_bits_eqb by lia.
     destruct (order =? n) eqn: x; try rewrite andb_false_r; auto.
     rewrite Z.eqb_eq in x.
     rewrite<- x.
@@ -149,20 +149,19 @@ Lemma lxor_eq_buddy:
 Proof.
   intros.
   unfold buddy.
-  split_if al; rewrite lxor_eq_if by omega; split_if testb; auto.
+  split_if al; rewrite lxor_eq_if by lia; split_if testb; auto.
   - apply Is_true_eq_left in al.
-    apply order_aligned_b_true1 in al; try omega.
+    apply order_aligned_b_true1 in al; try lia.
     rewrite order_aligned_imp_testbit_false with (i := order + 1)
-      in testb; auto; try omega.
-    discriminate testb.
-  - apply eq_true_false_abs in al; try omega.
+      in testb; auto; try lia.
+  - apply eq_true_false_abs in al; try lia.
     apply Is_true_eq_true.
-    apply order_aligned_b_true2; try omega.
-    apply order_aligned_from_testbit; try omega.
+    apply order_aligned_b_true2; try lia.
+    apply order_aligned_from_testbit; try lia.
     intros.
     destruct (Z.lt_ge_cases j order).
       apply order_aligned_imp_testbit_false with (i := order); auto.
-    assert (j = order) by omega.
+    assert (j = order) by lia.
     rewrite H3.
     auto.
 Qed.
@@ -176,12 +175,12 @@ Proof.
   intros.
   assert (4096 = 2 ^ 12) by (cbv; auto).
   rewrite H1.
-  rewrite<- Z.shiftl_mul_pow2 by omega.
+  rewrite<- Z.shiftl_mul_pow2 by lia.
   rewrite Z.mul_comm.
-  rewrite<- Z.shiftl_mul_pow2 by omega.
+  rewrite<- Z.shiftl_mul_pow2 by lia.
   rewrite<- Z.shiftl_lxor.
-  rewrite<- Z.shiftr_div_pow2 by omega.
-  rewrite Z.shiftr_shiftl_l by omega.
+  rewrite<- Z.shiftr_div_pow2 by lia.
+  rewrite Z.shiftr_shiftl_l by lia.
   rewrite Z.sub_diag, Z.shiftl_0_r.
   apply lxor_eq_buddy; auto.
 Qed.
@@ -206,14 +205,14 @@ Proof.
     rewrite Z.lxor_0_r.
     auto.
   assert (le_lx : 0 <= Z.lxor x y)
-    by (rewrite Z.lxor_nonneg; omega).
+    by (rewrite Z.lxor_nonneg; lia).
   rewrite Z.le_lteq in le_lx.
-  destruct le_lx; try omega.
+  destruct le_lx; try lia.
   rewrite Z.log2_lt_pow2 by auto.
   eapply Z.le_lt_trans.
-    apply Z.log2_lxor; try omega.
+    apply Z.log2_lxor; try lia.
   apply Z.max_lub_lt_iff.
-  rewrite Z.log2_lt_pow2 in * by omega.
+  rewrite Z.log2_lt_pow2 in * by lia.
   auto.
 Qed.
 
@@ -255,7 +254,7 @@ Proof.
     rewrite eq_n_al in *.
     destruct (H i ord); auto.
     destruct H7; auto.
-    destruct H7; try omega.
+    destruct H7; try lia.
   apply H; auto.
 Qed.
 
@@ -293,24 +292,24 @@ Proof.
       auto.
     destruct (ord <=? order2) eqn: ord_le.
       rewrite Z.leb_le in ord_le.
-      rewrite order_align_idemp; auto; try omega.
+      rewrite order_align_idemp; auto; try lia.
       eauto using order_aligned_sz_mono, Z.lt_le_incl.
     rewrite Z.leb_gt in ord_le.
-    apply H1; omega.
+    apply H1; lia.
   destruct (n =? order_align i ord) eqn: eq_n_al.
     rewrite Z.eqb_eq in eq_n_al.
     destruct (ord <=? order2) eqn: ord_le.
       rewrite Z.leb_le in ord_le.
-      rewrite H2 in H7; try omega.
-        rewrite<- (order_align_idemp n order2); auto; try omega.
+      rewrite H2 in H7; try lia.
+        rewrite<- (order_align_idemp n order2); auto; try lia.
         rewrite eq_n_al.
         rewrite order_align_compose; auto.
-        omega.
+        lia.
       rewrite eq_n_al in *.
       rewrite Z.le_neq.
       rewrite Z.eqb_neq in eq_n_i.
       constructor; auto.
-      apply order_align_le; omega.
+      apply order_align_le; lia.
     rewrite Z.leb_gt in ord_le.
     auto.
   apply H; auto.
@@ -331,39 +330,34 @@ Lemma group_ok_inv_split:
 Proof.
   intros.
   apply group_ok_inv_set; auto.
-        apply group_ok_inv_reduce; auto; try omega.
-      apply order_aligned_buddy; try omega.
-      apply (order_aligned_sz_mono pg order); auto; omega.
+        apply group_ok_inv_reduce; auto; try lia.
+      apply order_aligned_buddy; try lia.
+      apply (order_aligned_sz_mono pg order); auto; lia.
     intros.
-    rewrite<- (order_align_compose (buddy pg (order - 1)) order) by omega.
-    rewrite align_buddy_eq by (auto; omega).
+    rewrite<- (order_align_compose (buddy pg (order - 1)) order) by lia.
+    rewrite align_buddy_eq by (auto; lia).
     unfold fun_upd.
-    destruct (pg =? order_align pg order3) eqn: pg_eq_align; try omega.
+    destruct (pg =? order_align pg order3) eqn: pg_eq_align; try lia.
     destruct (Z.lt_ge_cases (order_align pg order3) start_n); auto.
-    destruct (H pg order3); try omega.
-    rewrite H9 in *.
-    rewrite Z.eqb_refl in *.
-    discriminate pg_eq_align.
+    destruct (H pg order3); try lia.
   intros.
   unfold fun_upd in *.
   destruct (pg =? n2) eqn: pg_eq_n2.
     rewrite Z.eqb_eq in pg_eq_n2.
     rewrite pg_eq_n2 in *.
-    rewrite order_align_idemp in H7; try omega.
-    apply order_aligned_sz_mono with (order1 := order); try omega.
+    rewrite order_align_idemp in H7; try lia.
+    apply order_aligned_sz_mono with (order1 := order); try lia.
     auto.
   pose (order_align_compose n2 (order - 1) order).
   rewrite H7 in e.
-  rewrite align_buddy_eq in e by (auto; try omega).
+  rewrite align_buddy_eq in e by (auto; try lia).
   destruct (orders n2 =? o_inval) eqn: eq_cases.
     rewrite Z.eqb_eq in eq_cases; auto.
   rewrite Z.eqb_neq in eq_cases.
-  destruct (H n2 order); auto; try omega.
-    rewrite<- e in * by omega.
-    rewrite Z.eqb_neq in pg_eq_n2.
-    omega.
-  rewrite<- e in * by omega.
-  omega.
+  destruct (H n2 order); auto; try lia.
+  rewrite<- e in * by lia.
+  rewrite Z.eqb_neq in pg_eq_n2.
+  lia.
 Qed.
 
 
@@ -379,8 +373,8 @@ Proof.
   rewrite H; auto.
   constructor; auto.
   apply Z.le_lt_trans with (m := i).
-    apply order_align_le; omega.
-  omega.
+    apply order_align_le; lia.
+  lia.
 Qed.
 
 Lemma order_aligned_triv_0:
@@ -410,11 +404,11 @@ Proof.
   intros.
   apply group_ok_inv_set; auto.
       apply group_ok_inv_reduce; auto.
-      omega.
+      lia.
     intros.
-    destruct (Z.lt_ge_cases order order3); try omega.
+    destruct (Z.lt_ge_cases order order3); try lia.
     unfold group_ok_inv in *.
-    destruct (H pg order3); try omega.
+    destruct (H pg order3); try lia.
     unfold fun_upd.
     split_if x; auto.
   intros.
@@ -423,26 +417,26 @@ Proof.
   destruct (orders n2 =? o_inval) eqn: is_inval.
     rewrite Z.eqb_eq in is_inval; auto.
   rewrite Z.eqb_neq in is_inval.  
-  apply align_to_page_or_buddy in H8; try omega.
+  apply align_to_page_or_buddy in H8; try lia.
   destruct H8.
     rewrite Z.le_lteq in H4.
     destruct H4.
-      destruct (H n2 order); try omega.
+      destruct (H n2 order); try lia.
       rewrite H8 in *.
-      omega.
+      lia.
     rewrite<- H4 in *.
     rewrite order_align_idemp in *
-      by (try apply order_aligned_triv_0; omega).
-    omega.
+      by (try apply order_aligned_triv_0; lia).
+    lia.
   rewrite Z.eqb_neq in x.
   rewrite Z.le_lteq in H4.
   destruct H4.
-    destruct (H n2 order); try omega.
+    destruct (H n2 order); try lia.
     rewrite H8 in *.
-    destruct H10; try omega.
-    apply (buddy_aligned_imp_le pg order) in H0; try omega.
+    destruct H10; try lia.
+    apply (buddy_aligned_imp_le pg order) in H0; try lia.
   rewrite<- H4 in *.
   rewrite order_align_idemp in *
-  by (try apply order_aligned_triv_0; omega).
-  omega.
+  by (try apply order_aligned_triv_0; lia).
+  lia.
 Qed.

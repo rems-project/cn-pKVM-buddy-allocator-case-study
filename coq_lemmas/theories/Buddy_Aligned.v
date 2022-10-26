@@ -1,7 +1,7 @@
 (* Notionally target-independent definitions and proofs
    about alignment and buddy trees as a spec concept. *)
 
-Require Import ZArith Bool.
+Require Import ZArith Bool Lia.
 
 Open Scope Z.
 
@@ -22,7 +22,7 @@ Definition buddy (ptr order : Z) : Z :=
   Ltac pow_sign :=
     try apply Z.pow_pos_nonneg;
     try apply Z.pow_nonzero;
-    try apply Z.pow_nonneg; try omega.
+    try apply Z.pow_nonneg; try lia.
   
     Lemma order_aligned_b_true1:
     forall p order,
@@ -35,7 +35,7 @@ Definition buddy (ptr order : Z) : Z :=
     apply Is_true_eq_true in H.
     rewrite Z.eqb_eq in *.
     rewrite<- Z.mod_divide by pow_sign.
-    omega.
+    lia.
   Qed.
   
   Lemma order_aligned_b_true2:
@@ -48,7 +48,7 @@ Definition buddy (ptr order : Z) : Z :=
     apply Is_true_eq_left.
     rewrite Z.eqb_eq in *.
     rewrite<- Z.mod_divide in * by pow_sign.
-    omega.
+    lia.
   Qed.
   
   Lemma order_aligned_sz_mono:
@@ -63,7 +63,7 @@ Definition buddy (ptr order : Z) : Z :=
     apply Z.divide_trans with (m := 2 ^ order1); auto.
     unfold Z.divide.
     exists (2 ^ (order1 - order2)).
-    rewrite<- Zpower_exp by omega.
+    rewrite<- Zpower_exp by lia.
     rewrite Z.sub_simpl_r.
     auto.
   Qed.
@@ -80,13 +80,13 @@ Definition buddy (ptr order : Z) : Z :=
     destruct (i <? j) eqn: lt.
     -
       apply Z.ltb_lt in lt.
-      omega.
+      lia.
     -
       apply Z.ltb_ge in lt.
-      apply (Z.divide_pos_le _) in H; try apply Z.pow_pos_nonneg; try omega.
+      apply (Z.divide_pos_le _) in H; try apply Z.pow_pos_nonneg; try lia.
       apply Z.le_antisymm in H.
-      apply (Z.pow_inj_r _ _ _) in H; try omega.
-      apply Z.pow_le_mono_r_iff; omega.
+      apply (Z.pow_inj_r _ _ _) in H; try lia.
+      apply Z.pow_le_mono_r_iff; lia.
   Qed.
   
   Lemma order_aligned_two_power:
@@ -101,16 +101,16 @@ Definition buddy (ptr order : Z) : Z :=
       apply Is_true_eq_true.
       apply order_aligned_b_true2; auto.
       apply Z.leb_le in ineq.
-      apply order_aligned_sz_mono with (order1 := order1); try omega.
+      apply order_aligned_sz_mono with (order1 := order1); try lia.
       unfold order_aligned.
       apply Z.divide_refl.
     -
       destruct (order_aligned_b (2 ^ order1) order2) eqn: ord; auto.
       apply Is_true_eq_left in ord.
-      apply order_aligned_b_true1 in ord; try omega.
+      apply order_aligned_b_true1 in ord; try lia.
       unfold order_aligned in ord.
       apply Z.leb_gt in ineq.
-      apply div_power_impl_le in ord; try omega.
+      apply div_power_impl_le in ord; try lia.
   Qed.
   
   Lemma buddy_lt_eq:
@@ -118,10 +118,10 @@ Definition buddy (ptr order : Z) : Z :=
   p <? buddy p order = order_aligned_b p (order + 1).
 Proof.
   intros.
-  apply (Z.pow_pos_nonneg 2 order) in H; try omega.
+  apply (Z.pow_pos_nonneg 2 order) in H; try lia.
   unfold buddy.
   destruct (order_aligned_b p (order + 1));
-    rewrite Z.ltb_lt || rewrite Z.ltb_ge; omega.
+    rewrite Z.ltb_lt || rewrite Z.ltb_ge; lia.
 Qed.
 
 Lemma buddy_aligned_imp_le:
@@ -131,12 +131,12 @@ Lemma buddy_aligned_imp_le:
   p <= buddy p order.
 Proof.
   intros.
-  apply order_aligned_b_true2 in H; try omega.
+  apply order_aligned_b_true2 in H; try lia.
   apply Is_true_eq_true in H.
-  apply (Z.pow_pos_nonneg 2 order) in H0; try omega.
+  apply (Z.pow_pos_nonneg 2 order) in H0; try lia.
   unfold buddy.
   rewrite H.
-  omega.
+  lia.
 Qed.
 
 Lemma buddy_higher_aligned:
@@ -154,7 +154,7 @@ Proof.
   destruct H0.
   rewrite H0 in *.
   unfold order_align in H1.
-  rewrite Z.pow_add_r, Z.pow_1_r in * by omega.
+  rewrite Z.pow_add_r, Z.pow_1_r in * by lia.
   rewrite Z.mul_comm in H1.
   rewrite Zmult_mod_distr_l in H1.
   destruct (Z.even x) eqn: even.
@@ -163,7 +163,7 @@ Proof.
     rewrite Z.eqb_refl in *.
     discriminate.
   -
-    rewrite (Z.div_mod x 2) by omega.
+    rewrite (Z.div_mod x 2) by lia.
     rewrite Zmod_even, even, Z.mul_add_distr_r, Z.mul_1_l.
     rewrite Z.add_simpl_r.
     rewrite Z.mul_comm.
@@ -181,17 +181,17 @@ Proof.
   unfold buddy.
   rewrite Z.sub_simpl_r.
   pose (H0_b := H0).
-  apply order_aligned_b_true2 in H0_b; try omega.
+  apply order_aligned_b_true2 in H0_b; try lia.
   apply Is_true_eq_true in H0_b.
   rewrite H0_b.
   match goal with |- ?b = _ => destruct b eqn: bv end; auto.
   apply Is_true_eq_left in bv.
-  apply order_aligned_b_true1 in bv; try omega.
+  apply order_aligned_b_true1 in bv; try lia.
   unfold order_aligned in *.
   destruct H0.
   rewrite H0 in *.
   apply (Z.divide_add_cancel_r _) in bv; try apply Z.divide_factor_r.
-  apply div_power_impl_le in bv; try omega.
+  apply div_power_impl_le in bv; try lia.
 Qed.
 
 Lemma align_buddy_eq:
@@ -206,18 +206,18 @@ Proof.
   rewrite H1.
   rewrite Z.sub_simpl_r.
   pose (H0_b := H0).
-  apply order_aligned_b_true2 in H0_b; try omega.
+  apply order_aligned_b_true2 in H0_b; try lia.
   apply Is_true_eq_true in H0_b.
   rewrite H0_b.
   unfold order_aligned in *.
-  rewrite<- Z.add_mod_idemp_l; try apply Z.pow_nonzero; try omega.
-  rewrite<- Z.mod_divide in H0; try apply Z.pow_nonzero; try omega.
+  rewrite<- Z.add_mod_idemp_l; try apply Z.pow_nonzero; try lia.
+  rewrite<- Z.mod_divide in H0; try apply Z.pow_nonzero; try lia.
   rewrite H0.
   simpl.
-  rewrite Z.mod_small; try omega.
+  rewrite Z.mod_small; try lia.
   constructor.
-  apply Z.pow_nonneg; omega.
-  apply Z.pow_lt_mono_r; try omega.
+  apply Z.pow_nonneg; lia.
+  apply Z.pow_lt_mono_r; try lia.
 Qed.
 
 Lemma order_aligned_imp_testbit_false:
@@ -231,7 +231,7 @@ Proof.
   destruct H.
   rewrite H.
   apply Z.mul_pow2_bits_low.
-  omega.
+  lia.
 Qed.
 
 Lemma order_aligned_from_testbit:
@@ -245,7 +245,7 @@ Proof.
   rewrite<- Z.mod_divide by pow_sign.
   apply Z.bits_inj_0.
   intros.
-  rewrite Z.testbit_mod_pow2 by omega.
+  rewrite Z.testbit_mod_pow2 by lia.
   destruct (n <? i) eqn: n_lt; auto.
   rewrite Z.ltb_lt in n_lt.
   rewrite H; auto.
@@ -287,7 +287,7 @@ Proof.
   intros.
   unfold order_align.
   rewrite Zmod_eq_full by pow_sign.
-  omega.
+  lia.
 Qed.
 
 Lemma order_align_compose:
@@ -297,10 +297,10 @@ Lemma order_align_compose:
   order_align i order2.
 Proof.
   intros.
-  repeat rewrite order_align_eq_div_mult by omega.
+  repeat rewrite order_align_eq_div_mult by lia.
   pose (x := Z.pow_add_r 2 order1 (order2 - order1)).
   rewrite Zplus_minus in x.
-  repeat rewrite x by omega.
+  repeat rewrite x by lia.
   rewrite<- Z.div_div by pow_sign.
   rewrite Z.div_mul by pow_sign.
   rewrite Z.div_div by pow_sign.
@@ -315,8 +315,8 @@ Proof.
   unfold order_align.
   intros.
   destruct (Z.mod_pos_bound i (2 ^ sz)).
-    apply Z.pow_pos_nonneg; omega.
-  omega.
+    apply Z.pow_pos_nonneg; lia.
+  lia.
 Qed.
 
 Lemma align_to_page_or_buddy1:
@@ -332,10 +332,10 @@ Proof.
   pose (pg_al := order_aligned_b_true2 pg (order + 1)).
   apply Is_true_eq_true in pg_al;
     try (rewrite<- H; apply order_aligned_order_align);
-    try omega.
+    try lia.
   rewrite pg_al.
-  rewrite order_align_eq_div_mult in H by omega.
-  rewrite Z.pow_add_r in H by omega.
+  rewrite order_align_eq_div_mult in H by lia.
+  rewrite Z.pow_add_r in H by lia.
   unfold Z.divide in H0.
   destruct H0.
   rewrite H0 in H.
@@ -347,7 +347,7 @@ Proof.
     destruct H2.
     rewrite Z.mul_comm in H2.
     rewrite H2 in *.
-    rewrite Z.div_mul in H by omega.
+    rewrite Z.div_mul in H by lia.
     rewrite<- H.
     rewrite H0.
     rewrite (Z.mul_comm (2 ^ _) 2).
@@ -357,7 +357,7 @@ Proof.
   destruct H2.
   rewrite Z.mul_comm in H2.
   rewrite H2 in *.
-  rewrite Z.div_add_l in H by omega.
+  rewrite Z.div_add_l in H by lia.
   constructor 2.
   assert (1 / 2 = 0) by (cbv; auto).
   rewrite H3 in *.
@@ -368,7 +368,7 @@ Proof.
   rewrite Z.mul_1_l.
   rewrite (Z.mul_comm (2 ^ _) 2).
   rewrite Z.mul_assoc.
-  omega.
+  lia.
 Qed.
 
 Lemma align_to_page_or_buddy:
@@ -379,11 +379,11 @@ Lemma align_to_page_or_buddy:
 Proof.
   intros.
   pose (align_to_page_or_buddy1 (order_align i order) order pg).
-  destruct o; try omega.
-    rewrite order_align_compose by omega.
+  destruct o; try lia.
+    rewrite order_align_compose by lia.
     auto.
   apply order_aligned_order_align.
-  omega.
+  lia.
 Qed.
 
 Lemma order_aligned_plus:
@@ -431,10 +431,10 @@ Lemma buddy_idemp_impossible:
 Proof.
   intros.
   unfold buddy.
-  apply (Z.pow_pos_nonneg 2 sz) in H; try omega.
+  apply (Z.pow_pos_nonneg 2 sz) in H; try lia.
   destruct (order_aligned_b n (sz + 1)).
-    constructor; intros; omega.
-  constructor; intros; omega.
+    constructor; intros; lia.
+  constructor; intros; lia.
 Qed.
 
 Lemma buddy_involution_gt_case:
@@ -450,9 +450,9 @@ Proof.
   pose (buddy_higher_aligned n sz H H0 H1).
   unfold buddy in o.
   rewrite H1 in o.
-  apply order_aligned_b_true2 in o; try omega.
+  apply order_aligned_b_true2 in o; try lia.
   apply Is_true_eq_true in o.
   rewrite o.
-  omega.
+  lia.
 Qed.
 
