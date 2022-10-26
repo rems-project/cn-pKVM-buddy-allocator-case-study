@@ -18,21 +18,20 @@ The directory contains the license file `GPL-2.0` and the note
 
 The directory structure is as follows:
 
-- `page_alloc.c` contains the main body of the buddy allocator logic.
+- `page_alloc.c` contains the main body of the buddy allocator
+  code. The function `__hyp_attach_page` discussed in the paper and
+  its annotations can be found here.
 
 - `gfp.h` defines the buddy allocator API described in the paper.
 
 - `memory.h` contains a number of auxiliary definitions of functions
   and types. 
   
-- `lemmas.h`
+- `lemmas.h` defines resource predicates and logical functions,
+    including the main invariant, `Hyp_pool`; it also declares
+    uninterpreted functions used in the proof.
 
-  - declares uninterpreted functions used in the proof,
-
-  - states lemmas, and
-
-  - defines resource predicates and logical functions, including the
-    main invariant, Hyp_pool.
+- `lemmas.h` states lemmas.
 
 - `coq_lemmas` is the directory for the Coq part of the verification:
 
