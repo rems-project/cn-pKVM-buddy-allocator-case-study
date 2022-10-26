@@ -4,15 +4,9 @@ function (integer) order_align (integer x, integer sz)
 function (boolean) page_aligned (integer x, integer sz)
 function (integer) page_size_of_order (integer sz)
 
-function (integer) page_size ()
-
-static int _cn_page_size (void) /*@ cn_function page_size @*/ { return PAGE_SIZE; }
-
-function (integer) max_order ()
-static int _cn_max_order (void) /*@ cn_function max_order @*/ { return MAX_ORDER; }
-
-function (integer) hyp_no_order ()
-static u64 _cn_hyp_no_order (void) /*@ cn_function hyp_no_order @*/ { return HYP_NO_ORDER; }
+function (integer) page_size () { return 4096; }
+function (integer) max_order () { return 11; }
+function (integer) hyp_no_order () { return 4294967295; }
 
 function (boolean) vmemmap_good_pointer (pointer vmemmap_pointer, pointer p,
         integer range_start, integer range_end)
