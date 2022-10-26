@@ -47,6 +47,8 @@ The directory structure is as follows:
   - `theories/Inst_Spec.v` the instantiation of the Coq module
     specifications in `Gen_Spec.v`.
 
+  This Coq development has been checked with Coq 8.15.0.
+
 
 - other `*.h`: these are various dependencies of the buddy allocator
   from the linux source tree.
