@@ -1,4 +1,3 @@
-/* define functions & logical predicates for the verification */
 function (integer) pfn_buddy (integer x, integer sz)
 function (boolean) order_aligned (integer x, integer sz)
 function (integer) order_align (integer x, integer sz)
@@ -439,8 +438,6 @@ predicate {} Page (pointer vbase, integer guard, integer order)
   }
   else {
     assert(((integer) vbase) >= 0);
-    /* assert (order != (hyp_no_order ())); */
-    /* assert (page_aligned((integer) pbase, order)); */
     let length = (page_size_of_order(order));
     let vbaseI = ((integer) vbase);
     let Bytes = each (integer i; (vbaseI <= i) && (i < (vbaseI + length)))
@@ -456,8 +453,6 @@ predicate {} ZeroPage (pointer vbase, integer guard, integer order)
   }
   else {
     assert(((integer) vbase) >= 0);
-    /* assert (order != (hyp_no_order ())); */
-    /* assert (page_aligned((integer) pbase, order)); */
     let length = (page_size_of_order(order));
     let vbaseI = ((integer) vbase);
     let Bytes = each (integer i; (vbaseI <= i) && (i < (vbaseI + length)))
