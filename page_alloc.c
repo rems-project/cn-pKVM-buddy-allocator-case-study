@@ -170,6 +170,7 @@ static inline void page_remove_from_list(struct hyp_pool *pool, struct hyp_page 
 /*@ requires let virt = (pointer) (phys - hyp_physvirt_offset) @*/
 /*@ requires let Hp = Owned(p) @*/
 /*@ requires let order = (*p).order @*/
+/*@ requires 0 <= order; order < (*pool).max_order @*/
 /*@ requires let AP = AllocatorPage(virt, 1, order) @*/
 /*@ requires let prev = AP.prev; let next = AP.next @*/
 /*@ requires let AP_prev = AllocatorPage(prev, 1, order) @*/
@@ -190,19 +191,13 @@ static inline void page_remove_from_list(struct hyp_pool *pool, struct hyp_page 
 	struct list_head *node = hyp_page_to_virt(p);
 
 	/*CN*/unpack AllocatorPage(node, 1, p->order);
-	/*CN*/struct list_head *prev = node->prev;
-	/*CN*/unpack AllocatorPage(prev, 1, p->order);
-	/*CN*/struct list_head *next = node->next;
-	/*CN*/bool cond = prev != next;
-	/*CN*/if (cond) unpack AllocatorPage(next, 1, p->order);
+	/*CN*/unpack AllocatorPage(node->prev, 1, p->order);
+	/*CN*/if (node->prev != node->next) unpack AllocatorPage(node->next, 1, p->order);
 	__list_del_entry(node);
-	///*CN*/pack AllocatorPage(prev, 1, p->order);
-	//assert(0);
-	///*CN*/if (cond) pack AllocatorPage(next, 1, p->order);
 	/*CN*/struct_list_head_to_bytes_lemma(node);
 	memset(node, 0, sizeof(*node));
-        merge_byteV_0_lemma(node, p->order);
-	///*CN*/pack ZeroPage (node, 1, p->order);
+	/*CN*/page_size_of_order_lemma(p->order);
+	/*CN*/pack ZeroPage(node, 1, p->order);
 }
 
 static inline void page_add_to_list(struct hyp_page *p, struct list_head *head)
@@ -286,7 +281,7 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 		    /*@ inv each (integer i; start_i2 <= i && i < end_i2 && (V2.value[i]).refcount == 0 && (V2.value[i]).order != (hyp_no_order())){vmemmap_l_wf(i, hyp_physvirt_offset, V2.value[p_i2 = p_page_tweaked2], APsI.prev, APsI.next, pool, *pool)} @*/
 		    /*@ inv each (integer i; start_i2 <= i && i < end_i2){vmemmap_wf(i, V2.value[p_i2 = p_page_tweaked2], pool, *pool)} @*/
 		    /*@ inv each (integer i; 0 <= i && i < ((*pool).max_order)){freeArea_cell_wf(i, hyp_physvirt_offset, V2.value, APsI.prev, APsI.next, pool, (*pool))} @*/
-		    /*@ inv 0 <= order; order+1 <= (*pool).max_order @*/
+		    /*@ inv 0 <= order; order < (*pool).max_order @*/
 		    /*@ inv cellPointer(hyp_vmemmap,4,start_i2,end_i2,p) @*/
 		    /*@ inv (p_page.refcount) == 0; (p_page.order) == (hyp_no_order ()) @*/
 		    /*@ inv (APsI.next[p_i2]) == virt; (APsI.prev[p_i2]) == virt @*/
