@@ -196,12 +196,13 @@ static inline void page_remove_from_list(struct hyp_pool *pool, struct hyp_page 
 	/*CN*/bool cond = prev != next;
 	/*CN*/if (cond) unpack AllocatorPage(next, 1, p->order);
 	__list_del_entry(node);
-	/*CN*/pack AllocatorPage(prev, 1, p->order);
-	assert(0);
-	/*CN*/if (cond) pack AllocatorPage(next, 1, p->order);
+	///*CN*/pack AllocatorPage(prev, 1, p->order);
+	//assert(0);
+	///*CN*/if (cond) pack AllocatorPage(next, 1, p->order);
 	/*CN*/struct_list_head_to_bytes_lemma(node);
 	memset(node, 0, sizeof(*node));
-	/*CN*/pack ZeroPage (node, 1, p->order);
+        merge_byteV_0_lemma(node, p->order);
+	///*CN*/pack ZeroPage (node, 1, p->order);
 }
 
 static inline void page_add_to_list(struct hyp_page *p, struct list_head *head)
