@@ -183,3 +183,12 @@ void struct_list_head_to_bytes_lemma(struct list_head *node)
 /*@ ensures let B = each (integer i; ((integer) node) <= i && i < (((integer) node) + (sizeof_struct_list_head()))){Byte(((pointer) 0)+(i*1))} @*/
 {}
 
+void bytes_to_struct_list_head_lemma(struct list_head *node, u8 order)
+/*@ trusted @*/
+/*@ requires ((integer) node) >= 0 @*/
+/*@ requires let length = page_size_of_order(order) @*/
+/*@ requires let nodeI = ((integer) node) @*/
+/*@ requires let B = each (integer i; (nodeI <= i) && (i < (nodeI + length))) {ByteV(((pointer) 0) + (i * 1), 0)} @*/
+/*@ ensures let Node = Owned(node) @*/
+/*@ ensures let BR = each (integer i; ({nodeI}@start + (sizeof_struct_list_head())) <= i && i < ({nodeI}@start + {length}@start)){ByteV(((pointer) 0)+(i*1), 0)} @*/
+{}

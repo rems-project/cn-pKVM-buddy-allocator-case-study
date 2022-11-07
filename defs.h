@@ -7,6 +7,7 @@ function (integer) page_size_of_order (integer sz)
 function (integer) page_size () { return 4096; }
 function (integer) max_order () { return 11; }
 function (integer) hyp_no_order () { return 255; }
+function (integer) sizeof_struct_hyp_page(){ return sizeof <struct hyp_page>; }
 function (integer) sizeof_struct_list_head() { return sizeof <struct list_head>; }
 
 function (boolean) vmemmap_good_pointer (integer physvirt_offset, pointer p,
