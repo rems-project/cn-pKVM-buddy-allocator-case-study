@@ -216,27 +216,30 @@ static inline void page_add_to_list(struct hyp_pool *pool, struct hyp_page *p, s
 /*@ requires let order = (*p).order @*/
 /*@ requires 0 <= order; order < (*pool).max_order @*/
 /*@ requires let AP1 = ZeroPage(virt, 1, order) @*/
-/*@ requires let AP2 = AllocatorPage(head, 1, order) @*/
-/*@ requires let prev = AP2.prev; let next = head @*/
+/*@ requires let free_area_l = (pointer)(((integer)pool) + offsetof(hyp_pool, free_area)) @*/
+/*@ requires cellPointer(free_area_l, (sizeof_struct_list_head()), 0, (*pool).max_order, head) @*/
+/*@ requires ((((integer)head) - ((integer)free_area_l)) / (sizeof_struct_list_head())) == order @*/
+/*@ requires let head_s = (*pool).free_area[order] @*/
+/*@ requires let prev = head_s.prev; let next = head @*/
 /*@ requires let AP3 = AllocatorPage(prev, 1, order) if prev != next @*/
 /*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
 /*@ ensures {p} unchanged; {pool} unchanged @*/
 /*@ ensures let AP1R = AllocatorPage(virt, 1, order) @*/
-/*@ ensures let AP2R = AllocatorPage(head, 1, order) @*/
+/*@ ensures {head} unchanged @*/
+/*@ ensures let OR = Owned(pool) @*/
+/*@ ensures let head_sR = (*pool).free_area[order] @*/
 /*@ ensures let AP3R = AllocatorPage(prev, 1, order) if prev != next @*/
 /*@ ensures (prev == next) || (AP3R.prev == {AP3.prev}@start) @*/
-/*@ ensures (prev == next) || (AP2R.next == {AP2.next}@start) @*/
-/*@ ensures AP2R.prev == virt @*/
+/*@ ensures (prev == next) || (head_sR.next == head_s.next) @*/
+/*@ ensures head_sR.prev == virt @*/
 /*@ ensures (prev == next) || (AP3R.next == virt) @*/
-/*@ ensures (prev != next) || (AP2R.next == virt) @*/
+/*@ ensures (prev != next) || (head_sR.next == virt) @*/
 /*@ ensures (AP1R.next == next) || (AP1R.prev == prev) @*/
-/*@ ensures let O2 = Owned(pool) @*/
-/*@ ensures let Hp2 = Owned(p) @*/
+/*@ ensures let HpR = Owned(p) @*/
 {
 	struct list_head *node = hyp_page_to_virt(p);
 
 	/*CN*/unpack ZeroPage(node, 1, p->order);
-	/*CN*/unpack AllocatorPage(head, 1, p->order);
 	/*CN*/if (head->prev != head) unpack AllocatorPage(head->prev, 1, p->order);
 	/*CN*/bytes_to_struct_list_head_lemma(node, p->order);
 	INIT_LIST_HEAD(node);
@@ -247,6 +250,11 @@ static inline struct hyp_page *node_to_page(struct list_head *node)
 /*@ ensures let O2 = Owned(return) @*/
 {
 	return hyp_virt_to_page(node);
+}
+
+void consume_struct_list_head(struct list_head *p)
+/*@ requires let O = Owned(p) @*/
+{
 }
 
 static void __hyp_attach_page(struct hyp_pool *pool,
@@ -260,8 +268,9 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 /*@ requires let p_i = (((integer) p) - __hyp_vmemmap) / 4 @*/
 /*@ requires let V = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
 /*@ requires hyp_pool_wf(pool, *pool, (pointer) __hyp_vmemmap, hyp_physvirt_offset) @*/
-/*@ requires let APs = each (integer i; (i + off_i) != p_i && start_i <= (i + off_i) && (i + off_i) < end_i && (V.value[(i + off_i)]).refcount == 0 && (V.value[(i + off_i)]).order != (hyp_no_order ())) { AllocatorPage(((pointer) 0) + (i*(page_size ())), 1, (V.value[(i + off_i)]).order) } @*/
 /*@ requires each (integer i; start_i <= i && i < end_i){vmemmap_wf(i, V.value, pool, *pool)} @*/
+/*@ requires let APs = each (integer i; (i + off_i) != p_i && start_i <= (i + off_i) && (i + off_i) < end_i && (V.value[(i + off_i)]).refcount == 0 && (V.value[(i + off_i)]).order != (hyp_no_order ())) { AllocatorPage(((pointer) 0) + (i*(page_size ())), 1, (V.value[(i + off_i)]).order) } @*/
+/*@ requires each (integer i; start_i <= i && i < end_i && (i != p_i) && (V.value[i]).refcount == 0 && (V.value[i]).order != (hyp_no_order())) {vmemmap_l_wf(i, hyp_physvirt_offset, V.value, APs.prev, APs.next, pool, *pool)} @*/
 /*@ requires each (integer i; 0 <= i && i < ((*pool).max_order)){freeArea_cell_wf(i, hyp_physvirt_offset, V.value, APs.prev, APs.next, pool, (*pool))} @*/
 /*@ requires cellPointer(hyp_vmemmap, 4, start_i, end_i, p) @*/
 /*@ requires ((V.value[p_i]).refcount) == 0 @*/
@@ -312,8 +321,9 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 		    /*@ inv let p_page = V2.value[p_i2] @*/
 		    /*@ inv let p_page_tweaked2 = (p_page){.order = order} @*/
 		    /*@ inv hyp_pool_wf(pool, *pool, hyp_vmemmap, hyp_physvirt_offset) @*/
-		    /*@ inv let APsI = each (integer i; start_i2 <= (i + off_i) && (i + off_i) < end_i2 && (V2.value[i + off_i]).refcount == 0 && (V2.value[i + off_i]).order != (hyp_no_order ())) { AllocatorPage(((pointer) 0) + (i*(page_size ())), 1, (V2.value[i+off_i]).order) } @*/
 		    /*@ inv each (integer i; start_i2 <= i && i < end_i2){vmemmap_wf(i, V2.value[p_i2 = p_page_tweaked2], pool, *pool)} @*/
+		    /*@ inv let APsI = each (integer i; start_i2 <= (i + off_i) && (i + off_i) < end_i2 && (V2.value[i + off_i]).refcount == 0 && (V2.value[i + off_i]).order != (hyp_no_order ())) { AllocatorPage(((pointer) 0) + (i*(page_size ())), 1, (V2.value[i+off_i]).order) } @*/
+                    /*@ inv each (integer i; start_i2 <= i && i < end_i2 && (V2.value[i]).refcount == 0 && (V2.value[i]).order != (hyp_no_order())){vmemmap_l_wf(i, hyp_physvirt_offset, V2.value[p_i2 = p_page_tweaked2], APsI.prev, APsI.next, pool, *pool)} @*/
 		    /*@ inv each (integer i; 0 <= i && i < ((*pool).max_order)){freeArea_cell_wf(i, hyp_physvirt_offset, V2.value, APsI.prev, APsI.next, pool, (*pool))} @*/
 		    /*@ inv 0 <= order; order < (*pool).max_order @*/
 		    /*@ inv cellPointer(hyp_vmemmap,4,start_i2,end_i2,p) @*/
@@ -325,6 +335,7 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 		    /*@ inv {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged; {pool} unchanged @*/ 
 		    /*@ inv ({*pool}@start){.free_area = (*pool).free_area} == *pool @*/
 		{
+
 		        buddy = __find_buddy_avail(pool, p, order);
 		        if (!buddy)
 		                break;
