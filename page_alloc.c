@@ -122,17 +122,17 @@ static struct hyp_page *__find_buddy_avail(struct hyp_pool *pool,
 /*@ requires let p_i = (((integer) p) - __hyp_vmemmap) / 4 @*/
 /*@ requires order_aligned(p_i, order) @*/
 /*@ requires 0 <= order; order < (*pool).max_order @*/
-/*@ requires let Vmemmap = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
+/*@ requires let V = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
 /*@ ensures let OR = Owned(pool) @*/
 /*@ ensures hyp_pool_wf(pool, *pool, hyp_vmemmap, hyp_physvirt_offset) @*/
-/*@ ensures let Vmemmap2 = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
-/*@ ensures Vmemmap2.value == {Vmemmap.value}@start @*/
+/*@ ensures let V2 = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
+/*@ ensures V2.value == {V.value}@start @*/
 /*@ ensures {hyp_physvirt_offset} unchanged; {__hyp_vmemmap} unchanged @*/
 /*@ ensures {*pool} unchanged @*/
 /*@ ensures let buddy_i = pfn_buddy(p_i, order) @*/
 /*@ ensures let addr = buddy_i * (page_size ()) @*/
-/*@ ensures let same_order = (Vmemmap2.value[buddy_i]).order == order @*/
-/*@ ensures let zero_refcount = (Vmemmap2.value[buddy_i]).refcount == 0 @*/
+/*@ ensures let same_order = (V2.value[buddy_i]).order == order @*/
+/*@ ensures let zero_refcount = (V2.value[buddy_i]).refcount == 0 @*/
 /*@ ensures let buddy = (pointer)(__hyp_vmemmap + (buddy_i * 4)) @*/
 /*@ ensures let in_range_buddy = addr >= (*pool).range_start && addr < (*pool).range_end @*/
 /*@ ensures let good_buddy = in_range_buddy && same_order && zero_refcount @*/
@@ -252,11 +252,6 @@ static inline struct hyp_page *node_to_page(struct list_head *node)
 	return hyp_virt_to_page(node);
 }
 
-void consume_struct_list_head(struct list_head *p)
-/*@ requires let O = Owned(p) @*/
-{
-}
-
 static void __hyp_attach_page(struct hyp_pool *pool,
 			      struct hyp_page *p)
 /*@ accesses __hyp_vmemmap; hyp_physvirt_offset @*/
@@ -267,7 +262,7 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 /*@ requires let off_i = hyp_physvirt_offset / (page_size ()) @*/
 /*@ requires let p_i = (((integer) p) - __hyp_vmemmap) / 4 @*/
 /*@ requires let V = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
-/*@ requires hyp_pool_wf(pool, *pool, (pointer) __hyp_vmemmap, hyp_physvirt_offset) @*/
+/*@ requires hyp_pool_wf(pool, *pool, hyp_vmemmap, hyp_physvirt_offset) @*/
 /*@ requires each (integer i; start_i <= i && i < end_i){vmemmap_wf(i, V.value, pool, *pool)} @*/
 /*@ requires let APs = each (integer i; (i + off_i) != p_i && start_i <= (i + off_i) && (i + off_i) < end_i && (V.value[(i + off_i)]).refcount == 0 && (V.value[(i + off_i)]).order != (hyp_no_order ())) { AllocatorPage(((pointer) 0) + (i*(page_size ())), 1, (V.value[(i + off_i)]).order) } @*/
 /*@ requires each (integer i; start_i <= i && i < end_i && (i != p_i) && (V.value[i]).refcount == 0 && (V.value[i]).order != (hyp_no_order())) {vmemmap_l_wf(i, hyp_physvirt_offset, V.value, APs.prev, APs.next, pool, *pool)} @*/
