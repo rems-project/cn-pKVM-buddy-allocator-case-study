@@ -225,8 +225,10 @@ static inline void page_add_to_list(struct hyp_pool *pool, struct hyp_page *p, s
 /*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
 /*@ ensures {p} unchanged; {pool} unchanged @*/
 /*@ ensures let AP1R = AllocatorPage(virt, 1, order) @*/
-/*@ ensures {head} unchanged @*/
+/*@ ensures let HpR = Owned(p) @*/
 /*@ ensures let OR = Owned(pool) @*/
+/*@ ensures {(*pool).range_start} unchanged; {(*pool).range_end} unchanged; {(*pool).max_order} unchanged @*/
+/*@ ensures {*p} unchanged @*/
 /*@ ensures let head_sR = (*pool).free_area[order] @*/
 /*@ ensures let AP3R = AllocatorPage(prev, 1, order) if prev != next @*/
 /*@ ensures (prev == next) || (AP3R.prev == {AP3.prev}@start) @*/
@@ -234,8 +236,7 @@ static inline void page_add_to_list(struct hyp_pool *pool, struct hyp_page *p, s
 /*@ ensures head_sR.prev == virt @*/
 /*@ ensures (prev == next) || (AP3R.next == virt) @*/
 /*@ ensures (prev != next) || (head_sR.next == virt) @*/
-/*@ ensures (AP1R.next == next) || (AP1R.prev == prev) @*/
-/*@ ensures let HpR = Owned(p) @*/
+/*@ ensures (AP1R.next == next); (AP1R.prev == prev) @*/
 {
 	struct list_head *node = hyp_page_to_virt(p);
 
