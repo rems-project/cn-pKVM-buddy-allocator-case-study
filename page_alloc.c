@@ -164,9 +164,6 @@ static inline void page_remove_from_list(struct hyp_pool *pool, struct hyp_page 
 /*@ requires let phys = p_i * (page_size ()) @*/
 /*@ requires (*pool).range_start <= phys; phys < (*pool).range_end @*/
 /*@ requires hyp_pool_wf(pool, *pool, (pointer) __hyp_vmemmap, hyp_physvirt_offset) @*/
-/*@ requires let start_i = (*pool).range_start / (page_size ()) @*/
-/*@ requires let end_i = (*pool).range_end / (page_size ()) @*/
-/*@ requires cellPointer(hyp_vmemmap, 4, start_i, end_i, p) @*/
 /*@ requires let virt = (pointer) (phys - hyp_physvirt_offset) @*/
 /*@ requires let Hp = Owned(p) @*/
 /*@ requires let order = (*p).order @*/
@@ -208,9 +205,6 @@ static inline void page_add_to_list(struct hyp_pool *pool, struct hyp_page *p, s
 /*@ requires let phys = p_i * (page_size ()) @*/
 /*@ requires (*pool).range_start <= phys; phys < (*pool).range_end @*/
 /*@ requires hyp_pool_wf(pool, *pool, (pointer) __hyp_vmemmap, hyp_physvirt_offset) @*/
-/*@ requires let start_i = (*pool).range_start / (page_size ()) @*/
-/*@ requires let end_i = (*pool).range_end / (page_size ()) @*/
-/*@ requires cellPointer(hyp_vmemmap, 4, start_i, end_i, p) @*/
 /*@ requires let virt = (pointer) (phys - hyp_physvirt_offset) @*/
 /*@ requires let Hp = Owned(p) @*/
 /*@ requires let order = (*p).order @*/
