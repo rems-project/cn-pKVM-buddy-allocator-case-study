@@ -4,13 +4,14 @@ This repository contains a case study in C code verification using the
 CN type system: the buddy allocator of the pKVM hypervisor for
 Android.
 
-The original files in the version we verified can be found in the [android-kvm repositories](https://android-kvm.googlesource.com/linux/+/39111fc40453747f8213cf9ef4337448d3c6197d/arch/arm64/kvm/hyp/nvhe/page_alloc.c).
+The original files from the version we verified can be found in the [android-kvm repositories](https://android-kvm.googlesource.com/linux/+/39111fc40453747f8213cf9ef4337448d3c6197d/arch/arm64/kvm/hyp/nvhe/page_alloc.c).
 
 Each file has a comment recording the original source code location in
 the Linux source tree, retaining the original license/copyright
 headers. Comments in the files point out where the code has been
 modified (minor edits and additions).
 
+The files are licensed under the GPL-2.0 license, except where a file's copyright header states otherwise.
 The directory contains the license file `GPL-2.0` and the note
 `Linux-syscall-note`.
 
