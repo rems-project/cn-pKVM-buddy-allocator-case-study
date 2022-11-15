@@ -15,6 +15,7 @@ The files are licensed under the GPL-2.0 license, except where a file's copyrigh
 The directory contains the license file `GPL-2.0` and the note
 `Linux-syscall-note`.
 
+The formalisation is by Christopher Pulte, Thomas Sewell, and Dhruv Makwana.
 
 ## Navigation
 
