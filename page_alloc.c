@@ -241,8 +241,21 @@ static inline void page_add_to_list(struct hyp_pool *pool, struct hyp_page *p, s
 	list_add_tail(node, head);
 }
 
-static inline struct hyp_page *node_to_page(struct list_head *node)
-/*@ ensures let O2 = Owned(return) @*/
+static inline struct hyp_page *node_to_page(struct hyp_pool *pool, struct list_head *node)
+/*@ accesses __hyp_vmemmap; hyp_physvirt_offset @*/
+/*@ requires let O = Owned(pool) @*/
+/*@ requires let phys = ((integer)node) + hyp_physvirt_offset @*/
+/*@ requires (*pool).range_start <= phys; phys < (*pool).range_end @*/
+/*@ requires hyp_pool_wf(pool, *pool, (pointer) __hyp_vmemmap, hyp_physvirt_offset) @*/
+/*@ requires let free_area_l = (pointer)(((integer)pool) + offsetof(hyp_pool, free_area)) @*/
+/*@ requires cellPointer(free_area_l, (sizeof_struct_list_head()), 0, (*pool).max_order, node) @*/
+/*@ requires let p_i = phys / (page_size()) @*/
+/*@ requires let p = (pointer)((p_i * (sizeof_struct_hyp_page())) + __hyp_vmemmap) @*/
+/*@ requires let O1 = Owned<struct hyp_page>(p) @*/
+/*@ ensures let O1R = Owned(pool) @*/
+/*@ ensures let O2R = Owned(return) @*/
+/*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
+/*@ ensures {(*pool)} unchanged; {*p}@start == *return; return == p @*/
 {
 	return hyp_virt_to_page(node);
 }

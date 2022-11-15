@@ -64,9 +64,8 @@ function (boolean) init_vmemmap_page (integer page_index,
 }
 
 function (boolean) vmemmap_normal_order_wf (integer page_index, struct hyp_page page, struct hyp_pool pool) {
-  let max_ORDER = 11;
   return (
-    (0 <= page.order && ((page.order < pool.max_order) && (page.order < max_ORDER)))
+    (0 <= page.order && ((page.order < pool.max_order) && (page.order < (max_order()))))
     && order_aligned(page_index, page.order)
     && (((page_index * (page_size ())) + page_size_of_order(page.order)) <= pool.range_end)
   );
@@ -83,7 +82,6 @@ function (boolean) vmemmap_wf (integer page_index,
   let page = vmemmap[page_index];
   // let prev = page.node.prev;
   // let next = page.node.next;
-  let max_ORDER = 11;
   return (
     /* representable as an unsigned short */
     (0 <= page.refcount) && (page.refcount < (power(2, 16)))
