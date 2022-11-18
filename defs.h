@@ -110,10 +110,11 @@ function (boolean) vmemmap_l_wf (integer page_index, integer physvirt_offset,
   let l_sz = sizeof <struct list_head>;
   let pool_free_area_pointer = ((pointer) (
     ((integer)pool_free_area_arr_pointer) + (page.order * l_sz)));
+  let off_i = physvirt_offset / (page_size());
   // let prev = page.node.prev;
-  let prev = prevs[page_index];
+  let prev = prevs[page_index - off_i];
   // let next = page.node.next;
-  let next = nexts[page_index];
+  let next = nexts[page_index - off_i];
   let free_area_entry = ((pool.free_area)[page.order]);
   // let prev_page_pointer = (pointer)(((integer)prev) - (offsetof (hyp_page, node)));
   let prev_page_pointer = prev;
@@ -127,13 +128,13 @@ function (boolean) vmemmap_l_wf (integer page_index, integer physvirt_offset,
     || ((prev == pool_free_area_pointer) && (free_area_entry.next == self_node_pointer))
     || (vmemmap_good_pointer (physvirt_offset, prev_page_pointer, pool.range_start, pool.range_end)
         // && (prev_page.node.next == self_node_pointer)
-        && (nexts[prev_page_index] == self_node_pointer)
+        && (nexts[prev_page_index - off_i] == self_node_pointer)
         && (prev_page.order == page.order));
   let next_clause = (next == self_node_pointer)
     || ((next == pool_free_area_pointer) && (free_area_entry.prev == self_node_pointer))
     || (vmemmap_good_pointer (physvirt_offset, next_page_pointer, pool.range_start, pool.range_end)
         // && (next_page.node.prev == self_node_pointer)
-        && (prevs[next_page_index] == self_node_pointer)
+        && (prevs[next_page_index - off_i] == self_node_pointer)
         && (next_page.order == page.order));
   return (prev_clause && next_clause);
 }
@@ -179,6 +180,7 @@ function (boolean) freeArea_cell_wf (integer cell_index, integer physvirt_offset
   // let next_page_index = (((integer) next_page_pointer) - ((integer) vmemmap_pointer)) / hp_sz;
   let next_page_index = (((integer) next_page_pointer) + physvirt_offset) / (page_size ());
   let next_page = vmemmap[next_page_index];
+  let off_i = physvirt_offset / (page_size());
   return (
     ((prev == cell_pointer) == (next == cell_pointer))
     && ((prev == cell_pointer) || (
@@ -186,12 +188,12 @@ function (boolean) freeArea_cell_wf (integer cell_index, integer physvirt_offset
         && (prev_page.order == cell_index)
         && (prev_page.refcount == 0)
         // && (prev_page.node.next == cell_pointer)
-        && (nexts[prev_page_index] == cell_pointer)
+        && (nexts[prev_page_index - off_i] == cell_pointer)
         && (vmemmap_good_pointer (physvirt_offset, next_page_pointer, pool.range_start, pool.range_end))
         && (next_page.order == cell_index)
         && (next_page.refcount == 0)
         // && (next_page.node.prev == cell_pointer)
-        && (prevs[next_page_index] == cell_pointer)
+        && (prevs[next_page_index - off_i] == cell_pointer)
     ))
   );
 }
