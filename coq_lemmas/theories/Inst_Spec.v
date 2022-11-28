@@ -318,6 +318,11 @@ Ltac conjI :=
   match goal with |- _ /\ _ => constructor end.
 Ltac conjunctsI := repeat conjI.
 
+Ltac lia2 :=
+  try lia;
+  try (apply Z.div_le_lower_bound; lia);
+  try (apply Z.div_lt_upper_bound; lia).
+
 Lemma lemma_order_align_inv_loop : lemma_order_align_inv_loop_type.
 Proof.
   unfold lemma_order_align_inv_loop_type, Inst.order_align,
@@ -325,7 +330,10 @@ Proof.
   intros until V.
   rewrite CN_form_to_group_ok; auto; try lia.
   rewrite CN_form_to_group_ok; auto; try lia.
-  simpl.
+  pose (start_i := get_range_start_1_4 pool / 4096).
+  fold start_i.
+  pose (end_i := get_range_end_2_4 pool / 4096).
+  fold end_i.
   intros.
   conjunctsI; auto.
   order_aligned_b.
@@ -334,7 +342,7 @@ Proof.
   match goal with m: group_ok_inv _ _ _ _ _ |- _ =>
     rename m into g_ok end.
   apply (group_ok_inv_split pg) in g_ok;
-    (try unfold pg in *); try lia; auto.
+    (try unfold pg in *); try lia2; auto.
   eapply group_ok_inv_eq_orders.
   apply g_ok.
   clear g_ok.
@@ -377,7 +385,7 @@ Lemma lemma_attach_inc_loop : lemma_attach_inc_loop_type.
       repeat rewrite (get_fun_upd get_order_1_4);
       repeat rewrite get_upd_order_1_4;
       repeat rewrite Z.eqb_refl;
-      auto; try lia.
+      auto; try lia2.
       eapply group_ok_inv_eq_orders.
         apply g_ok.
       clear g_ok.
