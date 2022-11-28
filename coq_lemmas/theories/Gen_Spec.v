@@ -3,7 +3,15 @@
 Require Import ZArith Bool.
 
 
+Module Types.
+
+  (* no type definitions required *)
+
+End Types.
+
+
 Module Type Parameters.
+  Import Types.
 
   Parameter order_aligned : Z -> Z -> bool.
 
@@ -20,7 +28,7 @@ End Parameters.
 
 Module Defs (P : Parameters).
 
-  Import P.
+  Import Types P.
   Open Scope Z.
 
   Definition get_next_0_2 {T_0 T_1: Type} (t : (T_0 * T_1)) :=
@@ -48,14 +56,14 @@ x_t_2).
 x_t_3).
 
   Definition struct_hyp_pool_good (x : (((Z -> (Z * Z))) * Z * Z * Z)) :=
-    ((forall (a_4617 : Z),
-(((0 <= a_4617) /\ (a_4617 <= 10)) ->
-(((0 <= (get_next_0_2 ((get_free_area_0_4 x) a_4617))) /\
-(((((get_next_0_2 ((get_free_area_0_4 x) a_4617)) + 16) - 1) <= 18446744073709551615) /\
-(((get_next_0_2 ((get_free_area_0_4 x) a_4617)) mod 8) = 0))) /\
-((0 <= (get_prev_1_2 ((get_free_area_0_4 x) a_4617))) /\
-(((((get_prev_1_2 ((get_free_area_0_4 x) a_4617)) + 16) - 1) <= 18446744073709551615) /\
-(((get_prev_1_2 ((get_free_area_0_4 x) a_4617)) mod 8) = 0)))))) /\
+    ((forall (a_4656 : Z),
+(((0 <= a_4656) /\ (a_4656 <= 10)) ->
+(((0 <= (get_next_0_2 ((get_free_area_0_4 x) a_4656))) /\
+(((((get_next_0_2 ((get_free_area_0_4 x) a_4656)) + 16) - 1) <= 18446744073709551615) /\
+(((get_next_0_2 ((get_free_area_0_4 x) a_4656)) mod 8) = 0))) /\
+((0 <= (get_prev_1_2 ((get_free_area_0_4 x) a_4656))) /\
+(((((get_prev_1_2 ((get_free_area_0_4 x) a_4656)) + 16) - 1) <= 18446744073709551615) /\
+(((get_prev_1_2 ((get_free_area_0_4 x) a_4656)) mod 8) = 0)))))) /\
 (((0 <= (get_range_start_1_4 x)) /\ ((get_range_start_1_4 x) <= 18446744073709551615)) /\
 (((0 <= (get_range_end_2_4 x)) /\ ((get_range_end_2_4 x) <= 18446744073709551615)) /\
 ((0 <= (get_max_order_3_4 x)) /\ ((get_max_order_3_4 x) <= 4294967295))))).
@@ -236,9 +244,8 @@ let p_order := (get_order_1_4 (V p_i)) in
 (1 <= p_order) -> 
 (p_order < 11) -> 
 (Is_true (order_aligned p_i p_order)) -> 
-((hyp_vmemmap <= p) /\
-((((p - hyp_vmemmap) mod 32) = 0) /\
-((start_i <= ((p - hyp_vmemmap) / 32)) /\ (((p - hyp_vmemmap) / 32) < end_i)))) -> 
+(((hyp_vmemmap + (32 * start_i)) <= p) /\
+((p < (hyp_vmemmap + (32 * end_i))) /\ (((p - hyp_vmemmap) mod 32) = 0))) -> 
 let buddy_i := (pfn_buddy p_i (p_order - 1)) in 
 (forall (i : Z),
 (((start_i <= i) /\ (i < end_i)) ->
@@ -315,9 +322,8 @@ forall (V : (((Z -> (Z * Z * Z * (Z * Z)))))),
 let hyp_vmemmap := O___hyp_vmemmap in 
 let start_i := ((get_range_start_1_4 pool) / 4096) in 
 let end_i := ((get_range_end_2_4 pool) / 4096) in 
-((hyp_vmemmap <= p) /\
-((((p - hyp_vmemmap) mod 32) = 0) /\
-((start_i <= ((p - hyp_vmemmap) / 32)) /\ (((p - hyp_vmemmap) / 32) < end_i)))) -> 
+(((hyp_vmemmap + (32 * start_i)) <= p) /\
+((p < (hyp_vmemmap + (32 * end_i))) /\ (((p - hyp_vmemmap) mod 32) = 0))) -> 
 (forall (i : Z),
 (((start_i <= i) /\ (i < end_i)) -> (struct_hyp_page_good (V i)))) -> 
 let p_i := ((p - O___hyp_vmemmap) / 32) in 
