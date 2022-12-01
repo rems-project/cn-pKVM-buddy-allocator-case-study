@@ -158,42 +158,42 @@ static struct hyp_page *__find_buddy_avail(struct hyp_pool *pool,
  */
 static inline void page_remove_from_list(struct hyp_pool *pool, struct hyp_page *p)
 /*@ accesses __hyp_vmemmap; hyp_physvirt_offset @*/
-/*@ requires let O = Owned(pool) @*/
 /*@ requires let hyp_vmemmap = (pointer) __hyp_vmemmap @*/
+/*@ requires (mod(__hyp_vmemmap, (sizeof_struct_hyp_page ()))) == 0 @*/
+/*@ requires (mod(hyp_physvirt_offset, (page_size ()))) == 0 @*/
 /*@ requires let p_i = (((integer) p) - __hyp_vmemmap) / 4 @*/
 /*@ requires let phys = p_i * (page_size ()) @*/
-/*@ requires (*pool).range_start <= phys; phys < (*pool).range_end @*/
-/*@ requires hyp_pool_wf(pool, *pool, (pointer) __hyp_vmemmap, hyp_physvirt_offset) @*/
+/*@ requires 0 <= hyp_physvirt_offset @*/
+/*@ requires hyp_physvirt_offset <= phys; phys < (power(2, 63)) @*/
 /*@ requires let virt = (pointer) (phys - hyp_physvirt_offset) @*/
 /*@ requires let Hp = Owned(p) @*/
 /*@ requires let order = (*p).order @*/
-/*@ requires 0 <= order; order < (*pool).max_order @*/
+/*@ requires 0 <= order; order < 11 @*/
 /*@ requires let AP = AllocatorPage(virt, 1, order) @*/
 /*@ requires let prev = AP.prev; let next = AP.next @*/
-/*@ requires let AP_prev = AllocatorPage(prev, 1, order) @*/
-/*@ requires let AP_next = AllocatorPage(next, 1, order) if prev != next @*/
+/*@ requires let Node_prev = Owned<struct list_head>(prev) @*/
+/*@ requires let Node_next = Owned<struct list_head>(next) if prev != next @*/
 /*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
-/*@ ensures {p} unchanged; {pool} unchanged @*/
-/*@ ensures let AP_prev2 = AllocatorPage(prev, 1, order) @*/
-/*@ ensures let AP_next2 = AllocatorPage(next, 1, order) if prev != next @*/
-/*@ ensures (prev == next) || (AP_next2.next == {AP_next.next}@start) @*/
-/*@ ensures (prev == next) || (AP_prev2.prev == {AP_prev.prev}@start) @*/
-/*@ ensures AP_prev2.next == next @*/
-/*@ ensures (prev == next) || (AP_next2.prev == prev) @*/
-/*@ ensures (prev != next) || (AP_prev2.prev == prev) @*/
-/*@ ensures let O2 = Owned(pool) @*/
 /*@ ensures let Hp2 = Owned(p) @*/
+/*@ ensures {*p} unchanged @*/
+/*@ ensures let Node_prev2 = Owned<struct list_head>(prev) @*/
+/*@ ensures let Node_next2 = Owned<struct list_head>(next) if prev != next @*/
+/*@ ensures (prev == next) || (Node_next2.value.next == {Node_next.value.next}@start) @*/
+/*@ ensures (prev == next) || (Node_prev2.value.prev == {Node_prev.value.prev}@start) @*/
+/*@ ensures Node_prev2.value.next == next @*/
+/*@ ensures (prev == next) || (Node_next2.value.prev == prev) @*/
+/*@ ensures (prev != next) || (Node_prev2.value.prev == prev) @*/
 /*@ ensures let ZP = ZeroPage(virt, 1, (*p).order) @*/
 {
 	struct list_head *node = hyp_page_to_virt(p);
 
 	/*CN*/unpack AllocatorPage(node, 1, p->order);
-	/*CN*/unpack AllocatorPage(node->prev, 1, p->order);
-	/*CN*/if (node->prev != node->next) unpack AllocatorPage(node->next, 1, p->order);
+        /*CN*/if (node->prev != node->next);
 	__list_del_entry(node);
 	/*CN*/struct_list_head_to_bytes_lemma(node);
 	memset(node, 0, sizeof(*node));
 	/*CN*/page_size_of_order_lemma(p->order);
+        /*CN*/unpack AllocatorPageZeroPart(node + 1, p->order);
 	/*CN*/pack ZeroPage(node, 1, p->order);
 }
 
@@ -217,14 +217,12 @@ static inline void page_add_to_list(struct hyp_pool *pool, struct hyp_page *p, s
 /*@ requires let prev = head_s.prev; let next = head @*/
 /*@ requires let AP3 = AllocatorPage(prev, 1, order) if prev != next @*/
 /*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
-/*@ ensures {p} unchanged; {pool} unchanged @*/
 /*@ ensures let AP1R = AllocatorPage(virt, 1, order) @*/
 /*@ ensures let HpR = Owned(p) @*/
 /*@ ensures let OR = Owned(pool) @*/
-/*@ ensures ({*pool}@start){.free_area = (*pool).free_area} == *pool @*/
-/*@ ensures each (integer i; 0 <= i && i < (*pool).max_order && i != order){ (({*pool}@start).free_area[i]) == ((*pool).free_area[i])} @*/
-/*@ ensures {*p} unchanged @*/
 /*@ ensures let head_sR = (*pool).free_area[order] @*/
+/*@ ensures *pool == ({*pool}@start){.free_area = ((({*pool}@start).free_area)[order = head_sR])} @*/
+/*@ ensures {*p} unchanged; {*pool} unchanged @*/
 /*@ ensures let AP3R = AllocatorPage(prev, 1, order) if prev != next @*/
 /*@ ensures (prev == next) || (AP3R.prev == {AP3.prev}@start) @*/
 /*@ ensures (prev == next) || (head_sR.next == head_s.next) @*/
@@ -240,6 +238,7 @@ static inline void page_add_to_list(struct hyp_pool *pool, struct hyp_page *p, s
 	/*CN*/bytes_to_struct_list_head_lemma(node, p->order);
 	INIT_LIST_HEAD(node);
 	list_add_tail(node, head);
+        /*CN*/pack AllocatorPageZeroPart(node + 1, p->order);
 }
 
 static inline struct hyp_page *node_to_page(struct hyp_pool *pool, struct list_head *node)
@@ -387,7 +386,8 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 /*@ requires let p_order = (H.vmemmap[p_i]).order @*/
 /*@ requires order_aligned(p_i, order) @*/
 /*@ requires (H.vmemmap[p_i]).refcount == 0 @*/
-/*! requires ((H.vmemmap[p_i]).node.prev) == ((pointer) (((integer) &(pool->free_area)) + (p_order*16))) !*/
+/*@ requires let off_i = hyp_physvirt_offset / (page_size ()) @*/
+/*@ requires (H.prev[p_i - off_i]) == ((pointer) (((integer) &(pool->free_area)) + (p_order*16))) @*/
 /*@ requires 0 <= order; order <= p_order; p_order != (hyp_no_order ()) @*/
 /*@ ensures let H2 = Owned(pool) @*/
 /*@ ensures let start_i = H2.value.range_start / (page_size ()) @*/
@@ -412,11 +412,22 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
         /*CN*/unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);
 	/* struct hyp_page *buddy; */
 	struct hyp_page *buddy = NULL;
-        /*CN*/instantiate hyp_page_to_pfn(p);
-        // /*CN*/if (p->node.prev != p->node.next) {
-        // /*CN*/  instantiate hyp_page_to_pfn(container_of(p->node.next, struct hyp_page, node));
-        // /*CN*/};
+        void *node_prev = NULL, *node_next = NULL;
+	/*CN*/struct list_head *node = hyp_page_to_virt(p);
+        /*CN*/instantiate vmemmap_l_wf, hyp_page_to_pfn(p);
+        /*CN*/instantiate vmemmap_wf, hyp_page_to_pfn(p);
+        /*CN*/instantiate good, hyp_page_to_pfn(p);
+        /*CN*/unpack AllocatorPage(node, 1, p->order);
+        /*CN*/instantiate freeArea_cell_wf, p->order;
+        /*CN*/node_prev = node->prev;
+        /*CN*/node_next = node->next;
+        /*CN*/if (node_prev != node_next) {
+        /*CN*/  unpack AllocatorPage(node_next, 1, p->order);
+        /*CN*/};
 	page_remove_from_list(pool, p);
+        /*CN*/if (node_prev != node_next) {
+        /*CN*/  pack AllocatorPage(node_next, 1, p->order);
+        /*CN*/};
 
 	while (p->order > order)
             /*@ inv let OI = Owned(pool) @*/
