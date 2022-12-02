@@ -53,18 +53,20 @@ static inline void __list_del(struct list_head * prev, struct list_head * next)
 static inline void __list_del_entry(struct list_head *entry)
 /*@ requires let O1 = Owned(entry) @*/
 /*@ requires let prev = (*entry).prev; let next = (*entry).next @*/
-/*@ requires let O2 = Owned(prev) @*/
+/*@ requires let O2 = Owned(prev) if prev != entry @*/
 /*@ requires let O3 = Owned(next) if prev != next @*/
+/*@ requires (prev != entry) || (next == entry) @*/
 /*@ ensures let O1R = Owned(entry) @*/
 /*@ ensures {*entry} unchanged @*/
-/*@ ensures let O2R = Owned(prev) @*/
+/*@ ensures let O2R = Owned(prev) if prev != entry @*/
 /*@ ensures let O3R = Owned(next) if prev != next @*/
 /*@ ensures (prev == next) || {(*next).next} unchanged @*/
 /*@ ensures (prev == next) || {(*prev).prev} unchanged @*/
-/*@ ensures (*prev).next == next @*/
+/*@ ensures (prev == entry) || ((*prev).next == next) @*/
 /*@ ensures (prev == next) || ((*next).prev == prev) @*/
-/*@ ensures (prev != next) || ((*prev).prev == prev) @*/
+/*@ ensures (prev != next) || ((prev == entry) || ((*prev).prev == prev)) @*/
 {
+        /*CN*/ if(entry->prev != entry);
         /*CN*/ if(entry->prev != entry->next);
 	if (!__list_del_entry_valid(entry))
 		return;
@@ -77,6 +79,7 @@ static inline void list_del_init(struct list_head *entry)
 /*@ requires let prev = (*entry).prev; let next = (*entry).next @*/
 /*@ requires let O2 = Owned(prev) @*/
 /*@ requires let O3 = Owned(next) if prev != next @*/
+/*@ requires (*entry).prev != entry @*/
 /*@ ensures let O1R = Owned(entry) @*/
 /*@ ensures (*entry).prev == entry; (*entry).next == entry @*/
 /*@ ensures let O2R = Owned(prev) @*/
@@ -87,6 +90,7 @@ static inline void list_del_init(struct list_head *entry)
 /*@ ensures (prev == next) || ((*next).prev == prev) @*/
 /*@ ensures (prev != next) || ((*prev).prev == prev) @*/
 {
+        /*CN*/ if(entry->prev != entry);
         /*CN*/ if(entry->prev != entry->next);
 	__list_del_entry(entry);
 	INIT_LIST_HEAD(entry);
