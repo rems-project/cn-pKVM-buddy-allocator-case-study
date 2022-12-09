@@ -56,58 +56,47 @@ x_t_2).
 x_t_3).
 
   Definition struct_hyp_pool_good (x : (((Z -> (Z * Z))) * Z * Z * Z)) :=
-    ((forall (a_4656 : Z),
-(((0 <= a_4656) /\ (a_4656 <= 10)) ->
-(((0 <= (get_next_0_2 ((get_free_area_0_4 x) a_4656))) /\
-(((((get_next_0_2 ((get_free_area_0_4 x) a_4656)) + 16) - 1) <= 18446744073709551615) /\
-(((get_next_0_2 ((get_free_area_0_4 x) a_4656)) mod 8) = 0))) /\
-((0 <= (get_prev_1_2 ((get_free_area_0_4 x) a_4656))) /\
-(((((get_prev_1_2 ((get_free_area_0_4 x) a_4656)) + 16) - 1) <= 18446744073709551615) /\
-(((get_prev_1_2 ((get_free_area_0_4 x) a_4656)) mod 8) = 0)))))) /\
+    ((forall (a_6052 : Z),
+(((0 <= a_6052) /\ (a_6052 <= 10)) ->
+(((0 <= (get_next_0_2 ((get_free_area_0_4 x) a_6052))) /\
+(((((get_next_0_2 ((get_free_area_0_4 x) a_6052)) + 16) - 1) <= 18446744073709551615) /\
+(((get_next_0_2 ((get_free_area_0_4 x) a_6052)) mod 8) = 0))) /\
+((0 <= (get_prev_1_2 ((get_free_area_0_4 x) a_6052))) /\
+(((((get_prev_1_2 ((get_free_area_0_4 x) a_6052)) + 16) - 1) <= 18446744073709551615) /\
+(((get_prev_1_2 ((get_free_area_0_4 x) a_6052)) mod 8) = 0)))))) /\
 (((0 <= (get_range_start_1_4 x)) /\ ((get_range_start_1_4 x) <= 18446744073709551615)) /\
 (((0 <= (get_range_end_2_4 x)) /\ ((get_range_end_2_4 x) <= 18446744073709551615)) /\
-((0 <= (get_max_order_3_4 x)) /\ ((get_max_order_3_4 x) <= 4294967295))))).
+((0 <= (get_max_order_3_4 x)) /\ ((get_max_order_3_4 x) <= 255))))).
 
-  Definition get_refcount_0_4 {T_0 T_1 T_2 T_3: Type} (t : (T_0 * T_1 * T_2 * T_3)) :=
-    (let '(x_t_0,x_t_1,x_t_2,x_t_3) := (t : (T_0 * T_1 * T_2 * T_3)) in
+  Definition get_refcount_0_3 {T_0 T_1 T_2: Type} (t : (T_0 * T_1 * T_2)) :=
+    (let '(x_t_0,x_t_1,x_t_2) := (t : (T_0 * T_1 * T_2)) in
 x_t_0).
 
-  Definition get_order_1_4 {T_0 T_1 T_2 T_3: Type} (t : (T_0 * T_1 * T_2 * T_3)) :=
-    (let '(x_t_0,x_t_1,x_t_2,x_t_3) := (t : (T_0 * T_1 * T_2 * T_3)) in
+  Definition get_order_1_3 {T_0 T_1 T_2: Type} (t : (T_0 * T_1 * T_2)) :=
+    (let '(x_t_0,x_t_1,x_t_2) := (t : (T_0 * T_1 * T_2)) in
 x_t_1).
 
-  Definition get_pool_2_4 {T_0 T_1 T_2 T_3: Type} (t : (T_0 * T_1 * T_2 * T_3)) :=
-    (let '(x_t_0,x_t_1,x_t_2,x_t_3) := (t : (T_0 * T_1 * T_2 * T_3)) in
+  Definition get_flags_2_3 {T_0 T_1 T_2: Type} (t : (T_0 * T_1 * T_2)) :=
+    (let '(x_t_0,x_t_1,x_t_2) := (t : (T_0 * T_1 * T_2)) in
 x_t_2).
 
-  Definition get_node_3_4 {T_0 T_1 T_2 T_3: Type} (t : (T_0 * T_1 * T_2 * T_3)) :=
-    (let '(x_t_0,x_t_1,x_t_2,x_t_3) := (t : (T_0 * T_1 * T_2 * T_3)) in
-x_t_3).
-
-  Definition struct_hyp_page_good (x : (Z * Z * Z * (Z * Z))) :=
-    (((0 <= (get_refcount_0_4 x)) /\ ((get_refcount_0_4 x) <= 4294967295)) /\
-(((0 <= (get_order_1_4 x)) /\ ((get_order_1_4 x) <= 4294967295)) /\
-(((0 <= (get_pool_2_4 x)) /\
-(((((get_pool_2_4 x) + 200) - 1) <= 18446744073709551615) /\ (((get_pool_2_4 x) mod 8) = 0))) /\
-(((0 <= (get_next_0_2 (get_node_3_4 x))) /\
-(((((get_next_0_2 (get_node_3_4 x)) + 16) - 1) <= 18446744073709551615) /\
-(((get_next_0_2 (get_node_3_4 x)) mod 8) = 0))) /\
-((0 <= (get_prev_1_2 (get_node_3_4 x))) /\
-(((((get_prev_1_2 (get_node_3_4 x)) + 16) - 1) <= 18446744073709551615) /\
-(((get_prev_1_2 (get_node_3_4 x)) mod 8) = 0))))))).
+  Definition struct_hyp_page_good (x : (Z * Z * Z)) :=
+    (((0 <= (get_refcount_0_3 x)) /\ ((get_refcount_0_3 x) <= 65535)) /\
+(((0 <= (get_order_1_3 x)) /\ ((get_order_1_3 x) <= 255)) /\
+((0 <= (get_flags_2_3 x)) /\ ((get_flags_2_3 x) <= 255)))).
 
   Definition page_size :=
     4096.
 
   Definition hyp_no_order :=
-    4294967295.
+    255.
 
   Definition fun_upd {A B : Type} (eq : A -> A -> bool) (f : A -> B) x y z :=
     if eq x z then y else f z.
 
-  Definition upd_order_1_4 {T_0 T_1 T_2 T_3: Type} (t : (T_0 * T_1 * T_2 * T_3)) (x : T_1) :=
-    (let '(x_t_0,x_t_1,x_t_2,x_t_3) := (t : (T_0 * T_1 * T_2 * T_3)) in
-(x_t_0,(x : T_1),x_t_2,x_t_3)).
+  Definition upd_order_1_3 {T_0 T_1 T_2: Type} (t : (T_0 * T_1 * T_2)) (x : T_1) :=
+    (let '(x_t_0,x_t_1,x_t_2) := (t : (T_0 * T_1 * T_2)) in
+(x_t_0,(x : T_1),x_t_2)).
 
   Definition lemma_order_dec_inv_type : Prop :=
     forall (pool_range_end : Z),
@@ -229,51 +218,51 @@ forall (p : Z),
 
 forall (O___hyp_vmemmap : (Z)),
 
-forall (V : (((Z -> (Z * Z * Z * (Z * Z)))))),
+forall (V : (((Z -> (Z * Z * Z))))),
 
 ((Is_true true) -> ((0 <= O___hyp_vmemmap) /\ (O___hyp_vmemmap <= 18446744073709551615))) -> 
 (struct_hyp_pool_good pool) -> 
-((0 <= p) /\ ((((p + 32) - 1) <= 18446744073709551615) /\ ((p mod 8) = 0))) -> 
+((0 <= p) /\ ((((p + 4) - 1) <= 18446744073709551615) /\ ((p mod 2) = 0))) -> 
 let hyp_vmemmap := O___hyp_vmemmap in 
-let p_i := ((p - O___hyp_vmemmap) / 32) in 
+let p_i := ((p - O___hyp_vmemmap) / 4) in 
 let start_i := ((get_range_start_1_4 pool) / 4096) in 
 let end_i := ((get_range_end_2_4 pool) / 4096) in 
 (forall (i : Z),
 (((start_i <= i) /\ (i < end_i)) -> (struct_hyp_page_good (V i)))) -> 
-let p_order := (get_order_1_4 (V p_i)) in 
+let p_order := (get_order_1_3 (V p_i)) in 
 (1 <= p_order) -> 
 (p_order < 11) -> 
 (Is_true (order_aligned p_i p_order)) -> 
-(((hyp_vmemmap + (32 * start_i)) <= p) /\
-((p < (hyp_vmemmap + (32 * end_i))) /\ (((p - hyp_vmemmap) mod 32) = 0))) -> 
+(((hyp_vmemmap + (4 * start_i)) <= p) /\
+((p < (hyp_vmemmap + (4 * end_i))) /\ (((p - hyp_vmemmap) mod 4) = 0))) -> 
 let buddy_i := (pfn_buddy p_i (p_order - 1)) in 
 (forall (i : Z),
 (((start_i <= i) /\ (i < end_i)) ->
-(((get_order_1_4 (V i)) = 4294967295) \/
+(((get_order_1_3 (V i)) = 255) \/
 (forall (i_0 : Z),
 (((1 <= i_0) /\ (i_0 <= 10)) ->
 (~
 (((((order_align i i_0) < i) /\ (((get_range_start_1_4 pool) / (page_size)) <= (order_align i i_0)))
-/\ (i_0 <= (get_order_1_4 (V (order_align i i_0))))) /\
-(~ ((get_order_1_4 (V (order_align i i_0))) = (hyp_no_order)))))))))) -> 
+/\ (i_0 <= (get_order_1_3 (V (order_align i i_0))))) /\
+(~ ((get_order_1_3 (V (order_align i i_0))) = (hyp_no_order)))))))))) -> 
 ((Is_true true) -> ((0 <= O___hyp_vmemmap) /\ (O___hyp_vmemmap <= 18446744073709551615))) /\ (forall (i : Z),
-(((start_i <= i) /\ (i < end_i)) -> (struct_hyp_page_good (V i)))) /\ let p_new_page := (upd_order_1_4
+(((start_i <= i) /\ (i < end_i)) -> (struct_hyp_page_good (V i)))) /\ let p_new_page := (upd_order_1_3
 (V p_i) (p_order - 1)) in 
-let buddy_new_page := (upd_order_1_4 (V buddy_i) (p_order - 1)) in 
+let buddy_new_page := (upd_order_1_3 (V buddy_i) (p_order - 1)) in 
 (forall (i : Z),
 (((start_i <= i) /\ (i < end_i)) ->
-(((get_order_1_4 ((fun_upd Z.eqb (fun_upd Z.eqb V p_i p_new_page) buddy_i buddy_new_page) i)) =
-4294967295) \/
+(((get_order_1_3 ((fun_upd Z.eqb (fun_upd Z.eqb V p_i p_new_page) buddy_i buddy_new_page) i)) = 255)
+\/
 (forall (i_0 : Z),
 (((1 <= i_0) /\ (i_0 <= 10)) ->
 (~
 (((((order_align i i_0) < i) /\ (((get_range_start_1_4 pool) / (page_size)) <= (order_align i i_0)))
 /\
 (i_0 <=
-(get_order_1_4
+(get_order_1_3
 ((fun_upd Z.eqb (fun_upd Z.eqb V p_i p_new_page) buddy_i buddy_new_page) (order_align i i_0))))) /\
 (~
-((get_order_1_4
+((get_order_1_3
 ((fun_upd Z.eqb (fun_upd Z.eqb V p_i p_new_page) buddy_i buddy_new_page) (order_align i i_0))) =
 (hyp_no_order)))))))))).
 
@@ -282,7 +271,7 @@ let buddy_new_page := (upd_order_1_4 (V buddy_i) (p_order - 1)) in
 
 forall (O___hyp_vmemmap : (Z)),
 
-forall (V : (((Z -> (Z * Z * Z * (Z * Z)))))),
+forall (V : (((Z -> (Z * Z * Z))))),
 
 ((Is_true true) -> ((0 <= O___hyp_vmemmap) /\ (O___hyp_vmemmap <= 18446744073709551615))) -> 
 (struct_hyp_pool_good pool) -> 
@@ -292,17 +281,17 @@ let end_i := ((get_range_end_2_4 pool) / 4096) in
 (forall (i : Z),
 (((start_i <= i) /\ (i < end_i)) -> (struct_hyp_page_good (V i)))) -> 
 (forall (i : Z),
-(((start_i <= i) /\ (i < end_i)) -> ((get_order_1_4 (V i)) = 0))) -> 
+(((start_i <= i) /\ (i < end_i)) -> ((get_order_1_3 (V i)) = 0))) -> 
 ((Is_true true) -> ((0 <= O___hyp_vmemmap) /\ (O___hyp_vmemmap <= 18446744073709551615))) /\ (forall (i : Z),
 (((start_i <= i) /\ (i < end_i)) -> (struct_hyp_page_good (V i)))) /\ (forall (i : Z),
 (((start_i <= i) /\ (i < end_i)) ->
-(((get_order_1_4 (V i)) = 4294967295) \/
+(((get_order_1_3 (V i)) = 255) \/
 (forall (i_0 : Z),
 (((1 <= i_0) /\ (i_0 <= 10)) ->
 (~
 (((((order_align i i_0) < i) /\ (((get_range_start_1_4 pool) / (page_size)) <= (order_align i i_0)))
-/\ (i_0 <= (get_order_1_4 (V (order_align i i_0))))) /\
-(~ ((get_order_1_4 (V (order_align i i_0))) = (hyp_no_order)))))))))).
+/\ (i_0 <= (get_order_1_3 (V (order_align i i_0))))) /\
+(~ ((get_order_1_3 (V (order_align i i_0))) = (hyp_no_order)))))))))).
 
   Definition lemma_attach_inc_loop_type : Prop :=
     forall (pool : (((Z -> (Z * Z))) * Z * Z * Z)),
@@ -313,22 +302,22 @@ forall (order : Z),
 
 forall (O___hyp_vmemmap : (Z)),
 
-forall (V : (((Z -> (Z * Z * Z * (Z * Z)))))),
+forall (V : (((Z -> (Z * Z * Z))))),
 
 ((Is_true true) -> ((0 <= O___hyp_vmemmap) /\ (O___hyp_vmemmap <= 18446744073709551615))) -> 
 (struct_hyp_pool_good pool) -> 
-((0 <= p) /\ ((((p + 32) - 1) <= 18446744073709551615) /\ ((p mod 8) = 0))) -> 
+((0 <= p) /\ ((((p + 4) - 1) <= 18446744073709551615) /\ ((p mod 2) = 0))) -> 
 ((0 <= order) /\ (order <= 4294967295)) -> 
 let hyp_vmemmap := O___hyp_vmemmap in 
 let start_i := ((get_range_start_1_4 pool) / 4096) in 
 let end_i := ((get_range_end_2_4 pool) / 4096) in 
-(((hyp_vmemmap + (32 * start_i)) <= p) /\
-((p < (hyp_vmemmap + (32 * end_i))) /\ (((p - hyp_vmemmap) mod 32) = 0))) -> 
+(((hyp_vmemmap + (4 * start_i)) <= p) /\
+((p < (hyp_vmemmap + (4 * end_i))) /\ (((p - hyp_vmemmap) mod 4) = 0))) -> 
 (forall (i : Z),
 (((start_i <= i) /\ (i < end_i)) -> (struct_hyp_page_good (V i)))) -> 
-let p_i := ((p - O___hyp_vmemmap) / 32) in 
+let p_i := ((p - O___hyp_vmemmap) / 4) in 
 let buddy_i := (pfn_buddy p_i order) in 
-let buddy_order := (get_order_1_4 (V buddy_i)) in 
+let buddy_order := (get_order_1_3 (V buddy_i)) in 
 (start_i <= buddy_i) -> 
 (buddy_i < end_i) -> 
 (0 <= order) -> 
@@ -336,35 +325,34 @@ let buddy_order := (get_order_1_4 (V buddy_i)) in
 (buddy_order = order) -> 
 (Is_true (order_aligned p_i order)) -> 
 (Is_true (order_aligned buddy_i order)) -> 
-((get_order_1_4 (V p_i)) = 4294967295) -> 
-let p_page_tweaked := (upd_order_1_4 (V p_i) order) in 
+((get_order_1_3 (V p_i)) = 255) -> 
+let p_page_tweaked := (upd_order_1_3 (V p_i) order) in 
 (forall (i : Z),
 (((start_i <= i) /\ (i < end_i)) ->
-(((get_order_1_4 ((fun_upd Z.eqb V p_i p_page_tweaked) i)) = 4294967295) \/
+(((get_order_1_3 ((fun_upd Z.eqb V p_i p_page_tweaked) i)) = 255) \/
 (forall (i_0 : Z),
 (((1 <= i_0) /\ (i_0 <= 10)) ->
 (~
 (((((order_align i i_0) < i) /\ (((get_range_start_1_4 pool) / (page_size)) <= (order_align i i_0)))
-/\ (i_0 <= (get_order_1_4 ((fun_upd Z.eqb V p_i p_page_tweaked) (order_align i i_0))))) /\
-(~ ((get_order_1_4 ((fun_upd Z.eqb V p_i p_page_tweaked) (order_align i i_0))) = (hyp_no_order)))))))))) -> 
+/\ (i_0 <= (get_order_1_3 ((fun_upd Z.eqb V p_i p_page_tweaked) (order_align i i_0))))) /\
+(~ ((get_order_1_3 ((fun_upd Z.eqb V p_i p_page_tweaked) (order_align i i_0))) = (hyp_no_order)))))))))) -> 
 let min_i := (if (p_i <? buddy_i) then p_i else buddy_i) in 
-let min_page := (upd_order_1_4 (V min_i) (order + 1)) in 
-let buddy_page := (upd_order_1_4 (V buddy_i) 4294967295) in 
+let min_page := (upd_order_1_3 (V min_i) (order + 1)) in 
+let buddy_page := (upd_order_1_3 (V buddy_i) (hyp_no_order)) in 
 ((Is_true true) -> ((0 <= O___hyp_vmemmap) /\ (O___hyp_vmemmap <= 18446744073709551615))) /\ (forall (i : Z),
 (((start_i <= i) /\ (i < end_i)) -> (struct_hyp_page_good (V i)))) /\ (forall (i : Z),
 (((start_i <= i) /\ (i < end_i)) ->
-(((get_order_1_4 ((fun_upd Z.eqb (fun_upd Z.eqb V buddy_i buddy_page) min_i min_page) i)) =
-4294967295) \/
+(((get_order_1_3 ((fun_upd Z.eqb (fun_upd Z.eqb V buddy_i buddy_page) min_i min_page) i)) = 255) \/
 (forall (i_0 : Z),
 (((1 <= i_0) /\ (i_0 <= 10)) ->
 (~
 (((((order_align i i_0) < i) /\ (((get_range_start_1_4 pool) / (page_size)) <= (order_align i i_0)))
 /\
 (i_0 <=
-(get_order_1_4
+(get_order_1_3
 ((fun_upd Z.eqb (fun_upd Z.eqb V buddy_i buddy_page) min_i min_page) (order_align i i_0))))) /\
 (~
-((get_order_1_4
+((get_order_1_3
 ((fun_upd Z.eqb (fun_upd Z.eqb V buddy_i buddy_page) min_i min_page) (order_align i i_0))) =
 (hyp_no_order)))))))))).
 

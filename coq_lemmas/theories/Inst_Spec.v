@@ -291,13 +291,12 @@ Ltac split_if_anon :=
     destruct P
   end.
 
-Lemma get_upd_order_1_4:
-  forall (t : Z * Z * Z * (Z * Z)) x, get_order_1_4 (upd_order_1_4 t x) = x.
+Lemma get_upd_order_1_3:
+  forall {A : Type} (t : Z * Z * A) x, get_order_1_3 (upd_order_1_3 t x) = x.
 Proof.
   intros.
-  unfold get_order_1_4, upd_order_1_4.
+  unfold get_order_1_3, upd_order_1_3.
   destruct t.
-  destruct p.
   destruct p.
   auto.
 Qed.
@@ -349,7 +348,7 @@ Proof.
   intros.
   unfold fun_upd, Defs.fun_upd, Inst.pfn_buddy.
   fold pg.
-  repeat split_if_anon; repeat rewrite get_upd_order_1_4; auto.
+  repeat split_if_anon; repeat rewrite get_upd_order_1_3; auto.
 Qed.
 
 Lemma lemma_page_group_ok_easy : lemma_page_group_ok_easy_type.
@@ -382,8 +381,8 @@ Lemma lemma_attach_inc_loop : lemma_attach_inc_loop_type.
     apply Is_true_eq_left in is_al.
     order_aligned_b.
     apply (group_ok_inv_join pg) in g_ok;
-      repeat rewrite (get_fun_upd get_order_1_4);
-      repeat rewrite get_upd_order_1_4;
+      repeat rewrite (get_fun_upd get_order_1_3);
+      repeat rewrite get_upd_order_1_3;
       repeat rewrite Z.eqb_refl;
       auto; try lia2.
       eapply group_ok_inv_eq_orders.
@@ -392,20 +391,20 @@ Lemma lemma_attach_inc_loop : lemma_attach_inc_loop_type.
       intros.
       unfold Defs.fun_upd, fun_upd.
       rewrite Z.eqb_refl.
-      split_if x; repeat rewrite get_upd_order_1_4; auto.
-      split_if y; repeat rewrite get_upd_order_1_4; auto.
+      split_if x; repeat rewrite get_upd_order_1_3; auto.
+      split_if y; repeat rewrite get_upd_order_1_3; auto.
     split_if x; auto.
   pose (buddy_le := is_al).
   rewrite<- buddy_lt_eq in buddy_le by lia.
   rewrite Z.ltb_ge in buddy_le.
-  match goal with b: get_order_1_4 (V (buddy _ _)) =_ |- _ =>
+  match goal with b: get_order_1_3 (V (buddy _ _)) =_ |- _ =>
     pose (buddy_order := b) end.
   apply (group_ok_inv_join (buddy pg order)) in g_ok;
     unfold pg in *;
-    repeat rewrite (get_fun_upd get_order_1_4);
+    repeat rewrite (get_fun_upd get_order_1_3);
     repeat rewrite buddy_idemp_impossible3;
     repeat rewrite Z.eqb_refl;
-    repeat rewrite get_upd_order_1_4;
+    repeat rewrite get_upd_order_1_3;
     repeat rewrite buddy_order;
     auto; try lia.
       eapply group_ok_inv_eq_orders.
@@ -416,8 +415,8 @@ Lemma lemma_attach_inc_loop : lemma_attach_inc_loop_type.
       rewrite buddy_idemp_impossible3 by lia.
       rewrite H9.
       rewrite buddy_involution_gt_case; auto.
-      split_if x; repeat rewrite get_upd_order_1_4; try lia.
-      split_if y; repeat rewrite get_upd_order_1_4; try lia.
+      split_if x; repeat rewrite get_upd_order_1_3; try lia.
+      split_if y; repeat rewrite get_upd_order_1_3; try lia.
       rewrite Z.eqb_eq in y.
       rewrite y in *.
       auto.
