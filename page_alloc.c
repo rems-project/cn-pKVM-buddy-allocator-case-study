@@ -167,8 +167,8 @@ static inline void page_remove_from_list(struct hyp_page *p)
 /*@ requires 0 <= order; order < 11 @*/
 /*@ requires take AP = AllocatorPage(virt, 1, order) @*/
 /*@ requires let prev = AP.prev; let next = AP.next @*/
-/*@ requires take Node_prev = Owned<struct list_head>(prev) if prev != virt @*/
-/*@ requires take Node_next = Owned<struct list_head>(next) if prev != next @*/
+/*@ requires take Node_prev = Owned<struct list_head>(prev) when (prev != virt) @*/
+/*@ requires take Node_next = Owned<struct list_head>(next) when (prev != next) @*/
 /*@ requires (prev != virt) || (next == virt) @*/
 /*@ requires 0 <= hyp_physvirt_offset @*/
 /*@ requires hyp_physvirt_offset <= phys; phys < (power(2, 63)) @*/
@@ -177,8 +177,8 @@ static inline void page_remove_from_list(struct hyp_page *p)
 /*@ ensures take OP2 = Owned(p) @*/
 /*@ ensures {*p} unchanged @*/
 /*@ ensures take ZP = ZeroPage(virt, 1, (*p).order) @*/
-/*@ ensures take Node_prev2 = Owned<struct list_head>(prev) if prev != virt @*/
-/*@ ensures take Node_next2 = Owned<struct list_head>(next) if prev != next @*/
+/*@ ensures take Node_prev2 = Owned<struct list_head>(prev) when (prev != virt) @*/
+/*@ ensures take Node_next2 = Owned<struct list_head>(next) when (prev != next) @*/
 /*@ ensures (prev == next) || (Node_next2.value.next == {Node_next.value.next}@start) @*/
 /*@ ensures (prev == next) || (Node_prev2.value.prev == {Node_prev.value.prev}@start) @*/
 /*@ ensures (prev == virt) || (Node_prev2.value.next == next) @*/
@@ -218,7 +218,7 @@ static inline void page_remove_from_list_pool(struct hyp_pool *pool, struct hyp_
 /*@ ensures take H2 = Hyp_pool_ex1(pool, (pointer) __hyp_vmemmap, hyp_physvirt_offset, p_i) @*/
 /*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
 /*@ ensures H2.vmemmap == {HP.vmemmap}@start @*/
-/*@ ensures H2.pool == ({HP.pool}@start){.free_area = H2.pool.free_area} @*/
+/*@ ensures H2.pool == ({({HP.pool}@start) with .free_area = H2.pool.free_area}) @*/
 {
 	/*CN*/unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);
 	/*CN*/void *node_prev = NULL, *node_next = NULL, *free_node = NULL;
@@ -262,7 +262,7 @@ static inline void page_add_to_list(struct hyp_page *p, struct list_head *head)
 /*@ requires let next = head @*/
 /*@ requires take Node_head = Owned<struct list_head>(next) @*/
 /*@ requires let prev = (*next).prev @*/
-/*@ requires take Node_prev = Owned<struct list_head>(prev) if prev != next @*/
+/*@ requires take Node_prev = Owned<struct list_head>(prev) when (prev != next) @*/
 /*@ requires 0 <= hyp_physvirt_offset @*/
 /*@ requires hyp_physvirt_offset <= phys; phys < (power(2, 63)) @*/
 /*@ requires (mod(hyp_physvirt_offset, (page_size ()))) == 0 @*/
@@ -273,7 +273,7 @@ static inline void page_add_to_list(struct hyp_page *p, struct list_head *head)
 /*@ ensures take Hp2 = Owned(p) @*/
 /*@ ensures {*p} unchanged @*/
 /*@ ensures take Node_head2 = Owned<struct list_head>(next) @*/
-/*@ ensures take Node_prev2 = Owned<struct list_head>(prev) if prev != next @*/
+/*@ ensures take Node_prev2 = Owned<struct list_head>(prev) when (prev != next) @*/
 /*@ ensures (prev == next) || ({(*prev).prev} unchanged) @*/
 /*@ ensures (prev == next) || ({(*next).next} unchanged) @*/
 /*@ ensures (*next).prev == virt @*/

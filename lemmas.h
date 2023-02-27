@@ -140,11 +140,11 @@ void lemma_attach_inc_loop (struct hyp_pool pool,
 /*@ requires order_aligned(p_i, order) @*/
 /*@ requires order_aligned(buddy_i, order) @*/
 /*@ requires (V.value[p_i]).order == (hyp_no_order ()) @*/
-/*@ requires let p_page_tweaked = (V.value[p_i]){.order = order} @*/
+/*@ requires let p_page_tweaked = {(V.value[p_i]) with .order = order} @*/
 /*@ requires each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V.value[p_i = p_page_tweaked], pool) } @*/
 /*@ requires let min_i = (p_i < buddy_i) ? p_i : buddy_i @*/
-/*@ requires let min_page = (V.value[min_i]){.order = (order + 1)} @*/
-/*@ requires let buddy_page = (V.value[buddy_i]){.order = (hyp_no_order ())} @*/
+/*@ requires let min_page = {(V.value[min_i]) with .order = (order + 1)} @*/
+/*@ requires let buddy_page = {(V.value[buddy_i]) with .order = (hyp_no_order ())} @*/
 /*@ ensures take V2 = each(integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
 /*@ ensures V2.value == {V.value}@start @*/
 /*@ ensures each(integer i; start_i <= i && i < end_i) { page_group_ok(i, (V2.value[buddy_i = buddy_page])[min_i = min_page], pool) } @*/
@@ -179,8 +179,8 @@ void page_size_of_order_lemma(unsigned int order)
 
 void struct_list_head_to_bytes_lemma(struct list_head *node)
 /*@ trusted @*/
-/*@ requires let Node = Owned(node) @*/
-/*@ ensures let B = each (integer i; ((integer) node) <= i && i < (((integer) node) + (sizeof_struct_list_head()))){Byte(((pointer) 0)+(i*1))} @*/
+/*@ requires take Node = Owned(node) @*/
+/*@ ensures take B = each (integer i; ((integer) node) <= i && i < (((integer) node) + (sizeof_struct_list_head()))){Byte(((pointer) 0)+(i*1))} @*/
 {}
 
 void bytes_to_struct_list_head_lemma(struct list_head *node, u8 order)
@@ -188,7 +188,7 @@ void bytes_to_struct_list_head_lemma(struct list_head *node, u8 order)
 /*@ requires ((integer) node) >= 0 @*/
 /*@ requires let length = page_size_of_order(order) @*/
 /*@ requires let nodeI = ((integer) node) @*/
-/*@ requires let B = each (integer i; (nodeI <= i) && (i < (nodeI + length))) {ByteV(((pointer) 0) + (i * 1), 0)} @*/
-/*@ ensures let Node = Owned(node) @*/
-/*@ ensures let BR = each (integer i; ({nodeI}@start + (sizeof_struct_list_head())) <= i && i < ({nodeI}@start + {length}@start)){ByteV(((pointer) 0)+(i*1), 0)} @*/
+/*@ requires take B = each (integer i; (nodeI <= i) && (i < (nodeI + length))) {ByteV(((pointer) 0) + (i * 1), 0)} @*/
+/*@ ensures take Node = Owned(node) @*/
+/*@ ensures take BR = each (integer i; ({nodeI}@start + (sizeof_struct_list_head())) <= i && i < ({nodeI}@start + {length}@start)){ByteV(((pointer) 0)+(i*1), 0)} @*/
 {}
