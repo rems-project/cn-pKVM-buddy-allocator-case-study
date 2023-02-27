@@ -74,9 +74,9 @@ static inline int hyp_page_count(struct hyp_pool *pool, void *addr)
 /*@ accesses hyp_physvirt_offset; __hyp_vmemmap @*/
 /*@ requires let hyp_vmemmap = (pointer) __hyp_vmemmap @*/
 /*@ requires let phys = ((integer) addr) + hyp_physvirt_offset @*/
-/*@ requires let H = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
+/*@ requires take H = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
 /*@ requires H.pool.range_start <= phys; phys < H.pool.range_end @*/
-/*@ ensures let H2 = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
+/*@ ensures take H2 = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
 /*@ ensures {hyp_physvirt_offset} unchanged; {hyp_vmemmap} unchanged @*/
 /*@ ensures H2.pool == {H.pool}@start @*/
 /*@ ensures return == ((H2.vmemmap)[phys / 4096]).refcount @*/
@@ -96,9 +96,9 @@ static inline int hyp_page_count(struct hyp_pool *pool, void *addr)
 #define USHRT_MAX ((unsigned short)~0U)
 
 static inline void hyp_page_ref_inc(struct hyp_page *p)
-/*@ requires let O = Owned(p) @*/
+/*@ requires take O = Owned(p) @*/
 /*@ requires (*p).refcount < ((power(2,16)) - 1) @*/
-/*@ ensures let OR = Owned(p) @*/
+/*@ ensures take OR = Owned(p) @*/
 /*@ ensures {(*p).order} unchanged @*/
 /*@ ensures (*p).refcount == {(*p).refcount}@start + 1 @*/
 {
@@ -107,9 +107,9 @@ static inline void hyp_page_ref_inc(struct hyp_page *p)
 }
 
 static inline void hyp_page_ref_dec(struct hyp_page *p)
-/*@ requires let O = Owned(p) @*/
+/*@ requires take O = Owned(p) @*/
 /*@ requires (*p).refcount > 0 @*/
-/*@ ensures let OR = Owned(p) @*/
+/*@ ensures take OR = Owned(p) @*/
 /*@ ensures {(*p).order} unchanged @*/
 /*@ ensures (*p).refcount == {(*p).refcount}@start - 1 @*/
 {
@@ -118,9 +118,9 @@ static inline void hyp_page_ref_dec(struct hyp_page *p)
 }
 
 static inline int hyp_page_ref_dec_and_test(struct hyp_page *p)
-/*@ requires let O = Owned(p) @*/
+/*@ requires take O = Owned(p) @*/
 /*@ requires (*p).refcount > 0 @*/
-/*@ ensures let OR = Owned(p) @*/
+/*@ ensures take OR = Owned(p) @*/
 /*@ ensures {(*p).order} unchanged @*/
 /*@ ensures (*p).refcount == {(*p).refcount}@start - 1 @*/
 /*@ ensures return == (((*p).refcount == 0) ? 1 : 0) @*/
@@ -130,9 +130,9 @@ static inline int hyp_page_ref_dec_and_test(struct hyp_page *p)
 }
 
 static inline void hyp_set_page_refcounted(struct hyp_page *p)
-/*@ requires let O = Owned(p) @*/
+/*@ requires take O = Owned(p) @*/
 /*@ requires (*p).refcount == 0 @*/
-/*@ ensures let OR = Owned(p) @*/
+/*@ ensures take OR = Owned(p) @*/
 /*@ ensures {(*p).order} unchanged @*/
 /*@ ensures (*p).refcount == 1 @*/
 {

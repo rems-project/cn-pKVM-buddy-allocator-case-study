@@ -8,8 +8,8 @@
 	list_entry((ptr)->next, type, member)
 
 static inline int list_empty(const struct list_head *head)
-/*@ requires let O = Owned(head) @*/
-/*@ ensures let OR = Owned(head) @*/
+/*@ requires take O = Owned(head) @*/
+/*@ ensures take OR = Owned(head) @*/
 /*@ ensures O.value == OR.value @*/
 /*@ ensures return == (((*head).next == head) ? 1 : 0) @*/
 {
@@ -19,8 +19,8 @@ static inline int list_empty(const struct list_head *head)
 
 /* renamed list to llist to avoid clash with CN keyword list */
 static inline void INIT_LIST_HEAD(struct list_head *llist)
-/*@ requires let O = Owned(llist) @*/
-/*@ ensures let OR = Owned(llist) @*/
+/*@ requires take O = Owned(llist) @*/
+/*@ ensures take OR = Owned(llist) @*/
 /*@ ensures (*llist).next == llist; (*llist).prev == llist @*/
 {
 	/* WRITE_ONCE (llist->next, llist); */
@@ -35,10 +35,10 @@ static inline bool __list_del_entry_valid(struct list_head *entry)
 }
 
 static inline void __list_del(struct list_head * prev, struct list_head * next)
-/*@ requires let O1 = Owned(prev) @*/
-/*@ requires let O2 = Owned(next) when (prev != next) @*/
-/*@ ensures let O1R = Owned(prev) @*/
-/*@ ensures let O2R = Owned(next) when (prev != next) @*/
+/*@ requires take O1 = Owned(prev) @*/
+/*@ requires take O2 = Owned(next) when (prev != next) @*/
+/*@ ensures take O1R = Owned(prev) @*/
+/*@ ensures take O2R = Owned(next) when (prev != next) @*/
 /*@ ensures (prev == next) || {(*next).next} unchanged @*/
 /*@ ensures (prev == next) || {(*prev).prev} unchanged @*/
 /*@ ensures (*prev).next == next @*/
@@ -52,15 +52,15 @@ static inline void __list_del(struct list_head * prev, struct list_head * next)
 }
 
 static inline void __list_del_entry(struct list_head *entry)
-/*@ requires let O1 = Owned(entry) @*/
+/*@ requires take O1 = Owned(entry) @*/
 /*@ requires let prev = (*entry).prev; let next = (*entry).next @*/
-/*@ requires let O2 = Owned(prev) when (prev != entry) @*/
-/*@ requires let O3 = Owned(next) when (prev != next) @*/
+/*@ requires take O2 = Owned(prev) when (prev != entry) @*/
+/*@ requires take O3 = Owned(next) when (prev != next) @*/
 /*@ requires (prev != entry) || (next == entry) @*/
-/*@ ensures let O1R = Owned(entry) @*/
+/*@ ensures take O1R = Owned(entry) @*/
 /*@ ensures {*entry} unchanged @*/
-/*@ ensures let O2R = Owned(prev) when (prev != entry) @*/
-/*@ ensures let O3R = Owned(next) when (prev != next) @*/
+/*@ ensures take O2R = Owned(prev) when (prev != entry) @*/
+/*@ ensures take O3R = Owned(next) when (prev != next) @*/
 /*@ ensures (prev == next) || {(*next).next} unchanged @*/
 /*@ ensures (prev == next) || {(*prev).prev} unchanged @*/
 /*@ ensures (prev == entry) || ((*prev).next == next) @*/
@@ -76,15 +76,15 @@ static inline void __list_del_entry(struct list_head *entry)
 }
 
 static inline void list_del_init(struct list_head *entry)
-/*@ requires let O1 = Owned(entry) @*/
+/*@ requires take O1 = Owned(entry) @*/
 /*@ requires let prev = (*entry).prev; let next = (*entry).next @*/
-/*@ requires let O2 = Owned(prev) @*/
-/*@ requires let O3 = Owned(next) when (prev != next) @*/
+/*@ requires take O2 = Owned(prev) @*/
+/*@ requires take O3 = Owned(next) when (prev != next) @*/
 /*@ requires (*entry).prev != entry @*/
-/*@ ensures let O1R = Owned(entry) @*/
+/*@ ensures take O1R = Owned(entry) @*/
 /*@ ensures (*entry).prev == entry; (*entry).next == entry @*/
-/*@ ensures let O2R = Owned(prev) @*/
-/*@ ensures let O3R = Owned(next) when (prev != next) @*/
+/*@ ensures take O2R = Owned(prev) @*/
+/*@ ensures take O3R = Owned(next) when (prev != next) @*/
 /*@ ensures (prev == next) || {(*next).next} unchanged @*/
 /*@ ensures (prev == next) || {(*prev).prev} unchanged @*/
 /*@ ensures (*prev).next == next @*/
@@ -109,8 +109,8 @@ static inline bool __list_add_valid(struct list_head *new,
 static inline void __list_add(struct list_head *new,
 			      struct list_head *prev,
 			      struct list_head *next)
-/*@ requires let O1 = Owned(new); let O2 = Owned(prev); let O3 = Owned(next) when (prev != next) @*/
-/*@ ensures let O1R = Owned(new); let O2R = Owned(prev); let O3R = Owned(next) when (prev != next) @*/
+/*@ requires take O1 = Owned(new); take O2 = Owned(prev); take O3 = Owned(next) when (prev != next) @*/
+/*@ ensures take O1R = Owned(new); take O2R = Owned(prev); take O3R = Owned(next) when (prev != next) @*/
 /*@ ensures (prev == next) || {(*prev).prev} unchanged @*/
 /*@ ensures (prev == next) || {(*next).next} unchanged @*/
 /*@ ensures (*prev).next == new @*/
@@ -132,11 +132,11 @@ static inline void __list_add(struct list_head *new,
 
 
 static inline void list_add_tail(struct list_head *new, struct list_head *head)
-/*@ requires let O1 = Owned(new) @*/
-/*@ requires let O2 = Owned(head) @*/
+/*@ requires take O1 = Owned(new) @*/
+/*@ requires take O2 = Owned(head) @*/
 /*@ requires let prev = (*head).prev; let next = head @*/
-/*@ requires let O3 = Owned(prev) when (prev != next) @*/
-/*@ ensures let O1R = Owned(new); let O2R = Owned(head); let O3R = Owned(prev) when (prev != next) @*/
+/*@ requires take O3 = Owned(prev) when (prev != next) @*/
+/*@ ensures take O1R = Owned(new); take O2R = Owned(head); take O3R = Owned(prev) when (prev != next) @*/
 /*@ ensures (prev == next) || {(*prev).prev} unchanged @*/
 /*@ ensures (prev == next) || {(*head).next} unchanged @*/
 /*@ ensures (*head).prev == new @*/
