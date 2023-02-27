@@ -92,8 +92,8 @@ void lemma_order_align_inv_loop (struct hyp_pool pool,
 /*@ requires each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V.value, pool) } @*/
 /*@ ensures let V = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*4))} @*/
 /*@ ensures V.value == {V.value}@start @*/
-/*@ ensures let p_new_page = (V.value[p_i]){.order = (p_order - 1)} @*/
-/*@ ensures let buddy_new_page = (V.value[buddy_i]){.order = (p_order - 1)} @*/
+/*@ ensures let p_new_page = {(V.value[p_i]) with .order = (p_order - 1)} @*/
+/*@ ensures let buddy_new_page = {(V.value[buddy_i]) with .order = (p_order - 1)} @*/
 /*@ ensures each(integer i; start_i <= i && i < end_i) { page_group_ok(i, (V.value[p_i = p_new_page])[buddy_i = buddy_new_page], pool) } @*/
 /*@ ensures {__hyp_vmemmap} unchanged @*/
 {}

@@ -78,7 +78,7 @@ static inline int hyp_page_count(struct hyp_pool *pool, void *addr)
 /*@ requires H.pool.range_start <= phys; phys < H.pool.range_end @*/
 /*@ ensures let H2 = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
 /*@ ensures {hyp_physvirt_offset} unchanged; {hyp_vmemmap} unchanged @*/
-/*@ ensures {H2.pool}@end == {H.pool}@start @*/
+/*@ ensures H2.pool == {H.pool}@start @*/
 /*@ ensures return == ((H2.vmemmap)[phys / 4096]).refcount @*/
 {
         /*CN*/unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);

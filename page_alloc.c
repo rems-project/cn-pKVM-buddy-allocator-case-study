@@ -684,7 +684,7 @@ void hyp_get_page(struct hyp_pool *pool, void *addr)
 /*@ requires (H.vmemmap[page_i]).refcount <= ((power(2,16)) - 2) @*/
 /*@ ensures let H2 = Hyp_pool(pool, (pointer) __hyp_vmemmap, hyp_physvirt_offset) @*/
 /*@ ensures {hyp_physvirt_offset} unchanged; {__hyp_vmemmap} unchanged @*/
-/*@ ensures {H2.pool}@end == {H.pool}@start @*/
+/*@ ensures H2.pool == {H.pool}@start @*/
 {
         /*CN*/unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);
 	struct hyp_page *p = hyp_virt_to_page(addr);
@@ -788,7 +788,7 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
 /*@ accesses __hyp_vmemmap; hyp_physvirt_offset @*/
 /*@ requires nr_pages > 0 @*/
 /*@ requires let hyp_vmemmap = (pointer) __hyp_vmemmap @*/
-/*@ requires let O = Owned(pool) @*/
+/*@ requires let O = Owned<struct hyp_pool>(pool) @*/
 /*@ requires let start_i = pfn; let start = start_i * (page_size ()) @*/
 /*@ requires start_i >= 0 @*/
 /*@ requires let end_i = start_i + nr_pages; let end = end_i * (page_size ()) @*/
@@ -798,7 +798,7 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
 /* The hyp_pool_wf below does not mention the free area. So the
    hyp_pool_wf constraint is just a short-hand for asking start,
    end, and others to have sensible values. */
-/*@ requires let poolv = ((*pool{.range_start = start}){.range_end = end}){.max_order = 11} @*/
+/*@ requires let poolv = {*pool with .range_start = start, .range_end = end, .max_order = 11} @*/
 /*@ requires hyp_pool_wf(pool, poolv, hyp_vmemmap, hyp_physvirt_offset) @*/
 /*@ requires let V = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
 /*@ requires let P = each (integer i; start_i + reserved_pages <= (i+off_i) && (i+off_i) < end_i){ Page(((pointer) 0) + (i*(page_size ())), 1, 0) } @*/
