@@ -310,7 +310,7 @@ static inline void page_add_to_list_pool(struct hyp_pool *pool,
 /*@ requires head == ((pointer) (((integer) &(pool->free_area)) + (order*16))) @*/
 /*@ ensures take H2 = Hyp_pool(pool, (pointer) __hyp_vmemmap, hyp_physvirt_offset) @*/
 /*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
-/*@ ensures H2.pool == ({HP.pool}@start){.free_area = H2.pool.free_area} @*/
+/*@ ensures H2.pool == {({HP.pool}@start) with .free_area = H2.pool.free_area} @*/
 /*@ ensures H2.vmemmap == {HP.vmemmap}@start @*/
 {
 	/*CN*/unpack Hyp_pool_ex1(pool, hyp_vmemmap, hyp_physvirt_offset, hyp_page_to_pfn(p));
@@ -352,7 +352,7 @@ static inline void page_add_to_list_pool_ex1(struct hyp_pool *pool,
 /*@ requires p_i != p_i2 @*/
 /*@ ensures take H2 = Hyp_pool_ex1(pool, (pointer) __hyp_vmemmap, hyp_physvirt_offset, p_i2) @*/
 /*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
-/*@ ensures H2.pool == ({HP.pool}@start){.free_area = H2.pool.free_area} @*/
+/*@ ensures H2.pool == {({HP.pool}@start) with .free_area = H2.pool.free_area} @*/
 /*@ ensures H2.vmemmap == {HP.vmemmap}@start @*/
 {
 	/*CN*/unpack Hyp_pool_ex2(pool, hyp_vmemmap, hyp_physvirt_offset,
@@ -406,7 +406,7 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 /*@ requires take P = Page((pointer) ((p_i * (page_size ())) - hyp_physvirt_offset), 1, order) @*/
 /*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
 /*@ ensures take H2 = Hyp_pool(pool, (pointer) __hyp_vmemmap, hyp_physvirt_offset) @*/
-/*@ ensures ({H.pool}@start){.free_area = H2.pool.free_area} == H2.pool @*/
+/*@ ensures {({H.pool}@start) with .free_area = H2.pool.free_area} == H2.pool @*/
 /*@ ensures each (integer i; p_i < i && i < end_i){(({H.vmemmap[i]}@start).refcount == 0) || ((H2.vmemmap[i]) == {H.vmemmap[i]}@start)} @*/
 {
 	/*CN*/unpack Hyp_pool_ex1(pool, hyp_vmemmap, hyp_physvirt_offset, hyp_page_to_pfn(p));
@@ -442,7 +442,7 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 		/*@ inv let hyp_vmemmap = (pointer) __hyp_vmemmap @*/
 		/*@ inv take H_I = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
 		/*@ inv let p_page = (H_I.vmemmap)[p_i2] @*/
-		/*@ inv let p_page_tweaked2 = (p_page){.order = order} @*/
+		/*@ inv let p_page_tweaked2 = {(p_page) with .order = order} @*/
 		/*@ inv let start_i = H_I.pool.range_start / (page_size()) @*/
 		/*@ inv let end_i = H_I.pool.range_end / (page_size ()) @*/
 
@@ -458,7 +458,7 @@ static void __hyp_attach_page(struct hyp_pool *pool,
                     /*@ inv each (integer i; {p_i}@start < i && i < end_i)
                          {(({H.vmemmap[i]}@start).refcount == 0) || ((H_I.vmemmap[i]) == {H.vmemmap[i]}@start)} @*/
 		    /*@ inv {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged; {pool} unchanged @*/
-		    /*@ inv H_I.pool == ({H.pool}@start){.free_area = (H_I.pool).free_area} @*/
+		    /*@ inv H_I.pool == {({H.pool}@start) with .free_area = (H_I.pool).free_area} @*/
 		{
 
 		        buddy = __find_buddy_avail(pool, p, order);
@@ -518,7 +518,7 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 /*@ ensures take H2 = Hyp_pool_ex1(pool, hyp_vmemmap, hyp_physvirt_offset, p_i) @*/
 /*@ ensures take ZR = ZeroPage((pointer) (p_i * (page_size ()) - hyp_physvirt_offset), 1, order) @*/
 /*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
-/*@ ensures H2.pool == ({H.pool}@start){.free_area = (H2.pool).free_area} @*/
+/*@ ensures H2.pool == {({H.pool}@start) with .free_area = (H2.pool).free_area} @*/
 /*@ ensures return == p @*/
 /*@ ensures let p_page = H2.vmemmap[p_i] @*/
 /*@ ensures p_page.refcount == 0; p_page.order == order @*/
@@ -570,7 +570,7 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 	/*@ inv {p} unchanged @*/
 	/*@ inv {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
 	/*@ inv {pool} unchanged; {order} unchanged @*/
-	/*@ inv P_I.value == ({H.pool}@start){.free_area = (P_I.value).free_area} @*/
+	/*@ inv P_I.value == {({H.pool}@start) with .free_area = (P_I.value).free_area} @*/
 	{
 		/*
 		 * The buddy of order n - 1 currently has HYP_NO_ORDER as it
