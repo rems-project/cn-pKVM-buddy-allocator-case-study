@@ -90,11 +90,11 @@ void lemma_order_align_inv_loop (struct hyp_pool pool,
 /*@ requires cellPointer(hyp_vmemmap, 4, start_i, end_i, p) @*/
 /*@ requires let buddy_i = pfn_buddy(p_i, p_order - 1) @*/
 /*@ requires each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V.value, pool) } @*/
-/*@ ensures take V = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*4))} @*/
-/*@ ensures V.value == {V.value}@start @*/
-/*@ ensures let p_new_page = {(V.value[p_i]) with .order = (p_order - 1)} @*/
-/*@ ensures let buddy_new_page = {(V.value[buddy_i]) with .order = (p_order - 1)} @*/
-/*@ ensures each(integer i; start_i <= i && i < end_i) { page_group_ok(i, (V.value[p_i = p_new_page])[buddy_i = buddy_new_page], pool) } @*/
+/*@ ensures take V2 = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hyp_vmemmap+(i*4))} @*/
+/*@ ensures V2.value == {V.value}@start @*/
+/*@ ensures let p_new_page = {(V2.value[p_i]) with .order = (p_order - 1)} @*/
+/*@ ensures let buddy_new_page = {(V2.value[buddy_i]) with .order = (p_order - 1)} @*/
+/*@ ensures each(integer i; start_i <= i && i < end_i) { page_group_ok(i, (V2.value[p_i = p_new_page])[buddy_i = buddy_new_page], pool) } @*/
 /*@ ensures {__hyp_vmemmap} unchanged @*/
 {}
 
@@ -106,9 +106,9 @@ void lemma_page_group_ok_easy (struct hyp_pool pool)
 /*@ requires let end_i = (pool).range_end / 4096 @*/
 /*@ requires take V = each (integer i; start_i <= i && i < end_i) { Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
 /*@ requires each (integer i; start_i <= i && i < end_i) { (V.value[i]).order == 0 } @*/
-/*@ ensures take V = each (integer i; start_i <= i && i < end_i) { Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
-/*@ ensures V.value == {V.value}@start @*/
-/*@ ensures each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V.value, pool) } @*/
+/*@ ensures take V2 = each (integer i; start_i <= i && i < end_i) { Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
+/*@ ensures V2.value == {V.value}@start @*/
+/*@ ensures each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V2.value, pool) } @*/
 /*@ ensures {__hyp_vmemmap} unchanged @*/
 {}
 

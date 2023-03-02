@@ -439,12 +439,9 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 		    /*@ inv let virt = (pointer)((p_i2 * (page_size ())) - hyp_physvirt_offset) @*/
 		    /*@ inv take Z = ZeroPage(virt, 1, order) @*/
 
-		/*@ inv let hyp_vmemmap = (pointer) __hyp_vmemmap @*/
 		/*@ inv take H_I = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
 		/*@ inv let p_page = (H_I.vmemmap)[p_i2] @*/
 		/*@ inv let p_page_tweaked2 = {(p_page) with .order = order} @*/
-		/*@ inv let start_i = H_I.pool.range_start / (page_size()) @*/
-		/*@ inv let end_i = H_I.pool.range_end / (page_size ()) @*/
 
 		/* for page_group_ok */
 		/*@ inv each (integer i; (start_i <= i) && (i < end_i))
@@ -532,17 +529,12 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
         /*CN*/instantiate vmemmap_wf, hyp_page_to_pfn(p);
 
 	while (p->order > order)
-	/*@ inv let hyp_vmemmap = (pointer) __hyp_vmemmap @*/
-	/*@ inv let p_i = (((integer) p) - __hyp_vmemmap) / 4 @*/
 
 /* sigh, copying in Hyp_pool_ex1 */
 
 	/*@ inv let vmemmap_l = (pointer) __hyp_vmemmap @*/
 	/*@ inv let ex = exclude_one (p_i) @*/
 	/*@ inv take P_I = Owned<struct hyp_pool>(pool) @*/
-	/*@ inv let start_i = P_I.value.range_start / 4096 @*/
-	/*@ inv let end_i = P_I.value.range_end / 4096 @*/
-	/*@ inv let off_i = hyp_physvirt_offset / 4096 @*/
 	/*@ inv hyp_pool_wf (pool, P_I.value, vmemmap_l, hyp_physvirt_offset) @*/
 	/*@ inv take V_I = each(integer i; (start_i <= i) && (i < end_i))
               {Owned<struct hyp_page>(vmemmap_l + i*4)} @*/
@@ -564,9 +556,9 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 	/*@ inv order_aligned(p_i, order) @*/
 	/*@ inv (V_I.value[p_i]).refcount == 0 @*/
 	/*@ inv let virt = (pointer)((p_i * (page_size ())) - hyp_physvirt_offset) @*/
-	/*@ inv let p_order = (V_I.value[p_i]).order @*/
-	/*@ inv take ZI = ZeroPage(virt, 1, p_order) @*/
-	/*@ inv 0 <= order; order <= p_order; p_order != (hyp_no_order ()); p_order < (max_order ()) @*/
+	/*@ inv let i_p_order = (V_I.value[p_i]).order @*/
+	/*@ inv take ZI = ZeroPage(virt, 1, i_p_order) @*/
+	/*@ inv 0 <= order; order <= i_p_order; i_p_order != (hyp_no_order ()); i_p_order < (max_order ()) @*/
 	/*@ inv {p} unchanged @*/
 	/*@ inv {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
 	/*@ inv {pool} unchanged; {order} unchanged @*/
@@ -733,7 +725,6 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 
 	/* Look for a high-enough-order page */
 	while (i < pool->max_order && list_empty(&pool->free_area[i]))
-            /*@ inv let hyp_vmemmap = (pointer) __hyp_vmemmap @*/
             /*@ inv take H_I = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
             /*@ inv let start = {H.pool.range_start}@start @*/
             /*@ inv let end = {H.pool.range_end}@start @*/
@@ -819,9 +810,8 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
 	for (i = 0; i < pool->max_order; i++)
              /*@ inv take OI = Owned(pool) @*/
              /*@ inv take V2 = each (integer j; {start_i}@start <= j && j < {end_i}@start){Owned<struct hyp_page>({hyp_vmemmap}@start+(j*4))} @*/
-             /*@ inv let off_i = hyp_physvirt_offset / (page_size ()) @*/
              /*@ inv 0 <= off_i; off_i < {start_i}@start @*/
-             /*@ inv take PI = each (integer i; {start_i + reserved_pages}@start <= (i+off_i) && (i+off_i) < {end_i}@start){ Page(((pointer) 0) + (i*(page_size ())), 1, 0) } @*/
+             /*@ inv take PI = each (integer j; {start_i + reserved_pages}@start <= (j+off_i) && (j+off_i) < {end_i}@start){ Page(((pointer) 0) + (j*(page_size ())), 1, 0) } @*/
              /*@ inv each(integer j; 0 <= j && j < i){((*pool).free_area[j]).prev == ((pointer) (((integer) pool) + (j * 16)))} @*/
              /*@ inv each(integer j; 0 <= j && j < i){((*pool).free_area[j]).next == ((pointer) (((integer) pool) + (j * 16)))} @*/
              /*@ inv {__hyp_vmemmap} unchanged; {pool} unchanged; {hyp_physvirt_offset} unchanged; {pfn} unchanged; {nr_pages} unchanged; {reserved_pages} unchanged @*/
@@ -839,9 +829,8 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
 	for (i = 0; i < nr_pages; i++)
              /*@ inv take OI2 = Owned(pool) @*/
              /*@ inv take V3 = each (integer j; {start_i}@start <= j && j < {end_i}@start){Owned<struct hyp_page>({hyp_vmemmap}@start+(j*4)) } @*/
-             /*@ inv let off_i = hyp_physvirt_offset / (page_size ()) @*/
              /*@ inv 0 <= off_i; off_i < {start_i}@start @*/
-             /*@ inv take PI2 = each (integer i; {start_i + reserved_pages}@start <= (i+off_i) && (i+off_i) < {end_i}@start){ Page(((pointer) 0) + (i*(page_size ())), 1, 0) } @*/
+             /*@ inv take PI2 = each (integer j; {start_i + reserved_pages}@start <= (j+off_i) && (j+off_i) < {end_i}@start){ Page(((pointer) 0) + (j*(page_size ())), 1, 0) } @*/
              /*@ inv each(integer j; 0 <= j && j < ((*pool).max_order)){((*pool).free_area[j]).prev == ((pointer) (((integer) pool) + (j * 16)))} @*/
              /*@ inv each(integer j; 0 <= j && j < ((*pool).max_order)){((*pool).free_area[j]).next == ((pointer) (((integer) pool) + (j * 16)))} @*/
              /*@ inv each (integer j; {start_i}@start <= j && j < {start_i}@start + i){init_vmemmap_page(j, V3.value, pool, *pool)} @*/
@@ -871,7 +860,6 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
 	for (i = reserved_pages; i < nr_pages; i++)
              /*@ inv take H = Hyp_pool(pool, {hyp_vmemmap}@start, hyp_physvirt_offset) @*/
              /*@ inv i >= 0 @*/
-             /*@ inv let off_i = hyp_physvirt_offset / (page_size ()) @*/
              /*@ inv 0 <= off_i; off_i < {start_i}@start @*/
              /*@ inv take PI3 = each(integer j; {start_i}@start + i <= (j+off_i) && (j+off_i) < {end_i}@start){ Page(((pointer) 0) + (j*(page_size ())), 1, 0) } @*/
              /*@ inv each(integer j; {start_i}@start + i <= j && j < {end_i}@start){(H.vmemmap[j]).order == 0} @*/
