@@ -401,9 +401,9 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 /*@ requires cellPointer(hyp_vmemmap, 4, start_i, end_i, p) @*/
 /*@ requires ((H.vmemmap[p_i]).refcount) == 0 @*/
 /*@ requires ((H.vmemmap[p_i]).order) != (hyp_no_order()) @*/
-/*@ requires let order = (H.vmemmap[p_i]).order @*/
-/*@ requires (p_i * (page_size ())) + (page_size_of_order(order)) <= (H.pool).range_end @*/
-/*@ requires take P = Page((pointer) ((p_i * (page_size ())) - hyp_physvirt_offset), 1, order) @*/
+/*@ requires let i_order = (H.vmemmap[p_i]).order @*/
+/*@ requires (p_i * (page_size ())) + (page_size_of_order(i_order)) <= (H.pool).range_end @*/
+/*@ requires take P = Page((pointer) ((p_i * (page_size ())) - hyp_physvirt_offset), 1, i_order) @*/
 /*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
 /*@ ensures take H2 = Hyp_pool(pool, (pointer) __hyp_vmemmap, hyp_physvirt_offset) @*/
 /*@ ensures {({H.pool}@start) with .free_area = H2.pool.free_area} == H2.pool @*/
