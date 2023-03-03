@@ -535,6 +535,8 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 	/*@ inv let vmemmap_l = (pointer) __hyp_vmemmap @*/
 	/*@ inv let ex = exclude_one (p_i) @*/
 	/*@ inv take P_I = Owned<struct hyp_pool>(pool) @*/
+	/*@ inv P_I.value == {({H.pool}@start) with .free_area = (P_I.value).free_area} @*/
+	/*@ inv {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
 	/*@ inv hyp_pool_wf (pool, P_I.value, vmemmap_l, hyp_physvirt_offset) @*/
 	/*@ inv take V_I = each(integer i; (start_i <= i) && (i < end_i))
               {Owned<struct hyp_page>(vmemmap_l + i*4)} @*/
@@ -560,9 +562,7 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 	/*@ inv take ZI = ZeroPage(virt, 1, i_p_order) @*/
 	/*@ inv 0 <= order; order <= i_p_order; i_p_order != (hyp_no_order ()); i_p_order < (max_order ()) @*/
 	/*@ inv {p} unchanged @*/
-	/*@ inv {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
 	/*@ inv {pool} unchanged; {order} unchanged @*/
-	/*@ inv P_I.value == {({H.pool}@start) with .free_area = (P_I.value).free_area} @*/
 	{
 		/*
 		 * The buddy of order n - 1 currently has HYP_NO_ORDER as it
