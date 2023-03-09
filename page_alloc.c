@@ -732,7 +732,7 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 		return NULL;
 	}
 
-        /*CN*/instantiate freeArea_cell_wf, i;
+        /*@ instantiate freeArea_cell_wf, i; @*/ 
 	/* Extract it from the tree at the right order */
 	p = node_to_page(pool->free_area[i].next);
         // p = hyp_virt_to_page(pool->free_area[i].next);
