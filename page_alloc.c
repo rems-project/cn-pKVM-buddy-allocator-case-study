@@ -712,11 +712,10 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 /*@ ensures {hyp_physvirt_offset} unchanged @*/
 /*@ ensures H2.pool == {H.pool with .free_area = H2.pool.free_area} @*/
 {
-	/* struct hyp_page *p; */
-        struct hyp_page *p = NULL;
+        struct hyp_page *p = NULL; /* struct hyp_page *p; */
 	u8 i = order;
 
-        /*CN*/unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);
+        /*@ unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset); @*/
 
 	/* hyp_spin_lock(&pool->lock); */
 
@@ -730,8 +729,6 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 		i++;
 	if (i >= pool->max_order) {
 		/* hyp_spin_unlock(&pool->lock); */
-                /*CN*/pack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);
-                /*CN*/pack ZeroPage(NULL, 0, order);
 		return NULL;
 	}
 
