@@ -736,7 +736,7 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 	/* Extract it from the tree at the right order */
 	p = node_to_page(pool->free_area[i].next);
         // p = hyp_virt_to_page(pool->free_area[i].next);
-        /*CN*/instantiate vmemmap_wf, hyp_page_to_pfn(p);
+        /*@ instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p); @*/
         /*CN*/lemma_order_dec_inv(pool->range_end, (u64) hyp_page_to_pfn(p), p->order, order);
 	p = __hyp_extract_page(pool, p, order);
 	/* hyp_spin_unlock(&pool->lock); */
