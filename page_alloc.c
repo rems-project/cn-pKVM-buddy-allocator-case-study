@@ -141,7 +141,7 @@ static struct hyp_page *__find_buddy_avail(struct hyp_pool *pool,
 {
 	struct hyp_page *buddy = __find_buddy_nocheck(pool, p, order);
 
-        /*CN*/ instantiate good, hyp_page_to_pfn(buddy);
+        /*@ instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, buddy); @*/
 	if (!buddy || buddy->order != order || buddy->refcount)
 		return NULL;
 
@@ -187,15 +187,16 @@ static inline void page_remove_from_list(struct hyp_page *p)
 {
 	struct list_head *node = hyp_page_to_virt(p);
 
-	/*CN*/unpack AllocatorPage(node, 1, p->order);
+	/*@ unpack AllocatorPage(node, 1, order); @*/
         /*CN*/if (node->prev != node);
         /*CN*/if (node->prev != node->next);
 	__list_del_entry(node);
 	/*CN*/struct_list_head_to_bytes_lemma(node);
 	memset(node, 0, sizeof(*node));
 	/*CN*/page_size_of_order_lemma(p->order);
-        /*CN*/unpack AllocatorPageZeroPart(node + 1, p->order);
-	/*CN*/pack ZeroPage(node, 1, p->order);
+        /*@ unpack AllocatorPageZeroPart(node + 1, order); @*/
+	/*@ pack ZeroPage(node, 1, order); @*/
+        /*CN*/ return;
 }
 
 /* for verification */
@@ -706,7 +707,6 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 /*@ accesses hyp_physvirt_offset; __hyp_vmemmap @*/
 /*@ requires let hyp_vmemmap = (pointer) __hyp_vmemmap @*/
 /*@ requires take H = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
-/*@ requires hyp_physvirt_offset == 0 @*/ /*FIXME*/
 /*@ ensures take H2 = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
 /*@ ensures take ZR = ZeroPage(return, (return == NULL) ? 0 : 1, order) @*/
 /*@ ensures {__hyp_vmemmap} unchanged @*/
@@ -719,7 +719,7 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
         struct hyp_page *p = NULL;
 	u8 i = order;
 
-        /*CN*/unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);
+        /*@ unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset); @*/
 
 	/* hyp_spin_lock(&pool->lock); */
 
@@ -747,7 +747,7 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 	}
 
 	/* Extract it from the tree at the right order */
-        /*CN*/instantiate freeArea_cell_wf, i;
+        /*@ instantiate freeArea_cell_wf, i; @*/
 	p = node_to_page(pool->free_area[i].next);
         // p = hyp_virt_to_page(pool->free_area[i].next);
         /* the refcount==0 precondition needs to know wellformedness facts about the free area cell that link it to the vmemmap; */
