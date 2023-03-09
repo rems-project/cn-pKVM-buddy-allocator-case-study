@@ -706,6 +706,7 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 /*@ accesses hyp_physvirt_offset; __hyp_vmemmap @*/
 /*@ requires let hyp_vmemmap = (pointer) __hyp_vmemmap @*/
 /*@ requires take H = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
+/*@ requires hyp_physvirt_offset == 0 @*/ /*FIXME*/
 /*@ ensures take H2 = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
 /*@ ensures take ZR = ZeroPage(return, (return == NULL) ? 0 : 1, order) @*/
 /*@ ensures {__hyp_vmemmap} unchanged @*/
@@ -745,12 +746,14 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 		return NULL;
 	}
 
-        /*@ instantiate freeArea_cell_wf, i; @*/
 	/* Extract it from the tree at the right order */
+        /*CN*/instantiate freeArea_cell_wf, i;
 	p = node_to_page(pool->free_area[i].next);
         // p = hyp_virt_to_page(pool->free_area[i].next);
-        /*@ instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p); @*/
+        /* the refcount==0 precondition needs to know wellformedness facts about the free area cell that link it to the vmemmap; */
+        /*CN*/instantiate vmemmap_wf, hyp_page_to_pfn(p);
         /*CN*/lemma_order_dec_inv(pool->range_end, (u64) hyp_page_to_pfn(p), p->order, order);
+        /*CN*/pack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);
 	p = __hyp_extract_page(pool, p, order);
 	/* hyp_spin_unlock(&pool->lock); */
         /*CN*/unpack Hyp_pool_ex1(pool, hyp_vmemmap, hyp_physvirt_offset, hyp_page_to_pfn(p));

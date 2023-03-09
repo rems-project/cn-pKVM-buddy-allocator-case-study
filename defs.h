@@ -10,11 +10,6 @@ function (integer) hyp_no_order () { return 255; }
 function (integer) sizeof_struct_hyp_page(){ return sizeof <struct hyp_page>; }
 function (integer) sizeof_struct_list_head() { return sizeof <struct list_head>; }
 
-function (integer) cn_hyp_page_to_pfn(integer hypvmemmap, pointer p) {
-  return (((integer) p) - hypvmemmap) / sizeof<struct hyp_page>;
-}
-
-
 datatype excludes {
   Exclude {boolean any, boolean do_ex1, integer ex1, boolean do_ex2, integer ex2}
 }
