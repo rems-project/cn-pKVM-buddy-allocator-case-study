@@ -710,9 +710,7 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 /*@ ensures take ZR = ZeroPage(return, (return == NULL) ? 0 : 1, order) @*/
 /*@ ensures {__hyp_vmemmap} unchanged @*/
 /*@ ensures {hyp_physvirt_offset} unchanged @*/
-/*@ ensures H2.pool.range_start == {H.pool.range_start}@start @*/
-/*@ ensures H2.pool.range_end == {H.pool.range_end}@start @*/
-/*@ ensures H2.pool.max_order == {H.pool.max_order}@start @*/
+/*@ ensures H2.pool == {H.pool with .free_area = H2.pool.free_area} @*/
 {
 	/* struct hyp_page *p; */
         struct hyp_page *p = NULL;
