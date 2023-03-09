@@ -726,16 +726,8 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 	/* Look for a high-enough-order page */
 	while (i < pool->max_order && list_empty(&pool->free_area[i]))
             /*@ inv take H_I = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
-            /*@ inv let start = {H.pool.range_start}@start @*/
-            /*@ inv let end = {H.pool.range_end}@start @*/
-            /*@ inv let max_order = {H.pool.max_order}@start @*/
-            /*@ inv let start_i = start / (page_size ()) @*/
-            /*@ inv let end_i = end / (page_size ()) @*/
-            /*@ inv let off_i = hyp_physvirt_offset / (page_size ()) @*/
-            /*@ inv H_I.vmemmap == {H.vmemmap}@start @*/
-            /*@ inv H_I.pool == {H.pool}@start @*/
-            /*@ inv order <= i @*/
-            /*@ inv max_order <= 11 @*/
+            /*@ inv H_I.vmemmap == H.vmemmap; H_I.pool == H.pool @*/
+            /*@ inv order <= i; H.pool.max_order <= 11 @*/
             /*@ inv {pool} unchanged; {order} unchanged @*/
             /*@ inv {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
 		i++;
