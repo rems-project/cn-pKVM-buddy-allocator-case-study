@@ -22,7 +22,16 @@ coq_proofs=$(cloc --hide-rate --quiet --sum-one -csv --list-file coq_proof_file_
 
 formalisation=$(($instr + $spec + $defs + $lemma_stmnts + $coq_proofs))
 
+
+formalisation_without_coq=$(($instr + $spec + $defs + $lemma_stmnts))
+
+
 overhead=$( echo "$formalisation / $code" | bc -l )
+
+
+pure_cn_overhead=$( echo "$formalisation_without_coq / $code" | bc -l )
+coq_overhead=$( echo "$coq_proofs / $code" | bc -l )
+
 
 echo "Code: $code"
 echo "Instr: $instr"
@@ -31,4 +40,6 @@ echo "Definitions: $defs"
 echo "Lemma stmts: $lemma_stmnts"
 echo "Coq proof: $coq_proofs"
 echo "Formalisation total: $formalisation"
-echo "Overhead: $overhead"
+echo "Overhead without Coq proofs: $pure_cn_overhead"
+echo "Overhead of Coq proofs: $coq_overhead"
+echo "Overhead total: $overhead"
