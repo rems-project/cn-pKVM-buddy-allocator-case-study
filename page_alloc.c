@@ -704,7 +704,7 @@ void hyp_get_page(struct hyp_pool *pool, void *addr)
 
 void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 /*@ accesses hyp_physvirt_offset; __hyp_vmemmap @*/
-/*@ requires let hyp_vmemmap = (pointer) __hyp_vmemmap;
+/*@ requires let hyp_vmemmap = (pointer) __hyp_vmemmap;       
              take H = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
 /*@ ensures  take H2 = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);
              take ZR = ZeroPage(return, (return == NULL) ? 0 : 1, order);
@@ -714,8 +714,8 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 {
         struct hyp_page *p = NULL; /* struct hyp_page *p; */
 	u8 i = order;
-        /*@ unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset); @*/
-	/* hyp_spin_lock(&pool->lock); */
+        /*CN*//*@ unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset); @*/
+	/* ----- hyp_spin_lock(&pool->lock); */
 
 	/* Look for a high-enough-order page */
 	while (i < pool->max_order && list_empty(&pool->free_area[i]))
@@ -726,22 +726,22 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
                     {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
 		i++;
 	if (i >= pool->max_order) {
-		/* hyp_spin_unlock(&pool->lock); */
+		/* ----- hyp_spin_unlock(&pool->lock); */
 		return NULL;
 	}
 
-        /*@ instantiate freeArea_cell_wf, i; @*/ 
+        /*CN*//*@ instantiate freeArea_cell_wf, i; @*/ 
 	/* Extract it from the tree at the right order */
 	p = node_to_page(pool->free_area[i].next);
         // p = hyp_virt_to_page(pool->free_area[i].next);
-        /*@ instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p); @*/
+        /*CN*//*@ instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p); @*/
         /*CN*/lemma_order_dec_inv(pool->range_end, (u64) hyp_page_to_pfn(p), p->order, order);
 	p = __hyp_extract_page(pool, p, order);
-	/* hyp_spin_unlock(&pool->lock); */
-        /*@ unpack Hyp_pool_ex1(pool, hyp_vmemmap, hyp_physvirt_offset, cn_hyp_page_to_pfn(__hyp_vmemmap,p)); @*/
-        /*@ instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,p); @*/ 
+	/* ----- hyp_spin_unlock(&pool->lock); */
+        /*CN*//*@ unpack Hyp_pool_ex1(pool, hyp_vmemmap, hyp_physvirt_offset, cn_hyp_page_to_pfn(__hyp_vmemmap,p)); @*/
+        /*CN*//*@ instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,p); @*/ 
 	hyp_set_page_refcounted(p);
-	/* hyp_spin_unlock(&pool->lock); */
+	/* ----- hyp_spin_unlock(&pool->lock); */
 	return hyp_page_to_virt(p);
 }
 
