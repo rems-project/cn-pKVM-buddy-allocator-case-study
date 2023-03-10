@@ -738,7 +738,7 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
         /*CN*/lemma_order_dec_inv(pool->range_end, (u64) hyp_page_to_pfn(p), p->order, order);
 	p = __hyp_extract_page(pool, p, order);
 	/* hyp_spin_unlock(&pool->lock); */
-        /*CN*/unpack Hyp_pool_ex1(pool, hyp_vmemmap, hyp_physvirt_offset, hyp_page_to_pfn(p));
+        /*@ unpack Hyp_pool_ex1(pool, hyp_vmemmap, hyp_physvirt_offset, cn_hyp_page_to_pfn(__hyp_vmemmap,p)); @*/
         /*@ instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,p); @*/ 
 	hyp_set_page_refcounted(p);
 	/* hyp_spin_unlock(&pool->lock); */
