@@ -704,28 +704,26 @@ void hyp_get_page(struct hyp_pool *pool, void *addr)
 
 void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 /*@ accesses hyp_physvirt_offset; __hyp_vmemmap @*/
-/*@ requires let hyp_vmemmap = (pointer) __hyp_vmemmap @*/
-/*@ requires take H = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
-/*@ ensures take H2 = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
-/*@ ensures take ZR = ZeroPage(return, (return == NULL) ? 0 : 1, order) @*/
-/*@ ensures {__hyp_vmemmap} unchanged @*/
-/*@ ensures {hyp_physvirt_offset} unchanged @*/
-/*@ ensures H2.pool == {H.pool with .free_area = H2.pool.free_area} @*/
+/*@ requires let hyp_vmemmap = (pointer) __hyp_vmemmap;
+             take H = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
+/*@ ensures  take H2 = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);
+             take ZR = ZeroPage(return, (return == NULL) ? 0 : 1, order);
+             {__hyp_vmemmap} unchanged;
+             {hyp_physvirt_offset} unchanged;
+             H2.pool == {H.pool with .free_area = H2.pool.free_area} @*/
 {
         struct hyp_page *p = NULL; /* struct hyp_page *p; */
 	u8 i = order;
-
         /*@ unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset); @*/
-
 	/* hyp_spin_lock(&pool->lock); */
 
 	/* Look for a high-enough-order page */
 	while (i < pool->max_order && list_empty(&pool->free_area[i]))
-            /*@ inv take H_I = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
-            /*@ inv H_I.vmemmap == H.vmemmap; H_I.pool == H.pool @*/
-            /*@ inv order <= i; H.pool.max_order <= 11 @*/
-            /*@ inv {pool} unchanged; {order} unchanged @*/
-            /*@ inv {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
+            /*@ inv take H_I = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);
+                    H_I.vmemmap == H.vmemmap; H_I.pool == H.pool;
+                    order <= i; H.pool.max_order <= 11;
+                    {pool} unchanged; {order} unchanged;
+                    {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
 		i++;
 	if (i >= pool->max_order) {
 		/* hyp_spin_unlock(&pool->lock); */
