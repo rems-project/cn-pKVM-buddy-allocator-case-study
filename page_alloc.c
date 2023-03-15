@@ -571,11 +571,11 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 		 * __find_buddy_nocheck() to find it and inject it in the
 		 * free_list[n - 1], effectively splitting @p in half.
 		 */
-                /*CN*/instantiate vmemmap_wf, hyp_page_to_pfn(p);
+                /*CN*//*@ instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p); @*/
                 /*CN*/lemma_order_dec_inv_(pool->range_end, (u64) hyp_page_to_pfn(p), p->order);
 		/*CN*/struct hyp_page *cn_buddy = __find_buddy_nocheck(pool, p, p->order - 1);
                 /*CN*/lemma4(hyp_page_to_pfn(p), p->order);
-                /*CN*/instantiate vmemmap_wf, hyp_page_to_pfn(cn_buddy);
+                /*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,cn_buddy);@*/
                 /*CN*//*@instantiate freeArea_cell_wf, (*p).order - 1;@*/
                 /*CN*//*@unpack ZeroPage(cn_hyp_page_to_virt(hyp_physvirt_offset,__hyp_vmemmap,p), 1, (*p).order);@*/
                 /*CN*/lemma_order_align_inv_loop(*pool, p);
