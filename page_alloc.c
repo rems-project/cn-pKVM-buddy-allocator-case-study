@@ -583,8 +583,8 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 		buddy->order = p->order;
                 /*CN*/lemma_extract(hyp_page_to_pfn(p), p->order);
                 /*CN*/lemma_page_size_of_order_inc(p->order);
-                /*CN*/pack ZeroPage(hyp_page_to_virt(p), 1, p->order);
-                /*CN*/pack ZeroPage(hyp_page_to_virt(buddy), 1, buddy->order);
+                /*CN*//*@pack ZeroPage(cn_hyp_page_to_virt(hyp_physvirt_offset, __hyp_vmemmap, p), 1, (*p).order);@*/
+                /*CN*//*@pack ZeroPage(cn_hyp_page_to_virt(hyp_physvirt_offset, __hyp_vmemmap, buddy), 1, (*buddy).order);@*/
 		page_add_to_list_pool_ex1(pool, buddy, &pool->free_area[buddy->order], p);
 	}
 

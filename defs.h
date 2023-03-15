@@ -14,6 +14,26 @@ function (integer) cn_hyp_page_to_pfn(integer hypvmemmap, pointer p) {
   return (((integer) p) - hypvmemmap) / sizeof<struct hyp_page>;
 }
 
+function (integer) cn_hyp_pfn_to_phys(integer pfn) {
+  return pfn*4096;
+}
+
+/* copied and adjusted from the corresponding macro definition in memory.h */
+function (integer) cn_hyp_page_to_phys(integer hypvmemmap, pointer page) {
+  return cn_hyp_pfn_to_phys((cn_hyp_page_to_pfn(hypvmemmap, page)));
+}
+
+/* copied and adjusted from the corresponding macro definition in memory.h */
+function (pointer) cn__hyp_va(integer physvirtoffset, integer phys) {
+  return ((pointer) (phys - physvirtoffset));
+}
+
+/* copied and adjusted from the corresponding macro definition in memory.h */
+function (pointer) cn_hyp_page_to_virt(integer physvirtoffset, 
+                                       integer hypvmemmap, pointer page) {
+  return cn__hyp_va(physvirtoffset, cn_hyp_page_to_phys(hypvmemmap, page));
+}
+
 
 datatype excludes {
   Exclude {boolean any, boolean do_ex1, integer ex1, boolean do_ex2, integer ex2}
