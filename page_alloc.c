@@ -585,15 +585,10 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
                 /*CN*/lemma_page_size_of_order_inc(p->order);
                 /*CN*/pack ZeroPage(hyp_page_to_virt(p), 1, p->order);
                 /*CN*/pack ZeroPage(hyp_page_to_virt(buddy), 1, buddy->order);
-                /*CN*/if (!(list_empty(&pool->free_area[buddy->order]))) {
-                /*CN*/  instantiate good, hyp_page_to_pfn((pool->free_area[buddy->order]).prev);
-                /*CN*/};
 		page_add_to_list_pool_ex1(pool, buddy, &pool->free_area[buddy->order], p);
-		/*CN*/unpack Hyp_pool_ex1(pool, hyp_vmemmap, hyp_physvirt_offset, hyp_page_to_pfn(p));
-
 	}
 
-        /*CN*/instantiate vmemmap_wf, hyp_page_to_pfn(p);
+        /*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap, p);@*/
 	return p;
 }
 
