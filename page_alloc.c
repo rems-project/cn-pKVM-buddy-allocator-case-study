@@ -619,17 +619,12 @@ static void __hyp_put_page(struct hyp_pool *pool, struct hyp_page *p)
 /*@ ensures H2.pool.max_order == {H.pool.max_order}@start @*/
 /*@ ensures each (integer i; p_i < i && i < end_i){(({H.vmemmap[i]}@start).refcount == 0) || ((H2.vmemmap[i]) == {H.vmemmap[i]}@start)} @*/
 {
-        /*CN*/unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);
-        /*CN*/instantiate vmemmap_wf, hyp_page_to_pfn(p);
-        /*CN*/instantiate good, hyp_page_to_pfn(p);
+        /*CN*//*@unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);@*/
+        /*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap, p);@*/
+        /*CN*//*@instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, p);@*/
 	if (hyp_page_ref_dec_and_test(p)) {
 		__hyp_attach_page(pool, p);
         }
-        /*CN*/else {
-        /*CN*/        /* prove emptiness of Page resource */
-        /*CN*/        unpack Page(hyp_page_to_virt(p), 0, p->order);
-        /*CN*/        pack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);
-        /*CN*/}
 }
 
 /*
