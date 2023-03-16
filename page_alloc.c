@@ -141,7 +141,7 @@ static struct hyp_page *__find_buddy_avail(struct hyp_pool *pool,
 {
 	struct hyp_page *buddy = __find_buddy_nocheck(pool, p, order);
 
-        /*CN*/ instantiate good, hyp_page_to_pfn(buddy);
+        /*CN*/ /*@instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,buddy);@*/
 	if (!buddy || buddy->order != order || buddy->refcount)
 		return NULL;
 
@@ -187,15 +187,15 @@ static inline void page_remove_from_list(struct hyp_page *p)
 {
 	struct list_head *node = hyp_page_to_virt(p);
 
-	/*CN*/unpack AllocatorPage(node, 1, p->order);
+	/*CN*//*@unpack AllocatorPage(node, 1, order);@*/
         /*CN*/if (node->prev != node);
         /*CN*/if (node->prev != node->next);
 	__list_del_entry(node);
 	/*CN*/struct_list_head_to_bytes_lemma(node);
 	memset(node, 0, sizeof(*node));
 	/*CN*/page_size_of_order_lemma(p->order);
-        /*CN*/unpack AllocatorPageZeroPart(node + 1, p->order);
-	/*CN*/pack ZeroPage(node, 1, p->order);
+        /*CN*//*@unpack AllocatorPageZeroPart((pointer)(((integer) node) + sizeof<struct list_head>), order);@*/
+	/*CN*//*@pack ZeroPage(node, 1, (*p).order);@*/;
 }
 
 /* for verification */
@@ -220,31 +220,30 @@ static inline void page_remove_from_list_pool(struct hyp_pool *pool, struct hyp_
 /*@ ensures H2.vmemmap == {HP.vmemmap}@start @*/
 /*@ ensures H2.pool == ({({HP.pool}@start) with .free_area = H2.pool.free_area}) @*/
 {
-	/*CN*/unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);
-	/*CN*/void *node_prev = NULL, *node_next = NULL, *free_node = NULL;
+	/*CN*//*@unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);@*/
 	/*CN*/struct list_head *node = hyp_page_to_virt(p);
-	/*CN*/instantiate vmemmap_l_wf, hyp_page_to_pfn(p);
-	/*CN*/instantiate vmemmap_wf, hyp_page_to_pfn(p);
-	/*CN*/instantiate good, hyp_page_to_pfn(p);
-	/*CN*/unpack AllocatorPage(node, 1, p->order);
-	/*CN*/node_prev = node->prev;
-	/*CN*/node_next = node->next;
-        /*CN*/free_node = &pool->free_area[p->order];
+	/*CN*//*@instantiate vmemmap_l_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/;
+	/*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/;
+	/*CN*//*@instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/;
+	/*CN*//*@unpack AllocatorPage(node, 1, (*p).order);@*/
+	/*CN*/void *node_prev = node->prev;
+	/*CN*/void *node_next = node->next;
+        /*CN*/void *free_node = &pool->free_area[p->order];
 	/*CN*/if (node_prev != node) {
 		/*CN*/if (node_prev != free_node) {
-			/*CN*/unpack AllocatorPage(node_prev, 1, p->order);
+			/*CN*//*@unpack AllocatorPage(node_prev, 1, (*p).order);@*/;
 		/*CN*/};
 		/*CN*/if (node_next != node_prev && node_next != free_node) {
-			/*CN*/unpack AllocatorPage(node_next, 1, p->order);
+			/*CN*//*@unpack AllocatorPage(node_next, 1, (*p).order);@*/;
 		/*CN*/};
 	/*CN*/};
 	page_remove_from_list(p);
 	/*CN*/if (node_prev != node) {
 		/*CN*/if (node_prev != free_node) {
-			/*CN*/pack AllocatorPage(node_prev, 1, p->order);
+			/*CN*//*@pack AllocatorPage(node_prev, 1, (*p).order);@*/;
 		/*CN*/};
 		/*CN*/if (node_next != node_prev && node_next != free_node) {
-			/*CN*/pack AllocatorPage(node_next, 1, p->order);
+			/*CN*//*@pack AllocatorPage(node_next, 1, (*p).order);@*/;
 		/*CN*/};
 	/*CN*/};
 }
