@@ -408,8 +408,8 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 /*@ ensures {({H.pool}@start) with .free_area = H2.pool.free_area} == H2.pool @*/
 /*@ ensures each (integer i; p_i < i && i < end_i){(({H.vmemmap[i]}@start).refcount == 0) || ((H2.vmemmap[i]) == {H.vmemmap[i]}@start)} @*/
 {
-	/*CN*/unpack Hyp_pool_ex1(pool, hyp_vmemmap, hyp_physvirt_offset, hyp_page_to_pfn(p));
-	/*CN*/instantiate vmemmap_wf, hyp_page_to_pfn(p);
+	/*CN*//*@unpack Hyp_pool_ex1(pool, hyp_vmemmap, hyp_physvirt_offset, cn_hyp_page_to_pfn(__hyp_vmemmap,p));@*/;
+	/*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/;
 
 	phys_addr_t phys = hyp_page_to_phys(p);
 	/* struct hyp_page *buddy; */
@@ -418,9 +418,9 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 
 
         /*CN*/page_size_of_order_lemma(p->order);
-        /*CN*/unpack Page (hyp_page_to_virt(p), 1, p->order);
+        /*CN*//*@unpack Page (cn_hyp_page_to_virt(hyp_physvirt_offset,__hyp_vmemmap,p), 1, (*p).order);@*/;
 	memset(hyp_page_to_virt(p), 0, PAGE_SIZE << p->order);
-        /*CN*/pack ZeroPage (hyp_page_to_virt(p), 1, p->order);
+        /*CN*//*@pack ZeroPage (cn_hyp_page_to_virt(hyp_physvirt_offset,__hyp_vmemmap,p), 1, (*p).order);@*/;
 
 	//if (phys < pool->range_start || phys >= pool->range_end)
 	//	goto insert;
@@ -461,38 +461,30 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 		        if (!buddy)
 		                break;
 
-		        /*CN*/instantiate vmemmap_wf, hyp_page_to_pfn(buddy);
+		        /*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,buddy);@*/;
 		        /*CN*/lemma_attach_inc_loop(*pool, p, order);
 		        /*CN*/lemma2(hyp_page_to_pfn(p), order);
 		        /*CN*/lemma_page_size_of_order_inc(order);
-		        ///*CN*/if ((buddy->node).next != &pool->free_area[order])
-		        ///*CN*/  instantiate vmemmap_b_wf, hyp_page_to_pfn(container_of((buddy->node).next, struct hyp_page, node));
-		        ///*CN*/if ((buddy->node).prev != &pool->free_area[order])
-		        ///*CN*/  instantiate vmemmap_b_wf, hyp_page_to_pfn(container_of((buddy->node).prev, struct hyp_page, node));
-		        ///*CN*/if ((buddy->node).prev != (buddy->node).next);
 
 		        /* Take the buddy out of its list, and coallesce with @p */
 		        page_remove_from_list_pool(pool, buddy);
 
-		        /*CN*/unpack ZeroPage (hyp_page_to_virt(p), 1, order);
-		        /*CN*/unpack ZeroPage (hyp_page_to_virt(buddy), 1, order);
-			/*CN*/unpack Hyp_pool_ex1(pool, hyp_vmemmap, hyp_physvirt_offset, hyp_page_to_pfn(buddy));
+		        /*CN*//*@unpack ZeroPage (cn_hyp_page_to_virt(hyp_physvirt_offset,__hyp_vmemmap,p), 1, order);@*/;
+		        /*CN*//*@unpack ZeroPage (cn_hyp_page_to_virt(hyp_physvirt_offset,__hyp_vmemmap,buddy), 1, order);@*/
+			/*CN*//*@unpack Hyp_pool_ex1(pool, hyp_vmemmap, hyp_physvirt_offset, cn_hyp_page_to_pfn(__hyp_vmemmap,buddy));@*/;
 		        buddy->order = HYP_NO_ORDER;
 		        p = min(p, buddy);
-		        /*CN*/pack ZeroPage (hyp_page_to_virt(p), 1, order + 1);
+		        /*CN*//*@pack ZeroPage (cn_hyp_page_to_virt(hyp_physvirt_offset,__hyp_vmemmap,p), 1, order + 1);@*/;
 		}
 	}
 
 //insert:
-	/*CN*/instantiate freeArea_cell_wf, order;
-	/*CN*/if (!(list_empty(&pool->free_area[order]))) {
-	/*CN*/  instantiate good, hyp_page_to_pfn((pool->free_area[order]).prev);
-	/*CN*/};
+	/*CN*//*@instantiate freeArea_cell_wf, order;@*/;
 	/* Mark the new head, and insert it */
 	p->order = order;
-	/*CN*/instantiate good, hyp_page_to_pfn(p);
+	/*CN*//*@instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/;
 	page_add_to_list_pool(pool, p, &pool->free_area[order]);
-	/*CN*/pack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);
+	/*CN*//*@pack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);@*/;
 }
 
 static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
