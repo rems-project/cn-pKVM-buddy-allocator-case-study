@@ -14,6 +14,24 @@ function (integer) cn_hyp_page_to_pfn(integer hypvmemmap, pointer p) {
   return (((integer) p) - hypvmemmap) / sizeof<struct hyp_page>;
 }
 
+/* copied and adjusted from the corresponding macro definition in memory.h */
+function (integer) cn__hyp_pa(integer physvirtoffset, pointer virt) {
+  return (((integer)(virt)) + physvirtoffset);
+}
+
+
+
+/* copied and adjusted from the corresponding macro definition in memory.h */
+function (integer) cn_hyp_phys_to_pfn(integer phys) {
+  return phys / 4096;
+}
+
+/* copied and adjusted from the corresponding macro definition in memory.h */
+function (integer) cn_hyp_virt_to_pfn (integer physvirtoffset, pointer virt) {
+  return cn_hyp_phys_to_pfn(cn__hyp_pa(physvirtoffset, virt));
+}
+
+
 function (integer) cn_hyp_pfn_to_phys(integer pfn) {
   return pfn*4096;
 }
