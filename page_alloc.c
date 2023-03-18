@@ -460,8 +460,8 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 
 		        /*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,buddy);@*/;
 		        /*CN*/lemma_attach_inc_loop(*pool, p, order);
-		        /*CN*/lemma2(hyp_page_to_pfn(p), order);
-		        /*CN*/lemma_page_size_of_order_inc(order);
+		        /*CN*//*@ apply lemma2(cn_hyp_page_to_pfn(__hyp_vmemmap,p), order); @*/
+		        /*CN*//*@ apply page_size_of_order_inc(order); @*/
 
 		        /* Take the buddy out of its list, and coallesce with @p */
 		        page_remove_from_list_pool(pool, buddy);
@@ -561,16 +561,16 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
                 /*CN*//*@ instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p); @*/
                 /*CN*/lemma_order_dec_inv_(pool->range_end, (u64) hyp_page_to_pfn(p), p->order);
 		/*CN*/struct hyp_page *cn_buddy = __find_buddy_nocheck(pool, p, p->order - 1);
-                /*CN*/lemma4(hyp_page_to_pfn(p), p->order);
+                /*CN*//*@apply lemma4(cn_hyp_page_to_pfn(__hyp_vmemmap,p), (*p).order); @*/
                 /*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,cn_buddy);@*/
                 /*CN*//*@instantiate freeArea_cell_wf, (*p).order - 1;@*/
                 /*CN*//*@unpack ZeroPage(cn_hyp_page_to_virt(hyp_physvirt_offset,__hyp_vmemmap,p), 1, (*p).order);@*/
-                /*CN*/lemma_order_align_inv_loop(*pool, p);
+                /*CN*//*@ apply order_align_inv_loop(__hyp_vmemmap,V_I.value,*pool, p); @*/
 		p->order--;
 		buddy = __find_buddy_nocheck(pool, p, p->order);
 		buddy->order = p->order;
-                /*CN*/lemma_extract(hyp_page_to_pfn(p), p->order);
-                /*CN*/lemma_page_size_of_order_inc(p->order);
+                /*CN*//*@ apply extract(cn_hyp_page_to_pfn(__hyp_vmemmap,p), (*p).order); @*/
+                /*CN*//*@ apply page_size_of_order_inc((*p).order); @*/
                 /*CN*//*@pack ZeroPage(cn_hyp_page_to_virt(hyp_physvirt_offset, __hyp_vmemmap, p), 1, (*p).order);@*/
                 /*CN*//*@pack ZeroPage(cn_hyp_page_to_virt(hyp_physvirt_offset, __hyp_vmemmap, buddy), 1, (*buddy).order);@*/
 		page_add_to_list_pool_ex1(pool, buddy, &pool->free_area[buddy->order], p);
@@ -714,7 +714,7 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 	p = node_to_page(pool->free_area[i].next);
         // p = hyp_virt_to_page(pool->free_area[i].next);
         /*CN*//*@ instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p); @*/
-        /*CN*/lemma_order_dec_inv(pool->range_end, (u64) hyp_page_to_pfn(p), p->order, order);
+        /*CN*//*@ apply order_dec_inv(H.pool.range_end, cn_hyp_page_to_pfn(__hyp_vmemmap,p), (*p).order, order); @*/
 	p = __hyp_extract_page(pool, p, order);
 	/* ----- hyp_spin_unlock(&pool->lock); */
         /*CN*//*@ unpack Hyp_pool_ex1(pool, hyp_vmemmap, hyp_physvirt_offset, cn_hyp_page_to_pfn(__hyp_vmemmap,p)); @*/
