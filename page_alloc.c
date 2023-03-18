@@ -94,7 +94,7 @@ static struct hyp_page *__find_buddy_nocheck(struct hyp_pool *pool,
 {
 	phys_addr_t addr = hyp_page_to_phys(p);
 
-	/*CN*/ find_buddy_xor_lemma(hyp_page_to_pfn(p), order);
+	/*CN*/ /*@ apply find_buddy_xor(cn_hyp_page_to_pfn(__hyp_vmemmap,p), order); @*/
 
 	addr ^= (PAGE_SIZE << order);
 
@@ -191,9 +191,9 @@ static inline void page_remove_from_list(struct hyp_page *p)
         /*CN*/if (node->prev != node);
         /*CN*/if (node->prev != node->next);
 	__list_del_entry(node);
-	/*CN*/struct_list_head_to_bytes_lemma(node);
+	/*CN*//*@ apply struct_list_head_to_bytes(node); @*/
 	memset(node, 0, sizeof(*node));
-	/*CN*/page_size_of_order_lemma(p->order);
+	/*CN*//*@ apply page_size_of_order2((*p).order); @*/
         /*CN*//*@unpack AllocatorPageZeroPart((pointer)(((integer) node) + sizeof<struct list_head>), order);@*/
 	/*CN*//*@pack ZeroPage(node, 1, (*p).order);@*/;
 }
@@ -284,7 +284,7 @@ static inline void page_add_to_list(struct hyp_page *p, struct list_head *head)
 
 	/*CN*//*@unpack ZeroPage(node, 1, (*p).order);@*/;
 	/*CN*/if (head->prev != head) {}
-	/*CN*/bytes_to_struct_list_head_lemma(node, p->order);
+	/*CN*//*@ apply bytes_to_struct_list_head(node, (*p).order); @*/
 	INIT_LIST_HEAD(node);
 	list_add_tail(node, head);
         /*CN*//*@pack AllocatorPageZeroPart((pointer) (((integer) node) + sizeof<struct list_head>), (*p).order);@*/;
@@ -414,7 +414,7 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 	u8 order = p->order;
 
 
-        /*CN*/page_size_of_order_lemma(p->order);
+        /*CN*//*@ apply page_size_of_order2((*p).order); @*/
         /*CN*//*@unpack Page (cn_hyp_page_to_virt(hyp_physvirt_offset,__hyp_vmemmap,p), 1, (*p).order);@*/;
 	memset(hyp_page_to_virt(p), 0, PAGE_SIZE << p->order);
         /*CN*//*@pack ZeroPage (cn_hyp_page_to_virt(hyp_physvirt_offset,__hyp_vmemmap,p), 1, (*p).order);@*/;

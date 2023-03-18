@@ -160,44 +160,41 @@ lemma attach_inc_loop (map<integer, struct hyp_page> V,
 
 
 
-void find_buddy_xor_lemma(intptr_t addr_i, unsigned int order)
-/*@ trusted @*/
-/*@ requires order_aligned(addr_i, order) @*/
-/*@ requires 0 <= order; order < 11 @*/
-/*@ requires addr_i * 4096 < (power(2, 64)) @*/
-/*@ ensures 0 < (power_uf(2, order)) @*/
-/*@ ensures (power_uf(2, order)) < (power(2, 11)) @*/
-/*@ ensures 0 <= (xor_uf(addr_i * 4096, 4096 * (power_uf(2, order)))) @*/
-/*@ ensures (xor_uf(addr_i * 4096, 4096 * (power_uf(2, order)))) < (power(2, 64)) @*/
-/*@ ensures let buddy_addr = (xor_uf(addr_i * 4096, 4096 * (power_uf(2, order)))) @*/
-/*@ ensures let buddy_i = (buddy_addr / 4096) @*/
-/*@ ensures buddy_i == (pfn_buddy (addr_i, order)) @*/
-/*@ ensures (mod(buddy_addr, 4096)) == 0 @*/
-/*@ ensures order_aligned(buddy_i, order) @*/
-/*@ ensures addr_i != buddy_i @*/
-{}
+lemma find_buddy_xor(integer /* intptr_t */ addr_i, integer /* unsigned int */ order)
+  requires order_aligned(addr_i, order) ;
+           0 <= order; order < 11 ;
+           addr_i * 4096 < (power(2, 64))
+  ensures 0 < (power_uf(2, order)) ;
+          (power_uf(2, order)) < (power(2, 11)) ;
+          0 <= (xor_uf(addr_i * 4096, 4096 * (power_uf(2, order)))) ;
+          (xor_uf(addr_i * 4096, 4096 * (power_uf(2, order)))) < (power(2, 64)) ;
+          let buddy_addr = (xor_uf(addr_i * 4096, 4096 * (power_uf(2, order)))) ;
+          let buddy_i = (buddy_addr / 4096) ;
+          buddy_i == (pfn_buddy (addr_i, order)) ;
+          (mod(buddy_addr, 4096)) == 0 ;
+          order_aligned(buddy_i, order) ;
+          addr_i != buddy_i
 
-void page_size_of_order_lemma(unsigned int order)
-/*@ trusted @*/
-/*@ requires 0 <= order; order < 11 @*/
-/*@ ensures 0 < (power_uf(2, order)) @*/
-/*@ ensures (power_uf(2, order)) < (power(2, 11)) @*/
-/*@ ensures let size = 4096 * (power_uf(2, order)) @*/
-/*@ ensures size == (page_size_of_order(order)) @*/
-{}
 
-void struct_list_head_to_bytes_lemma(struct list_head *node)
-/*@ trusted @*/
-/*@ requires take Node = Owned(node) @*/
-/*@ ensures take B = each (integer i; ((integer) node) <= i && i < (((integer) node) + (sizeof_struct_list_head()))){Byte(((pointer) 0)+(i*1))} @*/
-{}
+lemma page_size_of_order2(integer /* unsigned int */ order)
+  requires 0 <= order; order < 11
+  ensures 0 < (power_uf(2, order)) ;
+          (power_uf(2, order)) < (power(2, 11)) ;
+          let size = 4096 * (power_uf(2, order)) ;
+          size == (page_size_of_order(order))
 
-void bytes_to_struct_list_head_lemma(struct list_head *node, u8 order)
-/*@ trusted @*/
-/*@ requires ((integer) node) >= 0 @*/
-/*@ requires let length = page_size_of_order(order) @*/
-/*@ requires let nodeI = ((integer) node) @*/
-/*@ requires take B = each (integer i; (nodeI <= i) && (i < (nodeI + length))) {ByteV(((pointer) 0) + (i * 1), 0)} @*/
-/*@ ensures take Node = Owned(node) @*/
-/*@ ensures take BR = each (integer i; ({nodeI}@start + (sizeof_struct_list_head())) <= i && i < ({nodeI}@start + {length}@start)){ByteV(((pointer) 0)+(i*1), 0)} @*/
-{}
+
+lemma struct_list_head_to_bytes(pointer/* struct list_head * */ node)
+  requires take Node = Owned<struct list_head>(node) ;
+           (integer) node >= 0  /* this should maybe not be necessary to say */
+  ensures take B = each (integer i; ((integer) node) <= i && i < (((integer) node) + (sizeof_struct_list_head()))){Byte(((pointer) 0)+(i*1))} 
+
+
+lemma bytes_to_struct_list_head(pointer /* struct list_head * */ node, integer /* u8 */ order)
+  requires ((integer) node) >= 0 ; /* this should maybe not be necessary to say */
+           let length = page_size_of_order(order) ;
+           let nodeI = ((integer) node) ;
+           take B = each (integer i; (nodeI <= i) && (i < (nodeI + length))) {ByteV(((pointer) 0) + (i * 1), 0)} 
+  ensures take Node = Owned<struct list_head>(node) ;
+          take BR = each (integer i; (nodeI + (sizeof_struct_list_head())) <= i && i < (nodeI + length)){ByteV(((pointer) 0)+(i*1), 0)} 
+
