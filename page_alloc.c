@@ -459,7 +459,7 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 		                break;
 
 		        /*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,buddy);@*/;
-		        /*CN*/lemma_attach_inc_loop(*pool, p, order);
+		        /*CN*//*@ apply attach_inc_loop(H_I.vmemmap,__hyp_vmemmap,*pool, p, order); @*/
 		        /*CN*//*@ apply lemma2(cn_hyp_page_to_pfn(__hyp_vmemmap,p), order); @*/
 		        /*CN*//*@ apply page_size_of_order_inc(order); @*/
 
@@ -809,8 +809,8 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
 		p[i].refcount = 0; /* added for formalisation */
 		p[i].order = 0;    /* added for formalisation */
 		hyp_set_page_refcounted(&p[i]);
-		/*CN*/lemma_order_aligned_init(pfn+i);
-		/*CN*/lemma_page_size_of_order ();
+		/*CN*//*@ apply order_aligned_init(pfn+i); @*/
+		/*CN*//*@ apply page_size_of_order (); @*/;
 	}
 
         /*CN*/lemma_page_group_ok_easy(*pool);
