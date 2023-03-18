@@ -12,19 +12,6 @@ lemma order_dec_inv (integer /* phys_addr_t */ pool_range_end,
           (pfn * 4096) + (page_size_of_order(order2)) <= pool_range_end
 
 
-void lemma_order_dec_inv_ (phys_addr_t pool_range_end,
-                          u64 pfn,
-                          unsigned int order1) 
-/*@ requires order_aligned(pfn, order1) @*/
-/*@ requires (pfn*4096) + (page_size_of_order(order1)) <= pool_range_end @*/
-/*@ requires let order2 = order1 - 1 @*/
-/*@ requires 0 <= order2; order2 <= order1 @*/
-/*@ ensures order_aligned(pfn, order2) @*/
-/*@ ensures (pfn * 4096) + (page_size_of_order(order2)) <= pool_range_end @*/
-{
-  u64 order2 = order1 - 1;
-  /*@ apply order_dec_inv(pool_range_end, pfn, order1, order2); @*/;
-}
 
 lemma lemma2 (integer /* intptr_t */ p_i, integer /* unsigned int */ order)
   requires order >= 0; 
@@ -70,25 +57,6 @@ lemma lemma4 (integer /* intptr_t */ p_i, integer /* unsigned int */ order)
           (order_align(buddy_i, order)) == p_i
 
 
-/* lemma order_align_inv_loop (integer __hypvmemmap, */
-/*                             struct hyp_pool pool, */
-/*                             pointer /\* struct hyp_page* *\/ p)  */
-/*  requires let hypvmemmap = (pointer) __hypvmemmap ; */
-/*           let p_i = (((integer) p) - __hypvmemmap) / 4 ; */
-/*           let start_i = (pool).range_start / 4096 ; */
-/*           let end_i = (pool).range_end / 4096 ; */
-/*           take V = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hypvmemmap+(i*4))} ; */
-/*           let p_order = (V.value[p_i]).order ; */
-/*           p_order >= 1; p_order < 11 ; */
-/*           order_aligned(p_i, p_order) ; */
-/*           cellPointer(hypvmemmap, 4, start_i, end_i, p) ; */
-/*           let buddy_i = pfn_buddy(p_i, p_order - 1) ; */
-/*           each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V.value, pool) } */
-/*  ensures take V2 = each (integer i; start_i <= i && i < end_i){Owned<struct hyp_page>(hypvmemmap+(i*4))} ; */
-/*          V2.value == {V.value}%start ; */
-/*          let p_new_page = {(V2.value[p_i]) with .order = (p_order - 1)} ; */
-/*          let buddy_new_page = {(V2.value[buddy_i]) with .order = (p_order - 1)} ; */
-/*          each(integer i; start_i <= i && i < end_i) { page_group_ok(i, (V2.value[p_i = p_new_page])[buddy_i = buddy_new_page], pool) } */
 
 
 lemma order_align_inv_loop (integer __hypvmemmap,

@@ -559,7 +559,7 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 		 * free_list[n - 1], effectively splitting @p in half.
 		 */
                 /*CN*//*@ instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p); @*/
-                /*CN*/lemma_order_dec_inv_(pool->range_end, (u64) hyp_page_to_pfn(p), p->order);
+                /*CN*//*@ apply order_dec_inv((*pool).range_end, cn_hyp_page_to_pfn(__hyp_vmemmap,p), (*p).order, (*p).order - 1); @*/
 		/*CN*/struct hyp_page *cn_buddy = __find_buddy_nocheck(pool, p, p->order - 1);
                 /*CN*//*@apply lemma4(cn_hyp_page_to_pfn(__hyp_vmemmap,p), (*p).order); @*/
                 /*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,cn_buddy);@*/
