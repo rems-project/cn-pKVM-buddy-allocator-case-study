@@ -73,9 +73,9 @@ lemma order_align_inv_loop (integer __hypvmemmap,
           cellPointer(hypvmemmap, 4, start_i, end_i, p) ;
           let buddy_i = pfn_buddy(p_i, p_order - 1) ;
           each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V, pool) }
- ensures let p_new_page = {(V[p_i]) with .order = (p_order - 1)} ;
-         let buddy_new_page = {(V[buddy_i]) with .order = (p_order - 1)} ;
-         each(integer i; start_i <= i && i < end_i) { page_group_ok(i, (V[p_i = p_new_page])[buddy_i = buddy_new_page], pool) }
+ ensures let p_new_page = {order: (p_order - 1), ..V[p_i]} ;
+         let buddy_new_page = {order: (p_order - 1), ..V[buddy_i]} ;
+         each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V[p_i: p_new_page, buddy_i: buddy_new_page], pool) }
 
 
 
@@ -119,12 +119,12 @@ lemma attach_inc_loop (map<integer, struct hyp_page> V,
           order_aligned(p_i, order) ;
           order_aligned(buddy_i, order) ;
           (V[p_i]).order == (hyp_no_order ()) ;
-          let p_page_tweaked = {(V[p_i]) with .order = order} ;
-          each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V[p_i = p_page_tweaked], pool) } ;
+          let p_page_tweaked = {order: order, ..V[p_i]} ;
+          each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V[p_i: p_page_tweaked], pool) } ;
           let min_i = (p_i < buddy_i) ? p_i : buddy_i ;
-          let min_page = {(V[min_i]) with .order = (order + 1)} ;
-          let buddy_page = {(V[buddy_i]) with .order = (hyp_no_order ())}
- ensures each(integer i; start_i <= i && i < end_i) { page_group_ok(i, (V[buddy_i = buddy_page])[min_i = min_page], pool) }
+          let min_page = {order: (order + 1), ..V[min_i]} ;
+          let buddy_page = {order: (hyp_no_order ()), ..V[buddy_i]}
+ ensures each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V[buddy_i: buddy_page,min_i: min_page], pool) }
 
 
 
