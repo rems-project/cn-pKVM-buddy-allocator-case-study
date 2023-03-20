@@ -813,7 +813,7 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
 		/*CN*//*@ apply page_size_of_order (); @*/;
 	}
 
-        /*CN*/lemma_page_group_ok_easy(*pool);
+        /*CN*//*@ apply page_group_ok_easy(__hyp_vmemmap,*pool); @*/
         /*CN*//*@pack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);@*/;
 
 	/* Attach the unused pages to the buddy tree */

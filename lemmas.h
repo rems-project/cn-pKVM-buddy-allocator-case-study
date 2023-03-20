@@ -79,19 +79,17 @@ lemma order_align_inv_loop (integer __hypvmemmap,
 
 
 
-void lemma_page_group_ok_easy (struct hyp_pool pool) 
-/*@ trusted @*/
-/*@ accesses __hyp_vmemmap @*/
-/*@ requires let hyp_vmemmap = (pointer) __hyp_vmemmap @*/
-/*@ requires let start_i = (pool).range_start / 4096 @*/
-/*@ requires let end_i = (pool).range_end / 4096 @*/
-/*@ requires take V = each (integer i; start_i <= i && i < end_i) { Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
-/*@ requires each (integer i; start_i <= i && i < end_i) { (V.value[i]).order == 0 } @*/
-/*@ ensures take V2 = each (integer i; start_i <= i && i < end_i) { Owned<struct hyp_page>(hyp_vmemmap+(i*4)) } @*/
-/*@ ensures V2.value == {V.value}@start @*/
-/*@ ensures each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V2.value, pool) } @*/
-/*@ ensures {__hyp_vmemmap} unchanged @*/
-{}
+lemma page_group_ok_easy (integer __hypvmemmap, struct hyp_pool pool) 
+  requires let hypvmemmap = (pointer) __hypvmemmap ;
+           pool.range_start >= 0; pool.range_end >= 0; /* this used to be implied by the range_start and range_end uint types */
+           let start_i = (pool).range_start / 4096 ;
+           let end_i = (pool).range_end / 4096 ;
+           take V = each (integer i; start_i <= i && i < end_i) { Owned<struct hyp_page>(hypvmemmap+(i*4)) } ;
+           each (integer i; start_i <= i && i < end_i) { (V.value[i]).order == 0 } 
+  ensures take V2 = each (integer i; start_i <= i && i < end_i) { Owned<struct hyp_page>(hypvmemmap+(i*4)) } ;
+          V2.value == V.value ;
+          each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V2.value, pool) } 
+
 
 lemma order_aligned_init (integer /* unsigned long */ i) 
   requires 0==0
