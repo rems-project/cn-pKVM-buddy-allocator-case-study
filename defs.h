@@ -441,15 +441,15 @@ predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
   take V = each(integer i; (start_i <= i) && (i < end_i))
               {Owned<struct hyp_page>(vmemmap_l + i*(sizeof <struct hyp_page>))};
   take APs = each(integer i; (start_i <= i + off_i) && (i + off_i < end_i)
-                && (((V)[i+off_i]).refcount == 0)
-                && (((V)[i+off_i]).order != (hyp_no_order ()))
+                && ((V[i+off_i]).refcount == 0)
+                && ((V[i+off_i]).order != (hyp_no_order ()))
                 && ((not (excluded (ex, i + off_i)))))
-              {AllocatorPage(((pointer) 0) + i*4096, 1, ((V)[i+off_i]).order)};
+              {AllocatorPage(((pointer) 0) + i*4096, 1, (V[i+off_i]).order)};
   assert (each (integer i; (start_i <= i) && (i < end_i))
     {vmemmap_wf (i, V, pool_l, pool)});
   assert (each (integer i; (start_i <= i) && (i < end_i)
-            && (((V)[i]).refcount == 0)
-            && (((V)[i]).order != (hyp_no_order ()))
+            && ((V[i]).refcount == 0)
+            && ((V[i]).order != (hyp_no_order ()))
             && ((not (excluded (ex, i)))))
     {vmemmap_l_wf (i, physvirt_offset, V, APs, pool_l, pool, ex)});
   assert (each(integer i; (0 <= i) && (i < pool.max_order))
@@ -470,15 +470,15 @@ predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
               {Owned<struct hyp_page>(vmemmap_l + i*(sizeof <struct hyp_page>))};
   assert (hyp_pool_wf (pool_l, P, vmemmap_l, physvirt_offset));
   take APs = each(integer i; (start_i <= i + off_i) && (i + off_i < end_i)
-                && (((V)[i+off_i]).refcount == 0)
-                && (((V)[i+off_i]).order != (hyp_no_order ()))
+                && ((V[i+off_i]).refcount == 0)
+                && ((V[i+off_i]).order != (hyp_no_order ()))
                 && ((not (excluded (ex, i + off_i)))))
-              {AllocatorPage(((pointer) 0) + i*4096, 1, ((V)[i+off_i]).order)};
+              {AllocatorPage(((pointer) 0) + i*4096, 1, (V[i+off_i]).order)};
   assert (each (integer i; (start_i <= i) && (i < end_i))
     {vmemmap_wf (i, V, pool_l, P)});
   assert (each (integer i; (start_i <= i) && (i < end_i)
-            && (((V)[i]).refcount == 0)
-            && (((V)[i]).order != (hyp_no_order ()))
+            && ((V[i]).refcount == 0)
+            && ((V[i]).order != (hyp_no_order ()))
             && ((not (excluded (ex, i)))))
     {vmemmap_l_wf (i, physvirt_offset, V, APs, pool_l, P, ex)});
   assert (each(integer i; (0 <= i) && (i < P.max_order))
