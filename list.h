@@ -10,7 +10,7 @@
 static inline int list_empty(const struct list_head *head)
 /*@ requires take O = Owned(head) @*/
 /*@ ensures take OR = Owned(head) @*/
-/*@ ensures O.value == OR.value @*/
+/*@ ensures O == OR @*/
 /*@ ensures return == (((*head).next == head) ? 1 : 0) @*/
 {
 	/* return READ_ONCE(head->next) == head; */

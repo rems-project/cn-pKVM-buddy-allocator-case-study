@@ -85,10 +85,10 @@ lemma page_group_ok_easy (integer __hypvmemmap, struct hyp_pool pool)
            let start_i = (pool).range_start / 4096 ;
            let end_i = (pool).range_end / 4096 ;
            take V = each (integer i; start_i <= i && i < end_i) { Owned<struct hyp_page>(hypvmemmap+(i*4)) } ;
-           each (integer i; start_i <= i && i < end_i) { (V.value[i]).order == 0 } 
+           each (integer i; start_i <= i && i < end_i) { (V[i]).order == 0 } 
   ensures take V2 = each (integer i; start_i <= i && i < end_i) { Owned<struct hyp_page>(hypvmemmap+(i*4)) } ;
-          V2.value == V.value ;
-          each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V2.value, pool) } 
+          V2 == V ;
+          each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V2, pool) } 
 
 
 lemma order_aligned_init (integer /* unsigned long */ i) 
