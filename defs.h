@@ -68,17 +68,17 @@ function (boolean) excluded (datatype excludes ex, integer i)
 
 function (datatype excludes) exclude_none ()
 {
-  return Exclude {any = 0 < 0, do_ex1 = 0 < 0, ex1 = 0, do_ex2 = 0 < 0, ex2 = 0};
+  return Exclude {any: 0 < 0, do_ex1: 0 < 0, ex1: 0, do_ex2: 0 < 0, ex2: 0};
 }
 
 function (datatype excludes) exclude_one (integer ex1)
 {
-  return Exclude {any = 0 < 1, do_ex1 = 0 < 1, ex1 = ex1, do_ex2 = 0 < 0, ex2 = 0};
+  return Exclude {any: 0 < 1, do_ex1: 0 < 1, ex1: ex1, do_ex2: 0 < 0, ex2: 0};
 }
 
 function (datatype excludes) exclude_two (integer ex1, integer ex2)
 {
-  return Exclude {any = 0 < 1, do_ex1 = 0 < 1, ex1 = ex1, do_ex2 = 0 < 1, ex2 = ex2};
+  return Exclude {any: 0 < 1, do_ex1: 0 < 1, ex1: ex1, do_ex2: 0 < 1, ex2: ex2};
 }
 
 
@@ -424,7 +424,7 @@ predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
     {vmemmap_l_wf (i, physvirt_offset, V, APs, pool_l, pool, ex)});
   assert (each(integer i; (0 <= i) && (i < pool.max_order))
               {freeArea_cell_wf (i, physvirt_offset, V, APs, pool_l, pool, ex)});
-  return {pool = pool, vmemmap = V, APs = APs};
+  return {pool: pool, vmemmap: V, APs: APs};
 }
 
 predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
@@ -454,7 +454,7 @@ predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
     {vmemmap_l_wf (i, physvirt_offset, V, APs, pool_l, pool, ex)});
   assert (each(integer i; (0 <= i) && (i < pool.max_order))
               {freeArea_cell_wf (i, physvirt_offset, V, APs, pool_l, pool, ex)});
-  return {pool = pool, vmemmap = V, APs = APs};
+  return {pool: pool, vmemmap: V, APs: APs};
 }
 
 predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
@@ -483,7 +483,7 @@ predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
     {vmemmap_l_wf (i, physvirt_offset, V, APs, pool_l, P, ex)});
   assert (each(integer i; (0 <= i) && (i < P.max_order))
               {freeArea_cell_wf (i, physvirt_offset, V, APs, pool_l, P, ex)});
-  return {pool = P, vmemmap = V, APs = APs};
+  return {pool: P, vmemmap: V, APs: APs};
 }
 
 
