@@ -129,7 +129,7 @@ lemma attach_inc_loop (map<integer, struct hyp_page> V,
 lemma find_buddy_xor(integer /* intptr_t */ addr_i, integer /* unsigned int */ order)
   requires order_aligned(addr_i, order) ;
            0 <= order; order < 11 ;
-           addr_i * 4096 < (power(2, 64))
+           0 <= addr_i; addr_i * 4096 < (power(2, 64))
   ensures 0 < (power_uf(2, order)) ;
           (power_uf(2, order)) < (power(2, 11)) ;
           0 <= (xor_uf(addr_i * 4096, 4096 * (power_uf(2, order)))) ;

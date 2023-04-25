@@ -51,9 +51,9 @@ Ltac order_aligned_b1 :=
   end.
 Ltac order_aligned_b := repeat order_aligned_b1.
 
-Lemma lemma_order_dec_inv: lemma_order_dec_inv_type.
+Lemma order_dec_inv: order_dec_inv_type.
 Proof.
-  unfold lemma_order_dec_inv_type, Inst.order_aligned, Inst.page_size_of_order.
+  unfold order_dec_inv_type, Inst.order_aligned, Inst.page_size_of_order.
 
   intros.
   constructor; order_aligned_b.
@@ -83,15 +83,15 @@ Proof.
   apply pfn_add_sub_eq_pfn_times_4096; try lia.
 Qed.
 
-Lemma lemma_extract: lemma_extract_type.
+Lemma extract: extract_type.
 Proof.
-  unfold lemma_extract_type, Inst.order_aligned,
+  unfold extract_type, Inst.order_aligned,
       Inst.page_size_of_order, Inst.pfn_buddy, Inst.page_aligned.
   intros.
   constructor.
-    apply Is_true_eq_true in H2.
+    apply Is_true_eq_true in H0.
     unfold buddy.
-    rewrite H2.
+    rewrite H0.
     rewrite Z.mul_add_distr_r, page_size_of_order_times_4096; auto.
   order_aligned_b.
   constructor; apply page_aligned_times_4096; try lia.
@@ -102,9 +102,9 @@ Proof.
     auto; lia.
 Qed.
 
-Lemma lemma_page_size_of_order_inc: lemma_page_size_of_order_inc_type.
+Lemma page_size_of_order_inc: page_size_of_order_inc_type.
 Proof.
-  unfold lemma_page_size_of_order_inc_type, Inst.page_size_of_order.
+  unfold page_size_of_order_inc_type, Inst.page_size_of_order.
   intros.
   apply page_size_of_order_inc.
   lia.
@@ -126,8 +126,8 @@ Proof.
   -
     unfold buddy.
     rewrite Z.sub_simpl_r.
-    apply Is_true_eq_true in H2.
-    rewrite H2.
+    apply Is_true_eq_true in H0.
+    rewrite H0.
     rewrite Z.mul_add_distr_r, page_size_of_order_times_4096 by lia.
     auto.
   -
@@ -137,9 +137,9 @@ Proof.
     auto.
 Qed.
 
-Lemma lemma_order_aligned_init: lemma_order_aligned_init_type.
+Lemma order_aligned_init: order_aligned_init_type.
 Proof.
-  unfold lemma_order_aligned_init_type.
+  unfold order_aligned_init_type.
   unfold Inst.order_aligned, order_aligned_b, order_align.
   intros.
   simpl.
@@ -148,9 +148,9 @@ Proof.
   auto.
 Qed.
 
-Lemma lemma_page_size_of_order : lemma_page_size_of_order_type.
+Lemma page_size_of_order : page_size_of_order_type.
 Proof.
-  unfold lemma_page_size_of_order_type.
+  unfold page_size_of_order_type.
   unfold Inst.page_size_of_order, page_size_of_order.
   cbv.
   auto.
@@ -169,9 +169,9 @@ Proof.
   lia.
 Qed.
 
-Lemma find_buddy_xor_lemma : find_buddy_xor_lemma_type.
+Lemma find_buddy_xor : find_buddy_xor_type.
 Proof.
-  unfold find_buddy_xor_lemma_type, Inst.order_aligned,
+  unfold find_buddy_xor_type, Inst.order_aligned,
       Inst.pfn_buddy.
   intros.
   order_aligned_b.
@@ -201,9 +201,9 @@ Proof.
     rewrite buddy_idemp_impossible3; auto.
 Qed.
 
-Lemma page_size_of_order_lemma: page_size_of_order_lemma_type.
+Lemma page_size_of_order2: page_size_of_order2_type.
 Proof.
-  unfold page_size_of_order_lemma_type, Inst.page_size_of_order.
+  unfold page_size_of_order2_type, Inst.page_size_of_order.
   intros.
   rewrite (Z.mul_comm 4096).
   rewrite page_size_of_order_times_4096 by lia.
@@ -322,11 +322,11 @@ Ltac lia2 :=
   try (apply Z.div_le_lower_bound; lia);
   try (apply Z.div_lt_upper_bound; lia).
 
-Lemma lemma_order_align_inv_loop : lemma_order_align_inv_loop_type.
+Lemma order_align_inv_loop : order_align_inv_loop_type.
 Proof.
-  unfold lemma_order_align_inv_loop_type, Inst.order_align,
+  unfold order_align_inv_loop_type, Inst.order_align,
     Inst.order_aligned.
-  intros until V.
+  intros until p.
   rewrite CN_form_to_group_ok; auto; try lia.
   rewrite CN_form_to_group_ok; auto; try lia.
   pose (start_i := get_range_start_1_4 pool / 4096).
@@ -351,9 +351,9 @@ Proof.
   repeat split_if_anon; repeat rewrite get_upd_order_1_3; auto.
 Qed.
 
-Lemma lemma_page_group_ok_easy : lemma_page_group_ok_easy_type.
+Lemma page_group_ok_easy : page_group_ok_easy_type.
 Proof.
-  unfold lemma_page_group_ok_easy_type, Inst.order_align.
+  unfold page_group_ok_easy_type, Inst.order_align.
   intros until V.
   rewrite CN_form_to_group_ok; auto; try lia.
   intros.
@@ -362,10 +362,10 @@ Proof.
   auto.
 Qed.
 
-Lemma lemma_attach_inc_loop : lemma_attach_inc_loop_type.
-  unfold lemma_attach_inc_loop_type, Inst.order_align,
+Lemma attach_inc_loop : attach_inc_loop_type.
+  unfold attach_inc_loop_type, Inst.order_align,
     Inst.order_aligned, Inst.pfn_buddy.
-  intros until V.
+  intros until order.
   rewrite CN_form_to_group_ok; auto; try lia.
   rewrite CN_form_to_group_ok; auto; try lia.
   intros.
@@ -413,7 +413,7 @@ Lemma lemma_attach_inc_loop : lemma_attach_inc_loop_type.
       unfold fun_upd, Defs.fun_upd.
       intros.
       rewrite buddy_idemp_impossible3 by lia.
-      rewrite H9.
+      rewrite H4.
       rewrite buddy_involution_gt_case; auto.
       split_if x; repeat rewrite get_upd_order_1_3; try lia.
       split_if y; repeat rewrite get_upd_order_1_3; try lia.
