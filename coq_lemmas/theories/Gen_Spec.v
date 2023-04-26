@@ -36,12 +36,23 @@ Module Defs (P : Parameters).
     (let '(x_t_0,x_t_1,x_t_2) := (t : (T_0 * T_1 * T_2)) in
 x_t_1).
 
+  Definition hyp_no_order :=
+    255.
+
   Definition get_range_start_1_4 {T_0 T_1 T_2 T_3: Type} (t : (T_0 * T_1 * T_2 * T_3)) :=
     (let '(x_t_0,x_t_1,x_t_2,x_t_3) := (t : (T_0 * T_1 * T_2 * T_3)) in
 x_t_1).
 
-  Definition hyp_no_order :=
-    255.
+  Definition page_group_ok (page_index : Z) (vmemmap : ((Z -> (Z * Z * Z))))
+(pool : (((Z -> (Z * Z))) * Z * Z * Z)) :=
+    ((get_order_1_3 (vmemmap page_index)) = (hyp_no_order) \/
+(forall (i : Z),
+(((1 <= i) /\ (i <= 10)) ->
+(~
+(((((order_align page_index i) < page_index) /\
+(((get_range_start_1_4 pool) / 4096) <= (order_align page_index i))) /\
+(i <= (get_order_1_3 (vmemmap (order_align page_index i))))) /\
+(~ (get_order_1_3 (vmemmap (order_align page_index i))) = (hyp_no_order))))))).
 
   Definition fun_upd {A B : Type} (eq : A -> A -> bool) (f : A -> B) x y z :=
     if eq x z then y else f z.
@@ -154,31 +165,12 @@ let p_order := (get_order_1_3 (V p_i)) in
 ((p - hypvmemmap) mod 4) = 0) -> 
 let buddy_i := (pfn_buddy p_i (p_order - 1)) in 
 (forall (i : Z),
-(((start_i <= i) /\ (i < end_i)) ->
-((get_order_1_3 (V i)) = 255 \/
-(forall (i_0 : Z),
-(((1 <= i_0) /\ (i_0 <= 10)) ->
-(~
-(((((order_align i i_0) < i) /\ (((get_range_start_1_4 pool) / 4096) <= (order_align i i_0))) /\
-(i_0 <= (get_order_1_3 (V (order_align i i_0))))) /\
-(~ (get_order_1_3 (V (order_align i i_0))) = (hyp_no_order))))))))) -> 
+(((start_i <= i) /\ (i < end_i)) -> (page_group_ok i V pool))) -> 
 let p_new_page := (upd_order_1_3 (V p_i) (p_order - 1)) in 
 let buddy_new_page := (upd_order_1_3 (V buddy_i) (p_order - 1)) in 
 (forall (i : Z),
 (((start_i <= i) /\ (i < end_i)) ->
-((get_order_1_3 ((fun_upd Z.eqb (fun_upd Z.eqb V p_i p_new_page) buddy_i buddy_new_page) i)) = 255
-\/
-(forall (i_0 : Z),
-(((1 <= i_0) /\ (i_0 <= 10)) ->
-(~
-(((((order_align i i_0) < i) /\ (((get_range_start_1_4 pool) / 4096) <= (order_align i i_0))) /\
-(i_0 <=
-(get_order_1_3
-((fun_upd Z.eqb (fun_upd Z.eqb V p_i p_new_page) buddy_i buddy_new_page) (order_align i i_0))))) /\
-(~
-(get_order_1_3
-((fun_upd Z.eqb (fun_upd Z.eqb V p_i p_new_page) buddy_i buddy_new_page) (order_align i i_0))) =
-(hyp_no_order))))))))).
+(page_group_ok i (fun_upd Z.eqb (fun_upd Z.eqb V p_i p_new_page) buddy_i buddy_new_page) pool))).
 
   Definition order_aligned_init_type : Prop :=
     forall (i : Z),
@@ -216,34 +208,16 @@ let buddy_order := (get_order_1_3 (V buddy_i)) in
 buddy_order = order -> 
 (Is_true (order_aligned p_i order)) -> 
 (Is_true (order_aligned buddy_i order)) -> 
-(get_order_1_3 (V p_i)) = 255 -> 
+(get_order_1_3 (V p_i)) = (hyp_no_order) -> 
 let p_page_tweaked := (upd_order_1_3 (V p_i) order) in 
 (forall (i : Z),
-(((start_i <= i) /\ (i < end_i)) ->
-((get_order_1_3 ((fun_upd Z.eqb V p_i p_page_tweaked) i)) = 255 \/
-(forall (i_0 : Z),
-(((1 <= i_0) /\ (i_0 <= 10)) ->
-(~
-(((((order_align i i_0) < i) /\ (((get_range_start_1_4 pool) / 4096) <= (order_align i i_0))) /\
-(i_0 <= (get_order_1_3 ((fun_upd Z.eqb V p_i p_page_tweaked) (order_align i i_0))))) /\
-(~ (get_order_1_3 ((fun_upd Z.eqb V p_i p_page_tweaked) (order_align i i_0))) = (hyp_no_order))))))))) -> 
+(((start_i <= i) /\ (i < end_i)) -> (page_group_ok i (fun_upd Z.eqb V p_i p_page_tweaked) pool))) -> 
 let min_i := (if (p_i <? buddy_i) then p_i else buddy_i) in 
 let min_page := (upd_order_1_3 (V min_i) (order + 1)) in 
 let buddy_page := (upd_order_1_3 (V buddy_i) (hyp_no_order)) in 
 (forall (i : Z),
 (((start_i <= i) /\ (i < end_i)) ->
-((get_order_1_3 ((fun_upd Z.eqb (fun_upd Z.eqb V buddy_i buddy_page) min_i min_page) i)) = 255 \/
-(forall (i_0 : Z),
-(((1 <= i_0) /\ (i_0 <= 10)) ->
-(~
-(((((order_align i i_0) < i) /\ (((get_range_start_1_4 pool) / 4096) <= (order_align i i_0))) /\
-(i_0 <=
-(get_order_1_3
-((fun_upd Z.eqb (fun_upd Z.eqb V buddy_i buddy_page) min_i min_page) (order_align i i_0))))) /\
-(~
-(get_order_1_3
-((fun_upd Z.eqb (fun_upd Z.eqb V buddy_i buddy_page) min_i min_page) (order_align i i_0))) =
-(hyp_no_order))))))))).
+(page_group_ok i (fun_upd Z.eqb (fun_upd Z.eqb V buddy_i buddy_page) min_i min_page) pool))).
 
   Definition find_buddy_xor_type : Prop :=
     forall (addr_i : Z),
@@ -288,14 +262,7 @@ let end_i := ((get_range_end_2_4 pool) / 4096) in
 (((start_i <= i) /\ (i < end_i)) -> (get_order_1_3 (V i)) = 0)) -> 
 (forall (i : Z),
 (((start_i <= i) /\ (i < end_i)) -> (struct_hyp_page_good (V i)))) /\ (forall (i : Z),
-(((start_i <= i) /\ (i < end_i)) ->
-((get_order_1_3 (V i)) = 255 \/
-(forall (i_0 : Z),
-(((1 <= i_0) /\ (i_0 <= 10)) ->
-(~
-(((((order_align i i_0) < i) /\ (((get_range_start_1_4 pool) / 4096) <= (order_align i i_0))) /\
-(i_0 <= (get_order_1_3 (V (order_align i i_0))))) /\
-(~ (get_order_1_3 (V (order_align i i_0))) = (hyp_no_order))))))))).
+(((start_i <= i) /\ (i < end_i)) -> (page_group_ok i V pool))).
 
 End Defs.
 

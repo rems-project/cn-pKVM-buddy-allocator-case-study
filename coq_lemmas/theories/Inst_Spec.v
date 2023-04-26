@@ -225,53 +225,36 @@ Ltac is_true_or_step :=
   end.
 Ltac is_true_or := repeat is_true_or_step.
 
-Lemma CN_form_to_group_ok:
-  forall orders orders2 start_i end_i o_inval o_max_dec,
-  0 <= o_max_dec ->
-  o_max_dec + 1 < o_inval ->
-  (forall i ord, orders2 i ord = orders (order_align i ord)) ->
-  (forall i : Z,
-    start_i <= i < end_i ->
-    orders i = o_inval \/
-    (forall ord : Z,
-      1 <= ord <= o_max_dec ->
-      ~ (
-        (((order_align i ord < i) /\
-        (start_i <= order_align i ord)) /\
-        (ord <= orders2 i ord)) /\
-        (~ (orders2 i ord = o_inval)) )
-    )) <->
-  group_ok_inv start_i end_i (o_max_dec + 1) o_inval orders.
+Lemma forall_group_ok_to_inv:
+  forall V pool start_i end_i,
+  start_i = get_range_start_1_4 pool / 4096 ->
+  (forall i : Z, start_i <= i < end_i -> page_group_ok i V pool)
+  <->
+  group_ok_inv start_i end_i 11 hyp_no_order (fun i => get_order_1_3 (V i)).
 Proof.
   intros.
   unfold group_ok_inv.
   constructor.
   - intros.
-    destruct (H2 i); try lia.
-    clear H2.
+    pose (X := H0 _ H1).
+    unfold page_group_ok, Inst.order_align in X.
+    destruct X as [X2 | X2]; try lia.
     destruct (Zle_lt_or_eq (order_align i ord) i); auto.
       apply order_align_le; auto; lia.
-    pose (H_ord := H7 ord).
+    pose (H_ord := X2 ord).
     apply (Decidable.not_and _) in H_ord;
       repeat apply Decidable.dec_and;
       try apply Z.lt_decidable;
       try apply Z.le_decidable; try lia.
-    clear H7.
-    rewrite H1 in *.
-    repeat (apply Z.lt_decidable || apply Z.le_decidable
-      || apply Decidable.dec_and
-      || match goal with Hx: ~ (_ /\ _) |- _
-          => apply (Decidable.not_and _) in Hx
-        | Ho: _ \/ _ |- _ => destruct Ho end);
-    try lia.
   - intros.
-    destruct (orders i =? o_inval) eqn: inval_cases.
-      rewrite Z.eqb_eq in inval_cases; auto.
-    rewrite Z.eqb_neq in inval_cases.
-    constructor 2.
-    intros.
-    rewrite H1.
-    destruct (H2 i ord); try lia.
+    unfold page_group_ok, Inst.order_align.
+    destruct (get_order_1_3 (V i) =? hyp_no_order) eqn: inval_cases.
+    + rewrite Z.eqb_eq in inval_cases.
+      auto.
+    + rewrite Z.eqb_neq in inval_cases.
+      constructor 2.
+      intros.
+      destruct (H0 _ i0 H1); try lia.
 Qed.
 
 Lemma group_ok_inv_eq_orders:
@@ -327,19 +310,19 @@ Proof.
   unfold order_align_inv_loop_type, Inst.order_align,
     Inst.order_aligned.
   intros until p.
-  rewrite CN_form_to_group_ok; auto; try lia.
-  rewrite CN_form_to_group_ok; auto; try lia.
+  rewrite forall_group_ok_to_inv; try reflexivity.
+  rewrite forall_group_ok_to_inv; try reflexivity.
   pose (start_i := get_range_start_1_4 pool / 4096).
   fold start_i.
   pose (end_i := get_range_end_2_4 pool / 4096).
   fold end_i.
   intros.
-  conjunctsI; auto.
   order_aligned_b.
   match goal with |- context [pfn_buddy ?pgx _] =>
     pose (pg := pgx) end.
   match goal with m: group_ok_inv _ _ _ _ _ |- _ =>
     rename m into g_ok end.
+  unfold hyp_no_order in *.
   apply (group_ok_inv_split pg) in g_ok;
     (try unfold pg in *); try lia2; auto.
   eapply group_ok_inv_eq_orders.
@@ -355,7 +338,7 @@ Lemma page_group_ok_easy : page_group_ok_easy_type.
 Proof.
   unfold page_group_ok_easy_type, Inst.order_align.
   intros until V.
-  rewrite CN_form_to_group_ok; auto; try lia.
+  rewrite forall_group_ok_to_inv; try reflexivity.
   intros.
   conjunctsI; auto.
   apply group_ok_inv_0_order.
@@ -366,11 +349,11 @@ Lemma attach_inc_loop : attach_inc_loop_type.
   unfold attach_inc_loop_type, Inst.order_align,
     Inst.order_aligned, Inst.pfn_buddy.
   intros until order.
-  rewrite CN_form_to_group_ok; auto; try lia.
-  rewrite CN_form_to_group_ok; auto; try lia.
+  rewrite forall_group_ok_to_inv; try reflexivity.
+  rewrite forall_group_ok_to_inv; try reflexivity.
   intros.
-  conjunctsI; auto.
   order_aligned_b.
+  unfold hyp_no_order in *.
   match goal with |- context [buddy ?pgx _] =>
     pose (pg := pgx) end.
   fold pg.
