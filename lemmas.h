@@ -27,7 +27,7 @@ lemma lemma2 (integer /* intptr_t */ p_i, integer /* unsigned int */ order)
           (p_phys + (page_size_of_order(order)) == buddy_phys) || (p_phys - (page_size_of_order(order)) == buddy_phys) 
 
 
-lemma extract (integer /* intptr_t */ p_i, integer /* unsigned int */ order)
+lemma extract_l (integer /* intptr_t */ p_i, integer /* unsigned int */ order)
  requires order >= 0 ;
           let p_phys = p_i * 4096 ;
           let buddy_i = pfn_buddy(p_i, order) ;

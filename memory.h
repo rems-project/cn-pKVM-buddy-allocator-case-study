@@ -81,14 +81,13 @@ static inline int hyp_page_count(struct hyp_pool *pool, void *addr)
 /*@ ensures H2.pool == {H.pool}@start @*/
 /*@ ensures return == ((H2.vmemmap)[phys / 4096]).refcount @*/
 {
-        /*CN*//*@ unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset); @*/
 	struct hyp_page *p = hyp_virt_to_page(addr);
         /*CN*//*@instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
         /*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap, p);@*/
+				/*CN*//*@extract Owned<struct hyp_page>, phys/4096; @*/
 	/* TODO originally: return p->refcount.  Introducing 'ret' here, so we can pack resources before returning; */
 	int ret = p->refcount;
 
-        /*CN*//*@pack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);@*/
         return ret;
 }
 

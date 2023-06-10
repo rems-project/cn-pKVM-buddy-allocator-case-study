@@ -142,6 +142,7 @@ static struct hyp_page *__find_buddy_avail(struct hyp_pool *pool,
 	struct hyp_page *buddy = __find_buddy_nocheck(pool, p, order);
 
         /*CN*/ /*@instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,buddy);@*/
+				/*CN*/ /*@extract Owned<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, buddy);@*/
 	if (!buddy || buddy->order != order || buddy->refcount)
 		return NULL;
 
@@ -187,15 +188,12 @@ static inline void page_remove_from_list(struct hyp_page *p)
 {
 	struct list_head *node = hyp_page_to_virt(p);
 
-	/*CN*//*@unpack AllocatorPage(node, 1, order);@*/
-        /*CN*/if (node->prev != node);
+	      /*CN*/if (node->prev != node);
         /*CN*/if (node->prev != node->next);
 	__list_del_entry(node);
 	/*CN*//*@ apply struct_list_head_to_bytes(node); @*/
 	memset(node, 0, sizeof(*node));
 	/*CN*//*@ apply page_size_of_order2((*p).order); @*/
-        /*CN*//*@unpack AllocatorPageZeroPart((pointer)(((integer) node) + sizeof<struct list_head>), order);@*/
-	/*CN*//*@pack ZeroPage(node, 1, (*p).order);@*/
 }
 
 /* for verification */
@@ -220,32 +218,23 @@ static inline void page_remove_from_list_pool(struct hyp_pool *pool, struct hyp_
 /*@ ensures H2.vmemmap == HP.vmemmap @*/
 /*@ ensures H2.pool == {free_area: H2.pool.free_area, ..HP.pool} @*/
 {
-	/*CN*//*@unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);@*/
 	/*CN*/struct list_head *node = hyp_page_to_virt(p);
 	/*CN*//*@instantiate vmemmap_l_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
 	/*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
 	/*CN*//*@instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
-	/*CN*//*@unpack AllocatorPage(node, 1, (*p).order);@*/
+	/*CN*//*@extract AllocatorPage, ((integer) node) / 4096; @*/
+	/*CN*//*@extract Owned<struct list_head>, order; @*/
+	/*CN*//*@extract Owned<struct hyp_page>, p_i; @*/
 	/*CN*/void *node_prev = node->prev;
 	/*CN*/void *node_next = node->next;
+	/*CN*//*@extract AllocatorPage, ((integer) node_prev) / 4096; @*/
+	/*CN*//*@extract AllocatorPage, ((integer) node_next) / 4096; @*/
         /*CN*/void *free_node = &pool->free_area[p->order];
 	/*CN*/if (node_prev != node) {
-		/*CN*/if (node_prev != free_node) {
-			/*CN*//*@unpack AllocatorPage(node_prev, 1, (*p).order);@*/
-		/*CN*/};
-		/*CN*/if (node_next != node_prev && node_next != free_node) {
-			/*CN*//*@unpack AllocatorPage(node_next, 1, (*p).order);@*/
-		/*CN*/};
+		/*CN*/if (node_prev != free_node);
+		/*CN*/if (node_next != node_prev && node_next != free_node);
 	/*CN*/};
 	page_remove_from_list(p);
-	/*CN*/if (node_prev != node) {
-		/*CN*/if (node_prev != free_node) {
-			/*CN*//*@pack AllocatorPage(node_prev, 1, (*p).order);@*/
-		/*CN*/};
-		/*CN*/if (node_next != node_prev && node_next != free_node) {
-			/*CN*//*@pack AllocatorPage(node_next, 1, (*p).order);@*/
-		/*CN*/};
-	/*CN*/};
 }
 
 static inline void page_add_to_list(struct hyp_page *p, struct list_head *head)
@@ -282,12 +271,10 @@ static inline void page_add_to_list(struct hyp_page *p, struct list_head *head)
 {
 	struct list_head *node = hyp_page_to_virt(p);
 
-	/*CN*//*@unpack ZeroPage(node, 1, (*p).order);@*/
 	/*CN*/if (head->prev != head) {}
 	/*CN*//*@ apply bytes_to_struct_list_head(node, (*p).order); @*/
 	INIT_LIST_HEAD(node);
 	list_add_tail(node, head);
-        /*CN*//*@pack AllocatorPageZeroPart((pointer) (((integer) node) + sizeof<struct list_head>), (*p).order);@*/
 }
 
 static inline void page_add_to_list_pool(struct hyp_pool *pool,
@@ -312,19 +299,18 @@ static inline void page_add_to_list_pool(struct hyp_pool *pool,
 /*@ ensures H2.pool == {free_area: H2.pool.free_area, ..HP.pool} @*/
 /*@ ensures H2.vmemmap == HP.vmemmap @*/
 {
-	/*CN*//*@unpack Hyp_pool_ex1(pool, hyp_vmemmap, hyp_physvirt_offset, cn_hyp_page_to_pfn(__hyp_vmemmap,p));@*/
+	/*CN*//*@extract Owned<struct list_head>, order; @*/
+	/*CN*//*@extract Owned<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, p);@*/
 	/*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
 	/*CN*//*@instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
 	/*CN*/void *prev = head->prev;
 	/*CN*//*@instantiate freeArea_cell_wf, (*p).order;@*/
+	/*CN*//*@extract AllocatorPage, ((integer) virt) / 4096; @*/
+  /*CN*//*@extract AllocatorPage, ((integer) prev) / 4096; @*/
 	/*CN*/if (prev != head) {
 		/*CN*//*@instantiate vmemmap_l_wf, cn_hyp_virt_to_pfn(hyp_physvirt_offset,prev);@*/
-		/*CN*//*@unpack AllocatorPage(prev, 1, (*p).order);@*/
 	/*CN*/};
 	page_add_to_list(p, head);
-	/*CN*/if (prev != head) {
-		/*CN*//*@pack AllocatorPage(prev, 1, (*p).order);@*/
-	/*CN*/};
 }
 
 static inline void page_add_to_list_pool_ex1(struct hyp_pool *pool,
@@ -352,21 +338,18 @@ static inline void page_add_to_list_pool_ex1(struct hyp_pool *pool,
 /*@ ensures H2.pool == {free_area: H2.pool.free_area, ..HP.pool} @*/
 /*@ ensures H2.vmemmap == HP.vmemmap @*/
 {
-	/*CN*//*@unpack Hyp_pool_ex2(pool, hyp_vmemmap, hyp_physvirt_offset,
-		   cn_hyp_page_to_pfn(__hyp_vmemmap,p), 
-                   cn_hyp_page_to_pfn (__hyp_vmemmap,p_ex));@*/
+	/*CN*//*@extract Owned<struct list_head>, order;@*/
+	/*CN*//*@extract Owned<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, p);@*/
 	/*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
 	/*CN*//*@instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
 	/*CN*/void *prev = head->prev;
+	/*CN*//*@extract AllocatorPage, ((integer) virt) / 4096; @*/
+	/*CN*//*@extract AllocatorPage, ((integer) prev) / 4096; @*/
 	/*CN*//*@instantiate freeArea_cell_wf, (*p).order;@*/
 	/*CN*/if (prev != head) {
 		/*CN*//*@instantiate vmemmap_l_wf, cn_hyp_virt_to_pfn(hyp_physvirt_offset,prev);@*/
-		/*CN*//*@unpack AllocatorPage(prev, 1, (*p).order);@*/
 	/*CN*/};
 	page_add_to_list(p, head);
-	/*CN*/if (prev != head) {
-		/*CN*//*@pack AllocatorPage(prev, 1, (*p).order);@*/
-	/*CN*/};
 }
 
 
@@ -405,19 +388,17 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 /*@ ensures {free_area: H2.pool.free_area, ..H.pool} == H2.pool @*/
 /*@ ensures each (integer i; p_i < i && i < end_i){(H.vmemmap[i].refcount == 0) || (H2.vmemmap[i] == H.vmemmap[i])} @*/
 {
-	/*CN*//*@unpack Hyp_pool_ex1(pool, hyp_vmemmap, hyp_physvirt_offset, cn_hyp_page_to_pfn(__hyp_vmemmap,p));@*/
 	/*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
 
 	phys_addr_t phys = hyp_page_to_phys(p);
 	/* struct hyp_page *buddy; */
 	struct hyp_page *buddy = NULL;
+	/*CN*//*@extract Owned<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, p);@*/
 	u8 order = p->order;
 
 
         /*CN*//*@ apply page_size_of_order2((*p).order); @*/
-        /*CN*//*@unpack Page (cn_hyp_page_to_virt(hyp_physvirt_offset,__hyp_vmemmap,p), 1, (*p).order);@*/
 	memset(hyp_page_to_virt(p), 0, PAGE_SIZE << p->order);
-        /*CN*//*@pack ZeroPage (cn_hyp_page_to_virt(hyp_physvirt_offset,__hyp_vmemmap,p), 1, (*p).order);@*/
 
 	//if (phys < pool->range_start || phys >= pool->range_end)
 	//	goto insert;
@@ -460,26 +441,24 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 		        /*CN*//*@ apply attach_inc_loop(H_I.vmemmap,__hyp_vmemmap,*pool, p, order); @*/
 		        /*CN*//*@ apply lemma2(cn_hyp_page_to_pfn(__hyp_vmemmap,p), order); @*/
 		        /*CN*//*@ apply page_size_of_order_inc(order); @*/
+	          /*CN*//*@extract Owned<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, p);@*/
+	          /*CN*//*@extract Owned<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, buddy);@*/
 
 		        /* Take the buddy out of its list, and coallesce with @p */
 		        page_remove_from_list_pool(pool, buddy);
 
-		        /*CN*//*@unpack ZeroPage (cn_hyp_page_to_virt(hyp_physvirt_offset,__hyp_vmemmap,p), 1, order);@*/
-		        /*CN*//*@unpack ZeroPage (cn_hyp_page_to_virt(hyp_physvirt_offset,__hyp_vmemmap,buddy), 1, order);@*/
-			/*CN*//*@unpack Hyp_pool_ex1(pool, hyp_vmemmap, hyp_physvirt_offset, cn_hyp_page_to_pfn(__hyp_vmemmap,buddy));@*/
 		        buddy->order = HYP_NO_ORDER;
 		        p = min(p, buddy);
-		        /*CN*//*@pack ZeroPage (cn_hyp_page_to_virt(hyp_physvirt_offset,__hyp_vmemmap,p), 1, order + 1);@*/
 		}
 	}
 
 //insert:
 	/*CN*//*@instantiate freeArea_cell_wf, order;@*/
+	/*CN*//*@extract Owned<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, p);@*/
 	/* Mark the new head, and insert it */
 	p->order = order;
 	/*CN*//*@instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
 	page_add_to_list_pool(pool, p, &pool->free_area[order]);
-	/*CN*//*@pack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);@*/
 }
 
 static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
@@ -511,10 +490,11 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 	struct hyp_page *buddy = NULL;
 	page_remove_from_list_pool(pool, p);
 
-	/*CN*//*@unpack Hyp_pool_ex1(pool, hyp_vmemmap, hyp_physvirt_offset, cn_hyp_page_to_pfn(__hyp_vmemmap,p));@*/
         /*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
+				/*CN*//*@extract Owned<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, p);@*/
 
-	while (p->order > order)
+	/*while (p->order > order)*/
+	/*CN*/while (1)
 
 /* sigh, copying in Hyp_pool_ex1 */
 
@@ -549,6 +529,8 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 	/*@ inv 0 <= order; order <= i_p_order; i_p_order != hyp_no_order (); i_p_order < (max_order ()) @*/
 	/*@ inv {p} unchanged; {pool} unchanged; {order} unchanged @*/
 	{
+		/*CN*//*@extract Owned<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, p);@*/
+		/*CN*/if (!(p->order > order)) break;
 		/*
 		 * The buddy of order n - 1 currently has HYP_NO_ORDER as it
 		 * is covered by a higher-level page (whose head is @p). Use
@@ -561,15 +543,13 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
                 /*CN*//*@apply lemma4(cn_hyp_page_to_pfn(__hyp_vmemmap,p), (*p).order); @*/
                 /*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,cn_buddy);@*/
                 /*CN*//*@instantiate freeArea_cell_wf, (*p).order - 1;@*/
-                /*CN*//*@unpack ZeroPage(cn_hyp_page_to_virt(hyp_physvirt_offset,__hyp_vmemmap,p), 1, (*p).order);@*/
                 /*CN*//*@ apply order_align_inv_loop(__hyp_vmemmap,V_I,*pool, p); @*/
 		p->order--;
 		buddy = __find_buddy_nocheck(pool, p, p->order);
+		            /*CN*//*@extract Owned<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, buddy);@*/
 		buddy->order = p->order;
-                /*CN*//*@ apply extract(cn_hyp_page_to_pfn(__hyp_vmemmap,p), (*p).order); @*/
+                /*CN*//*@ apply extract_l(cn_hyp_page_to_pfn(__hyp_vmemmap,p), (*p).order); @*/
                 /*CN*//*@ apply page_size_of_order_inc((*p).order); @*/
-                /*CN*//*@pack ZeroPage(cn_hyp_page_to_virt(hyp_physvirt_offset, __hyp_vmemmap, p), 1, (*p).order);@*/
-                /*CN*//*@pack ZeroPage(cn_hyp_page_to_virt(hyp_physvirt_offset, __hyp_vmemmap, buddy), 1, (*buddy).order);@*/
 		page_add_to_list_pool_ex1(pool, buddy, &pool->free_area[buddy->order], p);
 	}
 
@@ -596,12 +576,12 @@ static void __hyp_put_page(struct hyp_pool *pool, struct hyp_page *p)
 /*@ ensures H2.pool == {free_area:H2.pool.free_area, .. H.pool} @*/
 /*@ ensures each (integer i; p_i < i && i < end_i){(H.vmemmap[i].refcount == 0) || (H2.vmemmap[i] == H.vmemmap[i])} @*/
 {
-        /*CN*//*@unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);@*/
         /*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap, p);@*/
         /*CN*//*@instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, p);@*/
+				/*CN*//*@extract Owned<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, p);@*/
 	if (hyp_page_ref_dec_and_test(p)) {
 		__hyp_attach_page(pool, p);
-        }
+  }
 }
 
 /*
@@ -626,7 +606,6 @@ void hyp_put_page(struct hyp_pool *pool, void *addr)
 /*@ ensures {hyp_physvirt_offset} unchanged; {__hyp_vmemmap} unchanged @*/
 /*@ ensures H2.pool == {free_area: H2.pool.free_area,.. H.pool} @*/
 {
-        /*CN*//*@unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);@*/
 	struct hyp_page *p = hyp_virt_to_page(addr);
 
 	/* hyp_spin_lock(&pool->lock); */
@@ -648,13 +627,12 @@ void hyp_get_page(struct hyp_pool *pool, void *addr)
 /*@ ensures {hyp_physvirt_offset} unchanged; {__hyp_vmemmap} unchanged @*/
 /*@ ensures H2.pool == H.pool @*/
 {
-        /*CN*//*@unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);@*/
 	struct hyp_page *p = hyp_virt_to_page(addr);
 
 	/* hyp_spin_lock(&pool->lock); */
         /*CN*//*@instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
 	hyp_page_ref_inc(p);
-        /*CN*//*@pack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);@*/
+  /*CN*//*@extract Owned<struct hyp_page>, page_i; @*/
 	/* hyp_spin_unlock(&pool->lock); */
 }
 
@@ -684,7 +662,7 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 {
         struct hyp_page *p = NULL; /* struct hyp_page *p; */
 	u8 i = order;
-        /*CN*//*@ unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset); @*/
+        /*CN*/ /*@extract Owned<struct list_head>, i;@*/
 	/* ----- hyp_spin_lock(&pool->lock); */
 
 	/* Look for a high-enough-order page */
@@ -694,21 +672,25 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
                     order <= i; H.pool.max_order <= 11;
                     {pool} unchanged; {order} unchanged;
                     {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
-		i++;
+		/*CN*/{ 
+			i++; 
+			/*CN*/ /*@extract Owned<struct list_head>, i-1;@*/ 
+		/*CN*/}
 	if (i >= pool->max_order) {
 		/* ----- hyp_spin_unlock(&pool->lock); */
 		return NULL;
 	}
 
         /*CN*//*@ instantiate freeArea_cell_wf, i; @*/ 
+			  /*CN*//*@extract Owned<struct list_head>, i;@*/ 
 	/* Extract it from the tree at the right order */
 	p = node_to_page(pool->free_area[i].next);
         // p = hyp_virt_to_page(pool->free_area[i].next);
         /*CN*//*@ instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p); @*/
         /*CN*//*@ apply order_dec_inv(H.pool.range_end, cn_hyp_page_to_pfn(__hyp_vmemmap,p), (*p).order, order); @*/
+				/*CN*/ /*@extract Owned<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, p); @*/
 	p = __hyp_extract_page(pool, p, order);
 	/* ----- hyp_spin_unlock(&pool->lock); */
-        /*CN*//*@ unpack Hyp_pool_ex1(pool, hyp_vmemmap, hyp_physvirt_offset, cn_hyp_page_to_pfn(__hyp_vmemmap,p)); @*/
         /*CN*//*@ instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,p); @*/ 
 	hyp_set_page_refcounted(p);
 	/* ----- hyp_spin_unlock(&pool->lock); */
@@ -770,6 +752,7 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
              /*@ inv (*pool).max_order == ((11 < (get_order_uf((nr_pages + 1)*(page_size ())))) ? 11 : (get_order_uf((nr_pages + 1)*(page_size ())))) @*/
              /*@ inv phys == pfn * (page_size ()) @*/
         {
+					/*CN*/ /*@ extract Owned<struct list_head>, i; @*/
 		INIT_LIST_HEAD(&pool->free_area[i]);
         }
 	pool->range_start = phys;
@@ -797,6 +780,7 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
              /*@ inv 0 <= i; i <= nr_pages @*/
         {
 		/*CN*//*@instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,(pointer) (((integer) p) + i*sizeof<struct hyp_page>));@*/
+		/*CN*//*@extract Owned<struct hyp_page>, pfn+i; @*/
 		p[i].refcount = 0; /* added for formalisation */
 		p[i].order = 0;    /* added for formalisation */
 		hyp_set_page_refcounted(&p[i]);
@@ -805,7 +789,6 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
 	}
 
         /*CN*//*@ apply page_group_ok_easy(__hyp_vmemmap,*pool); @*/
-        /*CN*//*@pack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);@*/
 
 	/* Attach the unused pages to the buddy tree */
 	for (i = reserved_pages; i < nr_pages; i++)
@@ -824,7 +807,6 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
              /*@ inv (H.pool).range_end == end @*/
              /*@ inv (H.pool).max_order <= 11 @*/
         {
-                /*CN*//*@unpack Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);@*/
                 /*CN*//*@instantiate i+pfn;@*/
 		// p[i].refcount = 0; /* added for formalisation */
 		__hyp_put_page(pool, &p[i]);
