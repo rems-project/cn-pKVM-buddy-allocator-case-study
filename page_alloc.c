@@ -168,8 +168,8 @@ static inline void page_remove_from_list(struct hyp_page *p)
 /*@ requires 0 <= order; order < 11 @*/
 /*@ requires take AP = AllocatorPage(virt, 1, order) @*/
 /*@ requires let prev = AP.prev; let next = AP.next @*/
-/*@ requires take Node_prev = Owned<struct list_head>(prev) when (prev != virt) @*/
-/*@ requires take Node_next = Owned<struct list_head>(next) when (prev != next) @*/
+/*@ requires take Node_prev = O_struct_list_head(prev, prev != virt) @*/
+/*@ requires take Node_next = O_struct_list_head(next, prev != next) @*/
 /*@ requires (prev != virt) || (next == virt) @*/
 /*@ requires 0 <= hyp_physvirt_offset @*/
 /*@ requires hyp_physvirt_offset <= phys; phys < (power(2, 63)) @*/
@@ -178,8 +178,8 @@ static inline void page_remove_from_list(struct hyp_page *p)
 /*@ ensures take OP2 = Owned(p) @*/
 /*@ ensures {*p} unchanged @*/
 /*@ ensures take ZP = ZeroPage(virt, 1, (*p).order) @*/
-/*@ ensures take Node_prev2 = Owned<struct list_head>(prev) when (prev != virt) @*/
-/*@ ensures take Node_next2 = Owned<struct list_head>(next) when (prev != next) @*/
+/*@ ensures take Node_prev2 = O_struct_list_head(prev, prev != virt) @*/
+/*@ ensures take Node_next2 = O_struct_list_head(next, prev != next) @*/
 /*@ ensures (prev == next) || (Node_next2.next == Node_next.next) @*/
 /*@ ensures (prev == next) || (Node_prev2.prev == Node_prev.prev) @*/
 /*@ ensures (prev == virt) || (Node_prev2.next == next) @*/
@@ -250,7 +250,7 @@ static inline void page_add_to_list(struct hyp_page *p, struct list_head *head)
 /*@ requires let next = head @*/
 /*@ requires take Node_head = Owned<struct list_head>(next) @*/
 /*@ requires let prev = (*next).prev @*/
-/*@ requires take Node_prev = Owned<struct list_head>(prev) when (prev != next) @*/
+/*@ requires take Node_prev = O_struct_list_head(prev, prev != next) @*/
 /*@ requires 0 <= hyp_physvirt_offset @*/
 /*@ requires hyp_physvirt_offset <= phys; phys < (power(2, 63)) @*/
 /*@ requires (mod(hyp_physvirt_offset, (page_size ()))) == 0 @*/
@@ -261,11 +261,11 @@ static inline void page_add_to_list(struct hyp_page *p, struct list_head *head)
 /*@ ensures take Hp2 = Owned(p) @*/
 /*@ ensures {*p} unchanged @*/
 /*@ ensures take Node_head2 = Owned<struct list_head>(next) @*/
-/*@ ensures take Node_prev2 = Owned<struct list_head>(prev) when (prev != next) @*/
-/*@ ensures (prev == next) || {(*prev).prev} unchanged @*/
+/*@ ensures take Node_prev2 = O_struct_list_head(prev, prev != next) @*/
+/*@ ensures (prev == next) || (Node_prev.prev == Node_prev2.prev) @*/
 /*@ ensures (prev == next) || {(*next).next} unchanged @*/
 /*@ ensures (*next).prev == virt @*/
-/*@ ensures (prev == next) || ((*prev).next == virt) @*/
+/*@ ensures (prev == next) || (Node_prev2.next == virt) @*/
 /*@ ensures (prev != next) || ((*next).next == virt) @*/
 /*@ ensures (AP1R.next == head); (AP1R.prev == prev) @*/
 {

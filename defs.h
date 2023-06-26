@@ -474,3 +474,15 @@ predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
 }
 
 
+
+
+predicate (struct list_head) O_struct_list_head(pointer p, boolean condition) 
+{
+  if (condition) {
+    take v = Owned<struct list_head>(p);
+    return v;
+  }
+  else {
+    return todo_default_list_head ();
+  }
+}
