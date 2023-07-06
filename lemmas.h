@@ -1,10 +1,10 @@
-/* define intptr_t a hacky way, for lemmas */
+// define intptr_t a hacky way, for lemmas 
 /*CN*/ typedef u64 intptr_t;
-
-lemma order_dec_inv (integer /* phys_addr_t */ pool_range_end,
-                     integer /* u64 */ pfn,
-                     integer /* unsigned int */ order1,
-                     integer /* unsigned int */ order2) 
+/*@
+lemma order_dec_inv (integer pool_range_end, // phys_addr_t 
+                     integer pfn, // u64 
+                     integer order1, // unsigned int 
+                     integer order2) // unsigned int 
   requires order_aligned(pfn, order1);
            (pfn*4096) + (page_size_of_order(order1)) <= pool_range_end;
            0 <= order2; order2 <= order1
@@ -13,7 +13,8 @@ lemma order_dec_inv (integer /* phys_addr_t */ pool_range_end,
 
 
 
-lemma lemma2 (integer /* intptr_t */ p_i, integer /* unsigned int */ order)
+lemma lemma2 (integer p_i, // intptr_t 
+              integer order) // unsigned int 
   requires order >= 0; 
            let p_phys = p_i * 4096; 
            let buddy_i = pfn_buddy(p_i, order); 
@@ -27,7 +28,8 @@ lemma lemma2 (integer /* intptr_t */ p_i, integer /* unsigned int */ order)
           (p_phys + (page_size_of_order(order)) == buddy_phys) || (p_phys - (page_size_of_order(order)) == buddy_phys) 
 
 
-lemma extract_l (integer /* intptr_t */ p_i, integer /* unsigned int */ order)
+lemma extract_l (integer p_i, // intptr_t 
+                 integer order) // unsigned int 
  requires order >= 0 ;
           let p_phys = p_i * 4096 ;
           let buddy_i = pfn_buddy(p_i, order) ;
@@ -38,12 +40,13 @@ lemma extract_l (integer /* intptr_t */ p_i, integer /* unsigned int */ order)
          page_aligned(buddy_phys, order)
 
 
-lemma page_size_of_order_inc (integer /* unsigned int */ order) 
+lemma page_size_of_order_inc (integer order) // unsigned int 
   requires order >= 0 
   ensures (page_size_of_order(order+1)) == 2*(page_size_of_order(order))
 
 
-lemma lemma4 (integer /* intptr_t */ p_i, integer /* unsigned int */ order)
+lemma lemma4 (integer p_i, // intptr_t 
+              integer order) // unsigned int 
   requires order >= 1 ;
            let p_phys = p_i * 4096 ;
            order_aligned(p_i, order)
@@ -62,7 +65,7 @@ lemma lemma4 (integer /* intptr_t */ p_i, integer /* unsigned int */ order)
 lemma order_align_inv_loop (integer __hypvmemmap,
                             map<integer, struct hyp_page> V,
                             struct hyp_pool pool,
-                            pointer /* struct hyp_page* */ p) 
+                            pointer p) // struct hyp_page* 
  requires let hypvmemmap = (pointer) __hypvmemmap ;
           let p_i = (((integer) p) - __hypvmemmap) / 4 ;
           let start_i = (pool).range_start / 4096 ;
@@ -81,7 +84,7 @@ lemma order_align_inv_loop (integer __hypvmemmap,
 
 lemma page_group_ok_easy (integer __hypvmemmap, struct hyp_pool pool) 
   requires let hypvmemmap = (pointer) __hypvmemmap ;
-           pool.range_start >= 0; pool.range_end >= 0; /* this used to be implied by the range_start and range_end uint types */
+           pool.range_start >= 0; pool.range_end >= 0; // this used to be implied by the range_start and range_end uint types 
            let start_i = (pool).range_start / 4096 ;
            let end_i = (pool).range_end / 4096 ;
            take V = each (integer i; start_i <= i && i < end_i) { Owned<struct hyp_page>(hypvmemmap+(i*4)) } ;
@@ -91,7 +94,7 @@ lemma page_group_ok_easy (integer __hypvmemmap, struct hyp_pool pool)
           each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V2, pool) } 
 
 
-lemma order_aligned_init (integer /* unsigned long */ i) 
+lemma order_aligned_init (integer i) // unsigned long 
   requires 0==0
   ensures order_aligned(i, 0) 
 
@@ -103,8 +106,8 @@ lemma page_size_of_order ()
 lemma attach_inc_loop (map<integer, struct hyp_page> V,
                             integer __hypvmemmap,
                             struct hyp_pool pool,
-                            pointer /* struct hyp_page* */ p,
-                            integer /* unsigned int */ order) 
+                            pointer p, // struct hyp_page* 
+                            integer order) // unsigned int 
  requires let hypvmemmap = (pointer) __hypvmemmap ;
           let start_i = (pool).range_start / 4096 ;
           let end_i = (pool).range_end / 4096 ;
@@ -126,7 +129,8 @@ lemma attach_inc_loop (map<integer, struct hyp_page> V,
 
 
 
-lemma find_buddy_xor(integer /* intptr_t */ addr_i, integer /* unsigned int */ order)
+lemma find_buddy_xor(integer addr_i, // intptr_t 
+                     integer order) // unsigned int 
   requires order_aligned(addr_i, order) ;
            0 <= order; order < 11 ;
            0 <= addr_i; addr_i * 4096 < (power(2, 64))
@@ -142,7 +146,7 @@ lemma find_buddy_xor(integer /* intptr_t */ addr_i, integer /* unsigned int */ o
           addr_i != buddy_i
 
 
-lemma page_size_of_order2(integer /* unsigned int */ order)
+lemma page_size_of_order2(integer order) // unsigned int 
   requires 0 <= order; order < 11
   ensures 0 < (power_uf(2, order)) ;
           (power_uf(2, order)) < (power(2, 11)) ;
@@ -150,17 +154,19 @@ lemma page_size_of_order2(integer /* unsigned int */ order)
           size == (page_size_of_order(order))
 
 
-lemma struct_list_head_to_bytes(pointer/* struct list_head * */ node)
+lemma struct_list_head_to_bytes(pointer node) // struct list_head * 
   requires take Node = Owned<struct list_head>(node) ;
-           (integer) node >= 0  /* this should maybe not be necessary to say */
+           (integer) node >= 0  // this should maybe not be necessary to say 
   ensures take B = each (integer i; ((integer) node) <= i && i < (((integer) node) + (sizeof_struct_list_head()))){Byte(((pointer) 0)+(i*1))} 
 
 
-lemma bytes_to_struct_list_head(pointer /* struct list_head * */ node, integer /* u8 */ order)
-  requires ((integer) node) >= 0 ; /* this should maybe not be necessary to say */
+lemma bytes_to_struct_list_head(pointer node, // struct list_head * 
+                                integer order) // u8 
+  requires ((integer) node) >= 0 ; // this should maybe not be necessary to say 
            let length = page_size_of_order(order) ;
            let nodeI = ((integer) node) ;
            take B = each (integer i; (nodeI <= i) && (i < (nodeI + length))) {ByteV(((pointer) 0) + (i * 1), 0)} 
   ensures take Node = Owned<struct list_head>(node) ;
           take BR = each (integer i; (nodeI + (sizeof_struct_list_head())) <= i && i < (nodeI + length)){ByteV(((pointer) 0)+(i*1), 0)} 
 
+@*/

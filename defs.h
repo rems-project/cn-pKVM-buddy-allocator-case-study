@@ -1,3 +1,4 @@
+/*@
 function (integer) pfn_buddy (integer x, integer sz)
 function (boolean) order_aligned (integer x, integer sz)
 function (integer) order_align (integer x, integer sz)
@@ -14,19 +15,19 @@ function (integer) cn_hyp_page_to_pfn(integer hypvmemmap, pointer p) {
   (((integer) p) - hypvmemmap) / sizeof<struct hyp_page>
 }
 
-/* copied and adjusted from the corresponding macro definition in memory.h */
+// copied and adjusted from the corresponding macro definition in memory.h 
 function (integer) cn__hyp_pa(integer physvirtoffset, pointer virt) {
   (((integer)(virt)) + physvirtoffset)
 }
 
 
 
-/* copied and adjusted from the corresponding macro definition in memory.h */
+// copied and adjusted from the corresponding macro definition in memory.h 
 function (integer) cn_hyp_phys_to_pfn(integer phys) {
   phys / 4096
 }
 
-/* copied and adjusted from the corresponding macro definition in memory.h */
+// copied and adjusted from the corresponding macro definition in memory.h 
 function (integer) cn_hyp_virt_to_pfn (integer physvirtoffset, pointer virt) {
   cn_hyp_phys_to_pfn(cn__hyp_pa(physvirtoffset, virt))
 }
@@ -36,17 +37,17 @@ function (integer) cn_hyp_pfn_to_phys(integer pfn) {
   pfn*4096
 }
 
-/* copied and adjusted from the corresponding macro definition in memory.h */
+// copied and adjusted from the corresponding macro definition in memory.h 
 function (integer) cn_hyp_page_to_phys(integer hypvmemmap, pointer page) {
   cn_hyp_pfn_to_phys((cn_hyp_page_to_pfn(hypvmemmap, page)))
 }
 
-/* copied and adjusted from the corresponding macro definition in memory.h */
+// copied and adjusted from the corresponding macro definition in memory.h 
 function (pointer) cn__hyp_va(integer physvirtoffset, integer phys) {
   ((pointer) (phys - physvirtoffset))
 }
 
-/* copied and adjusted from the corresponding macro definition in memory.h */
+// copied and adjusted from the corresponding macro definition in memory.h 
 function (pointer) cn_hyp_page_to_virt(integer physvirtoffset, 
                                        integer hypvmemmap, pointer page) {
   cn__hyp_va(physvirtoffset, cn_hyp_page_to_phys(hypvmemmap, page))
@@ -81,9 +82,9 @@ function (datatype excludes) exclude_two (integer ex1, integer ex2)
 }
 
 
-/* Check a pointer (to the struct list_head embedded in a free page) is a valid
-   pointer, which includes knowing that its matching vmemmap entry has the
-   refcount/order settings that indicate that the struct is present. */
+// Check a pointer (to the struct list_head embedded in a free page) is a valid
+// pointer, which includes knowing that its matching vmemmap entry has the
+// refcount/order settings that indicate that the struct is present. 
 function (boolean) vmemmap_good_pointer (integer physvirt_offset, pointer p,
         map <integer, struct hyp_page> vmemmap,
         integer range_start, integer range_end, datatype excludes ex)
@@ -153,7 +154,7 @@ function (boolean) vmemmap_wf (integer page_index,
   let page = vmemmap[page_index];
   // let prev = page.node.prev;
   // let next = page.node.next;
-    /* representable as an unsigned short */
+    // representable as an unsigned short 
     (0 <= page.refcount) && (page.refcount < (power(2, 16)))
     // && (page.pool == pool_pointer)
     && ((page.order == (hyp_no_order ())) || vmemmap_normal_order_wf(page_index, page, pool))
@@ -204,22 +205,13 @@ function (boolean) vmemmap_l_wf (integer page_index, integer physvirt_offset,
         && ((APs[next_page_index - off_i]).prev == self_node_pointer)
         && (next_page.order == page.order)
         && (next_page.refcount == 0));
-  /* there is no self-loop case for this node type, as it is cleared unless it is
-     present in the per-order free list */
+  // there is no self-loop case for this node type, as it is cleared unless it is
+  // present in the per-order free list 
   let nonempty_clause = (prev != self_node_pointer) && (next != self_node_pointer);
   (prev_clause && next_clause)
 }
 
-/*
-function (boolean) vmemmap_b_wf (integer page_index, integer physvirt_offset,
-        map <integer, struct hyp_page> vmemmap, map <integer, pointer> prevs,
-        map <integer, pointer> nexts, pointer pool_pointer, struct hyp_pool pool)
-{
-  return (vmemmap_wf (page_index, physvirt_offset, vmemmap, prevs, nexts, pool_pointer, pool)
-    && vmemmap_l_wf (page_index, physvirt_offset, vmemmap, prevs, nexts, pool_pointer, pool)
-  );
-}
-*/
+
 
 // hyp_virt_to_page(virt)
 // hyp_phys_to_page(__hy_pa(virt))
@@ -228,9 +220,9 @@ function (boolean) vmemmap_b_wf (integer page_index, integer physvirt_offset,
 // &hyp_vmemmap[(virt + hyp_physvirt_offset) >> PAGE_SHIFT]
 // &hyp_vmemmap[(virt + offset) / 4096]
 
-/* Note prevs & nexts are indexed by (virtual-address / page-size), whereas
-   the vmemmap is indexed by (physical-address / page-size), this is to do with
-   the way they're constructed by iterating conjunction in Hyp_pool. */
+// Note prevs & nexts are indexed by (virtual-address / page-size), whereas
+// the vmemmap is indexed by (physical-address / page-size), this is to do with
+// the way they're constructed by iterating conjunction in Hyp_pool. 
 function (boolean) freeArea_cell_wf (integer cell_index, integer physvirt_offset,
         map <integer, struct hyp_page> vmemmap, map <integer, struct list_head> APs,
         pointer pool_pointer, struct hyp_pool pool,
@@ -290,7 +282,7 @@ function (boolean) hyp_pool_wf (pointer pool_pointer, struct hyp_pool pool,
     && (range_start < range_end)
     && (range_end < (power(2, 52)))
     && (0 <= physvirt_offset)
-    && (physvirt_offset < range_start) /* use '<=' */
+    && (physvirt_offset < range_start) // use '<=' 
     && (mod(physvirt_offset, (page_size ())) == 0)
     && (((range_start / (page_size ())) * (page_size ())) == range_start)
     && (((range_end / (page_size ())) * (page_size ())) == range_end)
@@ -486,3 +478,4 @@ predicate (struct list_head) O_struct_list_head(pointer p, boolean condition)
     return todo_default_list_head ();
   }
 }
+@*/
