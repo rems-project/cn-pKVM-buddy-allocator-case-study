@@ -630,8 +630,8 @@ void hyp_get_page(struct hyp_pool *pool, void *addr)
 
 	/* hyp_spin_lock(&pool->lock); */
         /*CN*//*@instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
+  /*CN*//*@extract Owned<struct hyp_page>, page_i; @*/	
 	hyp_page_ref_inc(p);
-  /*CN*//*@extract Owned<struct hyp_page>, page_i; @*/
 	/* hyp_spin_unlock(&pool->lock); */
 }
 
@@ -665,15 +665,16 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 	/* ----- hyp_spin_lock(&pool->lock); */
 
 	/* Look for a high-enough-order page */
-	while (i < pool->max_order && list_empty(&pool->free_area[i]))
+	while /*CN(i < pool->max_order && list_empty(&pool->free_area[i]))*/ (1)
             /*@ inv take H_I = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset);
                     H_I.vmemmap == H.vmemmap; H_I.pool == H.pool;
                     order <= i; H.pool.max_order <= 11;
                     {pool} unchanged; {order} unchanged;
                     {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
 		/*CN*/{ 
+			/*CN*/ /*@extract Owned<struct list_head>, i;@*/ 
+			/*CN*/if (!(i < pool->max_order && list_empty(&pool->free_area[i]))) break;
 			i++; 
-			/*CN*/ /*@extract Owned<struct list_head>, i-1;@*/ 
 		/*CN*/}
 	if (i >= pool->max_order) {
 		/* ----- hyp_spin_unlock(&pool->lock); */
@@ -686,8 +687,8 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 	p = node_to_page(pool->free_area[i].next);
         // p = hyp_virt_to_page(pool->free_area[i].next);
         /*CN*//*@ instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p); @*/
-        /*CN*//*@ apply order_dec_inv(H.pool.range_end, cn_hyp_page_to_pfn(__hyp_vmemmap,p), (*p).order, order); @*/
 				/*CN*/ /*@extract Owned<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, p); @*/
+        /*CN*//*@ apply order_dec_inv(H.pool.range_end, cn_hyp_page_to_pfn(__hyp_vmemmap,p), (*p).order, order); @*/
 	p = __hyp_extract_page(pool, p, order);
 	/* ----- hyp_spin_unlock(&pool->lock); */
         /*CN*//*@ instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,p); @*/ 
@@ -807,8 +808,9 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
              /*@ inv (H.pool).max_order <= 11 @*/
         {
                 /*CN*//*@instantiate i+pfn;@*/
-		// p[i].refcount = 0; /* added for formalisation */
-		__hyp_put_page(pool, &p[i]);
+		            // p[i].refcount = 0; /* added for formalisation */
+								/*CN*/ /*@extract Page, start_i+i-off_i;@*/
+		            __hyp_put_page(pool, &p[i]);
         }
         assert(i == nr_pages);
 	return 0;
