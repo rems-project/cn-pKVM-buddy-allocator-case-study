@@ -54,11 +54,9 @@ function (pointer) cn_hyp_page_to_virt(integer physvirtoffset,
 }
 
 
-datatype excludes {
-  Exclude {boolean any, boolean do_ex1, integer ex1, boolean do_ex2, integer ex2}
-}
+type_synonym excludes = {boolean any, boolean do_ex1, integer ex1, boolean do_ex2, integer ex2}
 
-function (boolean) excluded (datatype excludes ex, integer i)
+function (boolean) excluded (excludes ex, integer i)
 {
   ex.any && (
       (ex.do_ex1 && (i == ex.ex1))
@@ -66,19 +64,19 @@ function (boolean) excluded (datatype excludes ex, integer i)
   )
 }
 
-function (datatype excludes) exclude_none ()
+function (excludes) exclude_none ()
 {
-  Exclude {any: 0 < 0, do_ex1: 0 < 0, ex1: 0, do_ex2: 0 < 0, ex2: 0}
+  {any: 0 < 0, do_ex1: 0 < 0, ex1: 0, do_ex2: 0 < 0, ex2: 0}
 }
 
-function (datatype excludes) exclude_one (integer ex1)
+function (excludes) exclude_one (integer ex1)
 {
-  Exclude {any: 0 < 1, do_ex1: 0 < 1, ex1: ex1, do_ex2: 0 < 0, ex2: 0}
+  {any: 0 < 1, do_ex1: 0 < 1, ex1: ex1, do_ex2: 0 < 0, ex2: 0}
 }
 
-function (datatype excludes) exclude_two (integer ex1, integer ex2)
+function (excludes) exclude_two (integer ex1, integer ex2)
 {
-  Exclude {any: 0 < 1, do_ex1: 0 < 1, ex1: ex1, do_ex2: 0 < 1, ex2: ex2}
+  {any: 0 < 1, do_ex1: 0 < 1, ex1: ex1, do_ex2: 0 < 1, ex2: ex2}
 }
 
 
@@ -87,7 +85,7 @@ function (datatype excludes) exclude_two (integer ex1, integer ex2)
 // refcount/order settings that indicate that the struct is present. 
 function (boolean) vmemmap_good_pointer (integer physvirt_offset, pointer p,
         map <integer, struct hyp_page> vmemmap,
-        integer range_start, integer range_end, datatype excludes ex)
+        integer range_start, integer range_end, excludes ex)
 {
   // let hp_sz = (sizeof <struct hyp_page>);
   let start_i = range_start / (page_size ());
@@ -166,8 +164,7 @@ function (boolean) vmemmap_wf (integer page_index,
 
 function (boolean) vmemmap_l_wf (integer page_index, integer physvirt_offset,
         map <integer, struct hyp_page> vmemmap, map <integer, struct list_head> APs,
-        pointer pool_pointer, struct hyp_pool pool,
-        datatype excludes ex)
+        pointer pool_pointer, struct hyp_pool pool, excludes ex)
 {
   // let hp_sz = (sizeof <struct hyp_page>);
   // let page_pointer = ((pointer) (
@@ -225,8 +222,7 @@ function (boolean) vmemmap_l_wf (integer page_index, integer physvirt_offset,
 // the way they're constructed by iterating conjunction in Hyp_pool. 
 function (boolean) freeArea_cell_wf (integer cell_index, integer physvirt_offset,
         map <integer, struct hyp_page> vmemmap, map <integer, struct list_head> APs,
-        pointer pool_pointer, struct hyp_pool pool,
-        datatype excludes ex)
+        pointer pool_pointer, struct hyp_pool pool, excludes ex)
 {
   let cell = (pool.free_area)[cell_index];
   let pool_free_area_arr_pointer = (pointer)(((integer)pool_pointer) +
