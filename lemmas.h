@@ -87,9 +87,9 @@ lemma page_group_ok_easy (integer __hypvmemmap, struct hyp_pool pool)
            pool.range_start >= 0; pool.range_end >= 0; // this used to be implied by the range_start and range_end uint types 
            let start_i = (pool).range_start / 4096 ;
            let end_i = (pool).range_end / 4096 ;
-           take V = each (integer i; start_i <= i && i < end_i) { Owned<struct hyp_page>(hypvmemmap+(i*4)) } ;
+           take V = each (integer i; start_i <= i && i < end_i) { Owned(array_shift<struct hyp_page>(hypvmemmap, i)) } ;
            each (integer i; start_i <= i && i < end_i) { (V[i]).order == 0 } 
-  ensures take V2 = each (integer i; start_i <= i && i < end_i) { Owned<struct hyp_page>(hypvmemmap+(i*4)) } ;
+  ensures take V2 = each (integer i; start_i <= i && i < end_i) { Owned(array_shift<struct hyp_page>(hypvmemmap, i)) } ;
           V2 == V ;
           each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V2, pool) } 
 
@@ -157,7 +157,7 @@ lemma page_size_of_order2(integer order) // unsigned int
 lemma struct_list_head_to_bytes(pointer node) // struct list_head * 
   requires take Node = Owned<struct list_head>(node) ;
            (integer) node >= 0  // this should maybe not be necessary to say 
-  ensures take B = each (integer i; ((integer) node) <= i && i < (((integer) node) + (sizeof_struct_list_head()))){Byte(((pointer) 0)+(i*1))} 
+  ensures take B = each (integer i; ((integer) node) <= i && i < (((integer) node) + (sizeof_struct_list_head()))){Byte(array_shift<char>(NULL, i))} 
 
 
 lemma bytes_to_struct_list_head(pointer node, // struct list_head * 
@@ -165,8 +165,8 @@ lemma bytes_to_struct_list_head(pointer node, // struct list_head *
   requires ((integer) node) >= 0 ; // this should maybe not be necessary to say 
            let length = page_size_of_order(order) ;
            let nodeI = ((integer) node) ;
-           take B = each (integer i; (nodeI <= i) && (i < (nodeI + length))) {ByteV(((pointer) 0) + (i * 1), 0)} 
+           take B = each (integer i; (nodeI <= i) && (i < (nodeI + length))) {ByteV(array_shift<char>(NULL, i), 0)} 
   ensures take Node = Owned<struct list_head>(node) ;
-          take BR = each (integer i; (nodeI + (sizeof_struct_list_head())) <= i && i < (nodeI + length)){ByteV(((pointer) 0)+(i*1), 0)} 
+          take BR = each (integer i; (nodeI + (sizeof_struct_list_head())) <= i && i < (nodeI + length)){ByteV(array_shift<char>(NULL, i), 0)} 
 
 @*/

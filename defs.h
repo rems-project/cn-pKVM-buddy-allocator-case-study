@@ -323,7 +323,7 @@ predicate void Page (pointer vbase, integer guard, integer order)
     let length = (page_size_of_order(order));
     let vbaseI = ((integer) vbase);
     take Bytes = each (integer i; (vbaseI <= i) && (i < (vbaseI + length)))
-         {Byte((pointer)(((integer)((pointer) 0)) + (i * 1)))};
+         {Byte(array_shift<char>(NULL, i))};
     return;
   }
 }
@@ -338,7 +338,7 @@ predicate void ZeroPage (pointer vbase, integer guard, integer order)
     let length = (page_size_of_order(order));
     let vbaseI = ((integer) vbase);
     take Bytes = each (integer i; (vbaseI <= i) && (i < (vbaseI + length)))
-         {ByteV((pointer)(((integer)((pointer) 0)) + (i * 1)), 0)};
+         {ByteV(array_shift<char>(NULL, i), 0)};
     return;
   }
 }
@@ -350,7 +350,7 @@ predicate void AllocatorPageZeroPart (pointer zero_start, integer order)
   let region_length = (page_size_of_order(order));
   let length = (region_length - (sizeof <struct list_head>));
   take Bytes = each (integer i; (start <= i) && (i < (start + length)))
-       {ByteV((pointer)(((integer)((pointer) 0)) + (i * 1)), 0)};
+       {ByteV(array_shift<char>(NULL, i), 0)};
   return;
 }
 
@@ -384,12 +384,12 @@ predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
   let off_i = physvirt_offset / 4096;
   assert (hyp_pool_wf (pool_l, pool, vmemmap_l, physvirt_offset));
   take V = each(integer i; (start_i <= i) && (i < end_i))
-               {Owned<struct hyp_page>(vmemmap_l + i*(sizeof <struct hyp_page>))};
+               {Owned(array_shift<struct hyp_page>(vmemmap_l, i))};
   take APs = each(integer i; (start_i <= i + off_i) && (i + off_i < end_i)
                   && ((V[i+off_i]).refcount == 0)
                   && ((V[i+off_i]).order != (hyp_no_order ()))
                   && ((not (excluded (ex, i + off_i)))))
-                 {AllocatorPage(((pointer) 0) + i*4096, 1, (V[i+off_i]).order)};
+                 {AllocatorPage(array_shift<PAGE_SIZE_t>(NULL, i), 1, (V[i+off_i]).order)};
   assert (each (integer i; (start_i <= i) && (i < end_i))
     {vmemmap_wf (i, V, pool_l, pool)});
   assert (each (integer i; (start_i <= i) && (i < end_i)
@@ -414,12 +414,12 @@ predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
   let off_i = physvirt_offset / 4096;
   assert (hyp_pool_wf (pool_l, pool, vmemmap_l, physvirt_offset));
   take V = each(integer i; (start_i <= i) && (i < end_i))
-              {Owned<struct hyp_page>(vmemmap_l + i*(sizeof <struct hyp_page>))};
+              {Owned(array_shift<struct hyp_page>(vmemmap_l,  i))};
   take APs = each(integer i; (start_i <= i + off_i) && (i + off_i < end_i)
                 && ((V[i+off_i]).refcount == 0)
                 && ((V[i+off_i]).order != (hyp_no_order ()))
                 && ((not (excluded (ex, i + off_i)))))
-              {AllocatorPage(((pointer) 0) + i*4096, 1, (V[i+off_i]).order)};
+              {AllocatorPage(array_shift<PAGE_SIZE_t>(NULL, i), 1, (V[i+off_i]).order)};
   assert (each (integer i; (start_i <= i) && (i < end_i))
     {vmemmap_wf (i, V, pool_l, pool)});
   assert (each (integer i; (start_i <= i) && (i < end_i)
@@ -442,13 +442,13 @@ predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
   let end_i = P.range_end / 4096;
   let off_i = physvirt_offset / 4096;
   take V = each(integer i; (start_i <= i) && (i < end_i))
-              {Owned<struct hyp_page>(vmemmap_l + i*(sizeof <struct hyp_page>))};
+              {Owned(array_shift<struct hyp_page>(vmemmap_l, i))};
   assert (hyp_pool_wf (pool_l, P, vmemmap_l, physvirt_offset));
   take APs = each(integer i; (start_i <= i + off_i) && (i + off_i < end_i)
                 && ((V[i+off_i]).refcount == 0)
                 && ((V[i+off_i]).order != (hyp_no_order ()))
                 && ((not (excluded (ex, i + off_i)))))
-              {AllocatorPage(((pointer) 0) + i*4096, 1, (V[i+off_i]).order)};
+              {AllocatorPage(array_shift<PAGE_SIZE_t>(NULL, i), 1, (V[i+off_i]).order)};
   assert (each (integer i; (start_i <= i) && (i < end_i))
     {vmemmap_wf (i, V, pool_l, P)});
   assert (each (integer i; (start_i <= i) && (i < end_i)
