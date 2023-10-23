@@ -150,8 +150,7 @@ function (boolean) vmemmap_l_wf (integer page_index, integer physvirt_offset,
 {
   let page = vmemmap[page_index];
   let self_node_pointer = (pointer)((page_index * (page_size ())) - physvirt_offset);
-  let pool_free_area_arr_pointer = (pointer)(((integer)pool_pointer) +
-    (offsetof (hyp_pool, free_area)));
+  let pool_free_area_arr_pointer = member_shift<hyp_pool>(pool_pointer, free_area);
   let l_sz = sizeof <struct list_head>;
   let pool_free_area_pointer = ((pointer) (
     ((integer)pool_free_area_arr_pointer) + (page.order * l_sz)));
@@ -200,8 +199,7 @@ function (boolean) freeArea_cell_wf (integer cell_index, integer physvirt_offset
         pointer pool_pointer, struct hyp_pool pool, excludes ex)
 {
   let cell = (pool.free_area)[cell_index];
-  let pool_free_area_arr_pointer = (pointer)(((integer)pool_pointer) +
-    (offsetof (hyp_pool, free_area)));
+  let pool_free_area_arr_pointer = member_shift<hyp_pool>(pool_pointer, free_area);
   let l_sz = sizeof <struct list_head>;
   let cell_pointer = ((pointer) (((integer)pool_free_area_arr_pointer) + (cell_index * l_sz)));
   let prev = cell.prev;

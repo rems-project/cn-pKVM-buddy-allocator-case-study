@@ -200,7 +200,7 @@ static inline void page_remove_from_list(struct hyp_page *p)
 static inline void page_remove_from_list_pool(struct hyp_pool *pool, struct hyp_page *p)
 /*@ accesses __hyp_vmemmap; hyp_physvirt_offset @*/
 /*@ requires take HP = Hyp_pool(pool, (pointer) __hyp_vmemmap, hyp_physvirt_offset) @*/
-/*@ requires let free_area_l = (pointer)(((integer)pool) + offsetof(hyp_pool, free_area)) @*/
+/*@ requires let free_area_l = member_shift<hyp_pool>(pool, free_area) @*/
 /*@ requires let p_i = (((integer) p) - __hyp_vmemmap) / 4 @*/
 /*@ requires let phys = p_i * (page_size ()) @*/
 /*@ requires let virt = (pointer) (phys - hyp_physvirt_offset) @*/
@@ -282,7 +282,7 @@ static inline void page_add_to_list_pool(struct hyp_pool *pool,
 /*@ accesses __hyp_vmemmap; hyp_physvirt_offset @*/
 /*@ requires let p_i = (((integer) p) - __hyp_vmemmap) / 4 @*/
 /*@ requires take HP = Hyp_pool_ex1(pool, (pointer) __hyp_vmemmap, hyp_physvirt_offset, p_i) @*/
-/*@ requires let free_area_l = (pointer)(((integer)pool) + offsetof(hyp_pool, free_area)) @*/
+/*@ requires let free_area_l = member_shift<hyp_pool>(pool, free_area) @*/
 /*@ requires let phys = p_i * (page_size ()) @*/
 /*@ requires let virt = (pointer) (phys - hyp_physvirt_offset) @*/
 /*@ requires let hyp_vmemmap = (pointer) __hyp_vmemmap @*/
@@ -319,7 +319,7 @@ static inline void page_add_to_list_pool_ex1(struct hyp_pool *pool,
 /*@ requires let p_i = (((integer) p) - __hyp_vmemmap) / 4 @*/
 /*@ requires let p_i2 = (((integer) p_ex) - __hyp_vmemmap) / 4 @*/
 /*@ requires take HP = Hyp_pool_ex2(pool, (pointer) __hyp_vmemmap, hyp_physvirt_offset, p_i, p_i2) @*/
-/*@ requires let free_area_l = (pointer)(((integer)pool) + offsetof(hyp_pool, free_area)) @*/
+/*@ requires let free_area_l = member_shift<hyp_pool>(pool, free_area) @*/
 /*@ requires let phys = p_i * (page_size ()) @*/
 /*@ requires let virt = (pointer) (phys - hyp_physvirt_offset) @*/
 /*@ requires let hyp_vmemmap = (pointer) __hyp_vmemmap @*/
