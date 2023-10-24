@@ -10,8 +10,8 @@ Open Scope Z.
 Definition page_size_of_order (order : Z) : Z :=
   2 ^ (order + 12).
 
-Definition page_aligned (ptr order : Z) : Prop :=
-  Z.divide (page_size_of_order order) ptr.
+Definition page_aligned (ptr order : Z) : bool :=
+  Z.eqb (Z.modulo ptr (page_size_of_order order)) 0.
 
 Definition no_order : Z := 4294967295.
 
@@ -49,16 +49,29 @@ Proof.
   cbv; auto.
 Qed.
 
+Lemma page_aligned_Is_true:
+  forall i order, 0 <= order ->
+  Z.divide (page_size_of_order order) i ->
+  Is_true (page_aligned i order).
+Proof.
+  unfold page_aligned, page_size_of_order.
+  intros.
+  apply Is_true_eq_left.
+  rewrite Z.eqb_eq.
+  rewrite Z.mod_divide by lia.
+  assumption.
+Qed.
+
 Lemma page_aligned_times_4096:
   forall i order, 0 <= order ->
   order_aligned i order ->
-  page_aligned (i * 4096) order.
+  Is_true (page_aligned (i * 4096) order).
 Proof.
-  unfold page_aligned, order_aligned.
+  unfold order_aligned.
   intros.
+  apply page_aligned_Is_true; try assumption.
   rewrite<- page_size_of_order_times_4096 by auto.
-  apply Z.mul_divide_cancel_r; auto.
-  lia.
+  apply Z.mul_divide_cancel_r; auto; lia.
 Qed.
 
 Lemma pfn_add_sub_eq_pfn_times_4096:

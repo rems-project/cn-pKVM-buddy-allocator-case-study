@@ -83,9 +83,9 @@ Proof.
   apply pfn_add_sub_eq_pfn_times_4096; try lia.
 Qed.
 
-Lemma extract: extract_type.
+Lemma extract_l: extract_l_type.
 Proof.
-  unfold extract_type, Inst.order_aligned,
+  unfold extract_l_type, Inst.order_aligned,
       Inst.page_size_of_order, Inst.pfn_buddy, Inst.page_aligned.
   intros.
   constructor.
