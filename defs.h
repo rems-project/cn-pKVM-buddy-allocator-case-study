@@ -8,8 +8,6 @@ function (integer) page_size_of_order (integer sz)
 function (integer) page_size () { 4096 }
 function (integer) max_order () { 11 }
 function (integer) hyp_no_order () { 255 }
-function (integer) sizeof_struct_hyp_page(){ sizeof <struct hyp_page> }
-function (integer) sizeof_struct_list_head() { sizeof <struct list_head> }
 
 function (integer) cn_hyp_page_to_pfn(integer hypvmemmap, pointer p) {
   (((integer) p) - hypvmemmap) / sizeof<struct hyp_page>
