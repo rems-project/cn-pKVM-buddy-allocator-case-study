@@ -8,8 +8,6 @@ function (integer) page_size_of_order (integer sz)
 function (integer) page_size () { 4096 }
 function (integer) max_order () { 11 }
 function (integer) hyp_no_order () { 255 }
-function (integer) sizeof_struct_hyp_page(){ sizeof <struct hyp_page> }
-function (integer) sizeof_struct_list_head() { sizeof <struct list_head> }
 
 function (integer) cn_hyp_page_to_pfn(integer hypvmemmap, pointer p) {
   (((integer) p) - hypvmemmap) / sizeof<struct hyp_page>
@@ -151,9 +149,7 @@ function (boolean) vmemmap_l_wf (integer page_index, integer physvirt_offset,
   let page = vmemmap[page_index];
   let self_node_pointer = (pointer)((page_index * (page_size ())) - physvirt_offset);
   let pool_free_area_arr_pointer = member_shift<hyp_pool>(pool_pointer, free_area);
-  let l_sz = sizeof <struct list_head>;
-  let pool_free_area_pointer = ((pointer) (
-    ((integer)pool_free_area_arr_pointer) + (page.order * l_sz)));
+  let pool_free_area_pointer = array_shift<struct list_head>(pool_free_area_arr_pointer, page.order);
   let off_i = physvirt_offset / (page_size());
   let prev = (APs[page_index - off_i]).prev;
   let next = (APs[page_index - off_i]).next;
@@ -200,8 +196,7 @@ function (boolean) freeArea_cell_wf (integer cell_index, integer physvirt_offset
 {
   let cell = (pool.free_area)[cell_index];
   let pool_free_area_arr_pointer = member_shift<hyp_pool>(pool_pointer, free_area);
-  let l_sz = sizeof <struct list_head>;
-  let cell_pointer = ((pointer) (((integer)pool_free_area_arr_pointer) + (cell_index * l_sz)));
+  let cell_pointer = array_shift<struct list_head>(pool_free_area_arr_pointer, cell_index);
   let prev = cell.prev;
   let next = cell.next;
   let prev_page_pointer = prev;
@@ -234,10 +229,8 @@ function (boolean) hyp_pool_wf (pointer pool_pointer, struct hyp_pool pool,
   let end_i = range_end / (page_size ());
   let hp_sz = (sizeof <struct hyp_page>);
   let pool_sz = (sizeof <struct hyp_pool>);
-  let vmemmap_start_pointer = ((pointer) (
-    ((integer)vmemmap_pointer) + (hp_sz * start_i)));
-  let vmemmap_boundary_pointer = ((pointer) (
-    ((integer)vmemmap_pointer) + (hp_sz * end_i)));
+  let vmemmap_start_pointer = array_shift<struct hyp_page>(vmemmap_pointer,  start_i);
+  let vmemmap_boundary_pointer = array_shift<struct hyp_page>(vmemmap_pointer, end_i);
   let range_start_virt = range_start - physvirt_offset;
   let range_end_virt = range_end - physvirt_offset;
     (0 <= range_start)
@@ -262,7 +255,7 @@ function (boolean) hyp_pool_wf (pointer pool_pointer, struct hyp_pool pool,
 function (integer) get_order_uf (integer size)
 
 function (pointer) virt (pointer phys, integer physvirt_offset) {
-  (pointer) (((integer) phys) - physvirt_offset)
+  array_shift<char>(phys, (0-physvirt_offset))
 }
 
 
@@ -330,8 +323,8 @@ predicate struct list_head AllocatorPage
   }
   else {
     assert(((integer) vbase) > 0);
-    let vbaseI = (((integer) vbase) + (sizeof <struct list_head>));
-    take ZeroPart = AllocatorPageZeroPart ((pointer) vbaseI, order);
+    let zero_start = array_shift<struct list_head>(vbase, 1);
+    take ZeroPart = AllocatorPageZeroPart (zero_start, order);
     take Node = Owned<struct list_head>(vbase);
     return Node;
   }
