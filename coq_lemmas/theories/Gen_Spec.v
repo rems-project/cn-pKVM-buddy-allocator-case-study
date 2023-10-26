@@ -43,15 +43,12 @@ x_t_1).
   Definition hyp_no_order :=
     255.
 
-  Definition page_group_ok (page_index : Z) (vmemmap : ((Z -> (Z * Z * Z))))
-(pool : (((Z -> (Z * Z))) * Z * Z * Z)) :=
-    (let page := (vmemmap page_index) in (let start_i := ((get_range_start_1_4 pool) / 4096) in (((get_order_1_3
-page) = (hyp_no_order)) \/
+  Definition page_group_ok (page_index : Z) (vmemmap : ((Z -> (Z * Z * Z)))) (pool : (((Z -> (CN_Lib.Loc * CN_Lib.Loc))) * Z * Z * Z)) :=
+    (let page := (vmemmap page_index) in (let start_i := ((get_range_start_1_4 pool) / 4096) in (((get_order_1_3 page) = (hyp_no_order)) \/
 (forall (i : Z),
 (((1 <= i) /\ (i <= 10)) ->
 (~
-(((((order_align page_index i) < page_index) /\ (start_i <= (order_align page_index i))) /\
-(i <= (get_order_1_3 (vmemmap (order_align page_index i))))) /\
+(((((order_align page_index i) < page_index) /\ (start_i <= (order_align page_index i))) /\ (i <= (get_order_1_3 (vmemmap (order_align page_index i))))) /\
 (~ ((get_order_1_3 (vmemmap (order_align page_index i))) = (hyp_no_order)))))))))).
 
   Definition fun_upd {A B : Type} (eq : A -> A -> bool) (f : A -> B) x y z :=
@@ -74,9 +71,7 @@ x_t_0).
 x_t_2).
 
   Definition struct_hyp_page_good (x : (Z * Z * Z)) :=
-    ((((0 <= (get_refcount_0_3 x)) /\ ((get_refcount_0_3 x) <= 65535)) /\
-((0 <= (get_order_1_3 x)) /\ ((get_order_1_3 x) <= 255))) /\
-((0 <= (get_flags_2_3 x)) /\ ((get_flags_2_3 x) <= 255))).
+    ((((0 <= (get_refcount_0_3 x)) /\ ((get_refcount_0_3 x) <= 65535)) /\ ((0 <= (get_order_1_3 x)) /\ ((get_order_1_3 x) <= 255))) /\ ((0 <= (get_flags_2_3 x)) /\ ((get_flags_2_3 x) <= 255))).
 
   Definition order_dec_inv_type : Prop :=
     forall (pool_range_end : Z),
@@ -87,46 +82,43 @@ forall (order1 : Z),
 
 forall (order2 : Z),
 
-(Is_true (order_aligned pfn order1)) -> 
-(((pfn * 4096) + (page_size_of_order order1)) <= pool_range_end) -> 
-(0 <= order2) -> 
-(order2 <= order1) -> 
-(Is_true (order_aligned pfn order2)) /\ (((pfn * 4096) + (page_size_of_order order2)) <=
-pool_range_end).
+(Is_true (order_aligned pfn order1)) ->
+(((pfn * 4096) + (page_size_of_order order1)) <= pool_range_end) ->
+(0 <= order2) ->
+(order2 <= order1) ->
+(Is_true (order_aligned pfn order2)) /\ (((pfn * 4096) + (page_size_of_order order2)) <= pool_range_end).
 
   Definition lemma2_type : Prop :=
     forall (p_i : Z),
 
 forall (order : Z),
 
-(0 <= order) -> 
-let p_phys := (p_i * 4096) in 
-let buddy_i := (pfn_buddy p_i order) in 
-let buddy_phys := (buddy_i * 4096) in 
-(Is_true (order_aligned p_i order)) -> 
-(Is_true (order_aligned buddy_i order)) -> 
-let min_i := (if (p_i <? buddy_i) then p_i else buddy_i) in 
-let min_i_phys := (min_i * 4096) in 
-(Is_true (order_aligned min_i (order + 1))) /\ (Is_true (page_aligned min_i_phys (order + 1))) /\ (((p_phys
-+ (page_size_of_order order)) = buddy_phys) \/ ((p_phys - (page_size_of_order order)) = buddy_phys)).
+(0 <= order) ->
+let p_phys := (p_i * 4096) in
+let buddy_i := (pfn_buddy p_i order) in
+let buddy_phys := (buddy_i * 4096) in
+(Is_true (order_aligned p_i order)) ->
+(Is_true (order_aligned buddy_i order)) ->
+let min_i := (if (p_i <? buddy_i) then p_i else buddy_i) in
+let min_i_phys := (min_i * 4096) in
+(Is_true (order_aligned min_i (order + 1))) /\ (Is_true (page_aligned min_i_phys (order + 1))) /\ (((p_phys + (page_size_of_order order)) = buddy_phys) \/ ((p_phys - (page_size_of_order order)) = buddy_phys)).
 
   Definition extract_l_type : Prop :=
     forall (p_i : Z),
 
 forall (order : Z),
 
-(0 <= order) -> 
-let p_phys := (p_i * 4096) in 
-let buddy_i := (pfn_buddy p_i order) in 
-let buddy_phys := (buddy_i * 4096) in 
-(Is_true (order_aligned p_i (order + 1))) -> 
-((p_phys + (page_size_of_order order)) = buddy_phys) /\ (Is_true (page_aligned p_phys order)) /\ (Is_true
-(page_aligned buddy_phys order)).
+(0 <= order) ->
+let p_phys := (p_i * 4096) in
+let buddy_i := (pfn_buddy p_i order) in
+let buddy_phys := (buddy_i * 4096) in
+(Is_true (order_aligned p_i (order + 1))) ->
+((p_phys + (page_size_of_order order)) = buddy_phys) /\ (Is_true (page_aligned p_phys order)) /\ (Is_true (page_aligned buddy_phys order)).
 
   Definition page_size_of_order_inc_type : Prop :=
     forall (order : Z),
 
-(0 <= order) -> 
+(0 <= order) ->
 ((page_size_of_order (order + 1)) = (2 * (page_size_of_order order))).
 
   Definition lemma4_type : Prop :=
@@ -134,43 +126,39 @@ let buddy_phys := (buddy_i * 4096) in
 
 forall (order : Z),
 
-(1 <= order) -> 
-let p_phys := (p_i * 4096) in 
-(Is_true (order_aligned p_i order)) -> 
-let buddy_i := (pfn_buddy p_i (order - 1)) in 
-let buddy_phys := (buddy_i * 4096) in 
-(~ (Is_true (order_aligned buddy_i order))) /\ (buddy_phys =
-(p_phys + (page_size_of_order (order - 1)))) /\ (0 < (page_size_of_order order)) /\ (0 <
-(page_size_of_order (order - 1))) /\ (((page_size_of_order (order - 1)) * 2) =
-(page_size_of_order order)) /\ ((order_align buddy_i order) = p_i).
+(1 <= order) ->
+let p_phys := (p_i * 4096) in
+(Is_true (order_aligned p_i order)) ->
+let buddy_i := (pfn_buddy p_i (order - 1)) in
+let buddy_phys := (buddy_i * 4096) in
+(~ (Is_true (order_aligned buddy_i order))) /\ (buddy_phys = (p_phys + (page_size_of_order (order - 1)))) /\ (0 < (page_size_of_order order)) /\ (0 < (page_size_of_order (order - 1))) /\ (((page_size_of_order
+(order - 1)) * 2) = (page_size_of_order order)) /\ ((order_align buddy_i order) = p_i).
 
   Definition order_align_inv_loop_type : Prop :=
     forall (__hypvmemmap : Z),
 
 forall (V : ((Z -> (Z * Z * Z)))),
 
-forall (pool : (((Z -> (Z * Z))) * Z * Z * Z)),
+forall (pool : (((Z -> (CN_Lib.Loc * CN_Lib.Loc))) * Z * Z * Z)),
 
-forall (p : Z),
+forall (p : CN_Lib.Loc),
 
-let hypvmemmap := __hypvmemmap in 
-let p_i := ((p - __hypvmemmap) / 4) in 
-let start_i := ((get_range_start_1_4 pool) / 4096) in 
-let end_i := ((get_range_end_2_4 pool) / 4096) in 
-let p_order := (get_order_1_3 (V p_i)) in 
-(1 <= p_order) -> 
-(p_order < 11) -> 
-(Is_true (order_aligned p_i p_order)) -> 
-((((hypvmemmap + (4 * start_i)) <= p) /\ (p < (hypvmemmap + (4 * end_i)))) /\
-(((p - hypvmemmap) mod 4) = 0)) -> 
-let buddy_i := (pfn_buddy p_i (p_order - 1)) in 
+let hypvmemmap := __hypvmemmap in
+let p_i := ((p - __hypvmemmap) / 4) in
+let start_i := ((get_range_start_1_4 pool) / 4096) in
+let end_i := ((get_range_end_2_4 pool) / 4096) in
+let p_order := (get_order_1_3 (V p_i)) in
+(1 <= p_order) ->
+(p_order < 11) ->
+(Is_true (order_aligned p_i p_order)) ->
+((((CN_Lib.array_shift hypvmemmap 1 (4 * start_i)) <= p) /\ (p < (CN_Lib.array_shift hypvmemmap 1 (4 * end_i)))) /\ (((p - hypvmemmap) mod 4) = 0)) ->
+let buddy_i := (pfn_buddy p_i (p_order - 1)) in
 (forall (i : Z),
-(((start_i <= i) /\ (i < end_i)) -> (page_group_ok i V pool))) -> 
-let p_new_page := (upd_order_1_3 (V p_i) (p_order - 1)) in 
-let buddy_new_page := (upd_order_1_3 (V buddy_i) (p_order - 1)) in 
+(((start_i <= i) /\ (i < end_i)) -> (page_group_ok i V pool))) ->
+let p_new_page := (upd_order_1_3 (V p_i) (p_order - 1)) in
+let buddy_new_page := (upd_order_1_3 (V buddy_i) (p_order - 1)) in
 (forall (i : Z),
-(((start_i <= i) /\ (i < end_i)) ->
-(page_group_ok i (fun_upd Z.eqb (fun_upd Z.eqb V p_i p_new_page) buddy_i buddy_new_page) pool))).
+(((start_i <= i) /\ (i < end_i)) -> (page_group_ok i (fun_upd Z.eqb (fun_upd Z.eqb V p_i p_new_page) buddy_i buddy_new_page) pool))).
 
   Definition order_aligned_init_type : Prop :=
     forall (i : Z),
@@ -187,79 +175,75 @@ let buddy_new_page := (upd_order_1_3 (V buddy_i) (p_order - 1)) in
 
 forall (__hypvmemmap : Z),
 
-forall (pool : (((Z -> (Z * Z))) * Z * Z * Z)),
+forall (pool : (((Z -> (CN_Lib.Loc * CN_Lib.Loc))) * Z * Z * Z)),
 
-forall (p : Z),
+forall (p : CN_Lib.Loc),
 
 forall (order : Z),
 
-let hypvmemmap := __hypvmemmap in 
-let start_i := ((get_range_start_1_4 pool) / 4096) in 
-let end_i := ((get_range_end_2_4 pool) / 4096) in 
-((((hypvmemmap + (4 * start_i)) <= p) /\ (p < (hypvmemmap + (4 * end_i)))) /\
-(((p - hypvmemmap) mod 4) = 0)) -> 
-let p_i := ((p - __hypvmemmap) / 4) in 
-let buddy_i := (pfn_buddy p_i order) in 
-let buddy_order := (get_order_1_3 (V buddy_i)) in 
-(start_i <= buddy_i) -> 
-(buddy_i < end_i) -> 
-(0 <= order) -> 
-((order + 1) < 11) -> 
-(buddy_order = order) -> 
-(Is_true (order_aligned p_i order)) -> 
-(Is_true (order_aligned buddy_i order)) -> 
-((get_order_1_3 (V p_i)) = (hyp_no_order)) -> 
-let p_page_tweaked := (upd_order_1_3 (V p_i) order) in 
+let hypvmemmap := __hypvmemmap in
+let start_i := ((get_range_start_1_4 pool) / 4096) in
+let end_i := ((get_range_end_2_4 pool) / 4096) in
+((((CN_Lib.array_shift hypvmemmap 1 (4 * start_i)) <= p) /\ (p < (CN_Lib.array_shift hypvmemmap 1 (4 * end_i)))) /\ (((p - hypvmemmap) mod 4) = 0)) ->
+let p_i := ((p - __hypvmemmap) / 4) in
+let buddy_i := (pfn_buddy p_i order) in
+let buddy_order := (get_order_1_3 (V buddy_i)) in
+(start_i <= buddy_i) ->
+(buddy_i < end_i) ->
+(0 <= order) ->
+((order + 1) < 11) ->
+(buddy_order = order) ->
+(Is_true (order_aligned p_i order)) ->
+(Is_true (order_aligned buddy_i order)) ->
+((get_order_1_3 (V p_i)) = (hyp_no_order)) ->
+let p_page_tweaked := (upd_order_1_3 (V p_i) order) in
 (forall (i : Z),
-(((start_i <= i) /\ (i < end_i)) -> (page_group_ok i (fun_upd Z.eqb V p_i p_page_tweaked) pool))) -> 
-let min_i := (if (p_i <? buddy_i) then p_i else buddy_i) in 
-let min_page := (upd_order_1_3 (V min_i) (order + 1)) in 
-let buddy_page := (upd_order_1_3 (V buddy_i) (hyp_no_order)) in 
+(((start_i <= i) /\ (i < end_i)) -> (page_group_ok i (fun_upd Z.eqb V p_i p_page_tweaked) pool))) ->
+let min_i := (if (p_i <? buddy_i) then p_i else buddy_i) in
+let min_page := (upd_order_1_3 (V min_i) (order + 1)) in
+let buddy_page := (upd_order_1_3 (V buddy_i) (hyp_no_order)) in
 (forall (i : Z),
-(((start_i <= i) /\ (i < end_i)) ->
-(page_group_ok i (fun_upd Z.eqb (fun_upd Z.eqb V buddy_i buddy_page) min_i min_page) pool))).
+(((start_i <= i) /\ (i < end_i)) -> (page_group_ok i (fun_upd Z.eqb (fun_upd Z.eqb V buddy_i buddy_page) min_i min_page) pool))).
 
   Definition find_buddy_xor_type : Prop :=
     forall (addr_i : Z),
 
 forall (order : Z),
 
-(Is_true (order_aligned addr_i order)) -> 
-(0 <= order) -> 
-(order < 11) -> 
-(0 <= addr_i) -> 
-((addr_i * 4096) < (2 ^ 64)) -> 
-(0 < (2 ^ order)) /\ ((2 ^ order) < (2 ^ 11)) /\ (0 <=
-(Z.lxor (addr_i * 4096) (4096 * (2 ^ order)))) /\ ((Z.lxor (addr_i * 4096) (4096 * (2 ^ order))) <
-(2 ^ 64)) /\ let buddy_addr := (Z.lxor (addr_i * 4096) (4096 * (2 ^ order))) in 
-let buddy_i := (buddy_addr / 4096) in 
-(buddy_i = (pfn_buddy addr_i order)) /\ ((buddy_addr mod 4096) = 0) /\ (Is_true
-(order_aligned buddy_i order)) /\ (~ (addr_i = buddy_i)).
+(Is_true (order_aligned addr_i order)) ->
+(0 <= order) ->
+(order < 11) ->
+(0 <= addr_i) ->
+((addr_i * 4096) < (2 ^ 64)) ->
+(0 < (2 ^ order)) /\ ((2 ^ order) < (2 ^ 11)) /\ (0 <= (Z.lxor (addr_i * 4096) (4096 * (2 ^ order)))) /\ ((Z.lxor (addr_i * 4096) (4096 * (2 ^ order))) < (2 ^ 64)) /\ let buddy_addr := (Z.lxor
+(addr_i * 4096) (4096 * (2 ^ order))) in
+let buddy_i := (buddy_addr / 4096) in
+(buddy_i = (pfn_buddy addr_i order)) /\ ((buddy_addr mod 4096) = 0) /\ (Is_true (order_aligned buddy_i order)) /\ (~ (addr_i = buddy_i)).
 
   Definition page_size_of_order2_type : Prop :=
     forall (order : Z),
 
-(0 <= order) -> 
-(order < 11) -> 
-(0 < (2 ^ order)) /\ ((2 ^ order) < (2 ^ 11)) /\ let size := (4096 * (2 ^ order)) in 
+(0 <= order) ->
+(order < 11) ->
+(0 < (2 ^ order)) /\ ((2 ^ order) < (2 ^ 11)) /\ let size := (4096 * (2 ^ order)) in
 (size = (page_size_of_order order)).
 
   Definition page_group_ok_easy_type : Prop :=
     forall (__hypvmemmap : Z),
 
-forall (pool : (((Z -> (Z * Z))) * Z * Z * Z)),
+forall (pool : (((Z -> (CN_Lib.Loc * CN_Lib.Loc))) * Z * Z * Z)),
 
 forall (V : ((Z -> (Z * Z * Z)))),
 
-let hypvmemmap := __hypvmemmap in 
-(0 <= (get_range_start_1_4 pool)) -> 
-(0 <= (get_range_end_2_4 pool)) -> 
-let start_i := ((get_range_start_1_4 pool) / 4096) in 
-let end_i := ((get_range_end_2_4 pool) / 4096) in 
+let hypvmemmap := __hypvmemmap in
+(0 <= (get_range_start_1_4 pool)) ->
+(0 <= (get_range_end_2_4 pool)) ->
+let start_i := ((get_range_start_1_4 pool) / 4096) in
+let end_i := ((get_range_end_2_4 pool) / 4096) in
 (forall (i : Z),
-(((start_i <= i) /\ (i < end_i)) -> (struct_hyp_page_good (V i)))) -> 
+(((start_i <= i) /\ (i < end_i)) -> (struct_hyp_page_good (V i)))) ->
 (forall (i : Z),
-(((start_i <= i) /\ (i < end_i)) -> ((get_order_1_3 (V i)) = 0))) -> 
+(((start_i <= i) /\ (i < end_i)) -> ((get_order_1_3 (V i)) = 0))) ->
 (forall (i : Z),
 (((start_i <= i) /\ (i < end_i)) -> (struct_hyp_page_good (V i)))) /\ (forall (i : Z),
 (((start_i <= i) /\ (i < end_i)) -> (page_group_ok i V pool))).

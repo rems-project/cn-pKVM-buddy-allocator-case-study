@@ -324,7 +324,7 @@ Proof.
     rename m into g_ok end.
   unfold hyp_no_order in *.
   apply (group_ok_inv_split pg) in g_ok;
-    (try unfold pg in *); try lia2; auto.
+    (try unfold pg, CN_Lib.array_shift in *); try lia2; auto.
   eapply group_ok_inv_eq_orders.
   apply g_ok.
   clear g_ok.
@@ -361,51 +361,51 @@ Lemma attach_inc_loop : attach_inc_loop_type.
     pose (g_ok := g_okx); fold pg in g_ok end.
   rewrite buddy_lt_eq in * by lia.
   destruct (order_aligned_b pg (order + 1)) eqn: is_al.
-    apply Is_true_eq_left in is_al.
+  - apply Is_true_eq_left in is_al.
     order_aligned_b.
     apply (group_ok_inv_join pg) in g_ok;
       repeat rewrite (get_fun_upd get_order_1_3);
       repeat rewrite get_upd_order_1_3;
       repeat rewrite Z.eqb_refl;
-      auto; try lia2.
-      eapply group_ok_inv_eq_orders.
-        apply g_ok.
-      clear g_ok.
+      auto; unfold CN_Lib.array_shift in *; try lia2.
+      + eapply group_ok_inv_eq_orders.
+        * apply g_ok.
+        * clear g_ok.
       intros.
       unfold Defs.fun_upd, fun_upd.
       rewrite Z.eqb_refl.
       split_if x; repeat rewrite get_upd_order_1_3; auto.
       split_if y; repeat rewrite get_upd_order_1_3; auto.
-    split_if x; auto.
-  pose (buddy_le := is_al).
-  rewrite<- buddy_lt_eq in buddy_le by lia.
-  rewrite Z.ltb_ge in buddy_le.
-  match goal with b: get_order_1_3 (V (buddy _ _)) =_ |- _ =>
-    pose (buddy_order := b) end.
-  apply (group_ok_inv_join (buddy pg order)) in g_ok;
-    unfold pg in *;
-    repeat rewrite (get_fun_upd get_order_1_3);
-    repeat rewrite buddy_idemp_impossible3;
-    repeat rewrite Z.eqb_refl;
-    repeat rewrite get_upd_order_1_3;
-    repeat rewrite buddy_order;
-    auto; try lia.
-      eapply group_ok_inv_eq_orders.
-        apply g_ok.
-      clear g_ok.
-      unfold fun_upd, Defs.fun_upd.
-      intros.
-      rewrite buddy_idemp_impossible3 by lia.
-      rewrite H4.
-      rewrite buddy_involution_gt_case; auto.
-      split_if x; repeat rewrite get_upd_order_1_3; try lia.
-      split_if y; repeat rewrite get_upd_order_1_3; try lia.
-      rewrite Z.eqb_eq in y.
-      rewrite y in *.
-      auto.
-    apply buddy_higher_aligned; auto.
-  rewrite buddy_involution_gt_case; auto.
-  rewrite Z.eqb_refl; auto.
+    + split_if x; auto.
+  - pose (buddy_le := is_al).
+    rewrite<- buddy_lt_eq in buddy_le by lia.
+    rewrite Z.ltb_ge in buddy_le.
+    match goal with b: get_order_1_3 (V (buddy _ _)) =_ |- _ =>
+      pose (buddy_order := b) end.
+    apply (group_ok_inv_join (buddy pg order)) in g_ok;
+      unfold pg in *;
+      repeat rewrite (get_fun_upd get_order_1_3);
+      repeat rewrite buddy_idemp_impossible3;
+      repeat rewrite Z.eqb_refl;
+      repeat rewrite get_upd_order_1_3;
+      repeat rewrite buddy_order;
+      auto; try lia.
+      + eapply group_ok_inv_eq_orders.
+          * apply g_ok.
+          * clear g_ok.
+            unfold fun_upd, Defs.fun_upd.
+            intros.
+            rewrite buddy_idemp_impossible3 by lia.
+            rewrite H4.
+            rewrite buddy_involution_gt_case; auto.
+            split_if x; repeat rewrite get_upd_order_1_3; try lia.
+            split_if y; repeat rewrite get_upd_order_1_3; try lia.
+            rewrite Z.eqb_eq in y.
+            rewrite y in *.
+            auto.
+    + apply buddy_higher_aligned; auto.
+    + rewrite buddy_involution_gt_case; auto.
+      rewrite Z.eqb_refl; auto.
 Qed.
 
 End Proofs.
