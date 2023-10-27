@@ -62,6 +62,9 @@ x_t_1).
     (let '(x_t_0,x_t_1,x_t_2,x_t_3) := (t : (T_0 * T_1 * T_2 * T_3)) in
 x_t_2).
 
+  Definition page_size :=
+    4096.
+
   Definition get_refcount_0_3 {T_0 T_1 T_2: Type} (t : (T_0 * T_1 * T_2)) :=
     (let '(x_t_0,x_t_1,x_t_2) := (t : (T_0 * T_1 * T_2)) in
 x_t_0).
@@ -135,7 +138,7 @@ let buddy_phys := (buddy_i * 4096) in
 (order - 1)) * 2) = (page_size_of_order order)) /\ ((order_align buddy_i order) = p_i).
 
   Definition order_align_inv_loop_type : Prop :=
-    forall (__hypvmemmap : Z),
+    forall (__hypvmemmap : CN_Lib.Loc),
 
 forall (V : ((Z -> (Z * Z * Z)))),
 
@@ -168,12 +171,12 @@ let buddy_new_page := (upd_order_1_3 (V buddy_i) (p_order - 1)) in
 
   Definition page_size_of_order_type : Prop :=
     
-((page_size_of_order 0) = 4096).
+((page_size_of_order 0) = (page_size)).
 
   Definition attach_inc_loop_type : Prop :=
     forall (V : ((Z -> (Z * Z * Z)))),
 
-forall (__hypvmemmap : Z),
+forall (__hypvmemmap : CN_Lib.Loc),
 
 forall (pool : (((Z -> (CN_Lib.Loc * CN_Lib.Loc))) * Z * Z * Z)),
 
@@ -229,7 +232,7 @@ let buddy_i := (buddy_addr / 4096) in
 (size = (page_size_of_order order)).
 
   Definition page_group_ok_easy_type : Prop :=
-    forall (__hypvmemmap : Z),
+    forall (__hypvmemmap : CN_Lib.Loc),
 
 forall (pool : (((Z -> (CN_Lib.Loc * CN_Lib.Loc))) * Z * Z * Z)),
 

@@ -22,7 +22,7 @@ function (integer) cn__hyp_pa(integer physvirtoffset, pointer virt) {
 
 // copied and adjusted from the corresponding macro definition in memory.h 
 function (integer) cn_hyp_phys_to_pfn(integer phys) {
-  phys / 4096
+  phys / page_size()
 }
 
 // copied and adjusted from the corresponding macro definition in memory.h 
@@ -32,7 +32,7 @@ function (integer) cn_hyp_virt_to_pfn (integer physvirtoffset, pointer virt) {
 
 
 function (integer) cn_hyp_pfn_to_phys(integer pfn) {
-  pfn*4096
+  pfn*page_size()
 }
 
 // copied and adjusted from the corresponding macro definition in memory.h 
@@ -136,7 +136,7 @@ function (boolean) vmemmap_wf (integer page_index,
         map <integer, struct hyp_page> vmemmap, pointer pool_pointer, struct hyp_pool pool)
 {
   let page = vmemmap[page_index];
-    (0 <= page.refcount) && (page.refcount < (power(2, 16)))
+    (0 <= page.refcount) && (page.refcount < power(2, 16))
     && ((page.order == (hyp_no_order ())) || vmemmap_normal_order_wf(page_index, page, pool))
     && ((page.order != (hyp_no_order ())) || (page.refcount == 0))
     && (page_group_ok(page_index, vmemmap, pool))
@@ -185,7 +185,7 @@ function (boolean) vmemmap_l_wf (integer page_index, integer physvirt_offset,
 // hyp_phys_to_page(virt + hyp_physvirt_offset)
 // &hyp_vmemmap[hyp_phys_to_pfn(virt + hyp_physvirt_offset)]
 // &hyp_vmemmap[(virt + hyp_physvirt_offset) >> PAGE_SHIFT]
-// &hyp_vmemmap[(virt + offset) / 4096]
+// &hyp_vmemmap[(virt + offset) / page_size()]
 
 // Note prevs & nexts are indexed by (virtual-address / page-size), whereas
 // the vmemmap is indexed by (physical-address / page-size), this is to do with
@@ -235,14 +235,14 @@ function (boolean) hyp_pool_wf (pointer pool_pointer, struct hyp_pool pool,
   let range_end_virt = range_end - physvirt_offset;
     (0 <= range_start)
     && (range_start < range_end)
-    && (range_end < (power(2, 52)))
+    && (range_end < power(2, 52))
     && (0 <= physvirt_offset)
     && (physvirt_offset < range_start) // use '<=' 
     && (mod(physvirt_offset, (page_size ())) == 0)
     && (((range_start / (page_size ())) * (page_size ())) == range_start)
     && (((range_end / (page_size ())) * (page_size ())) == range_end)
     && (0 <= ((integer) vmemmap_boundary_pointer))
-    && (((integer) vmemmap_boundary_pointer) < (power(2, 64)))
+    && (((integer) vmemmap_boundary_pointer) < power(2, 64))
     && (0 <= pool.max_order)
     && (pool.max_order <= (max_order ()))
     && (mod(((integer) vmemmap_pointer), hp_sz) == 0)
@@ -338,9 +338,9 @@ predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
 {
   let ex = exclude_one (ex1);
   take pool = Owned<struct hyp_pool>(pool_l);
-  let start_i = pool.range_start / 4096;
-  let end_i = pool.range_end / 4096;
-  let off_i = physvirt_offset / 4096;
+  let start_i = pool.range_start / page_size();
+  let end_i = pool.range_end / page_size();
+  let off_i = physvirt_offset / page_size();
   assert (hyp_pool_wf (pool_l, pool, vmemmap_l, physvirt_offset));
   take V = each(integer i; (start_i <= i) && (i < end_i))
                {Owned(array_shift<struct hyp_page>(vmemmap_l, i))};
@@ -368,9 +368,9 @@ predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
 {
   let ex = exclude_two (ex1, ex2);
   take pool = Owned<struct hyp_pool>(pool_l);
-  let start_i = pool.range_start / 4096;
-  let end_i = pool.range_end / 4096;
-  let off_i = physvirt_offset / 4096;
+  let start_i = pool.range_start / page_size();
+  let end_i = pool.range_end / page_size();
+  let off_i = physvirt_offset / page_size();
   assert (hyp_pool_wf (pool_l, pool, vmemmap_l, physvirt_offset));
   take V = each(integer i; (start_i <= i) && (i < end_i))
               {Owned(array_shift<struct hyp_page>(vmemmap_l,  i))};
@@ -397,9 +397,9 @@ predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
 {
   let ex = exclude_none ();
   take P = Owned<struct hyp_pool>(pool_l);
-  let start_i = P.range_start / 4096;
-  let end_i = P.range_end / 4096;
-  let off_i = physvirt_offset / 4096;
+  let start_i = P.range_start / page_size();
+  let end_i = P.range_end / page_size();
+  let off_i = physvirt_offset / page_size();
   take V = each(integer i; (start_i <= i) && (i < end_i))
               {Owned(array_shift<struct hyp_page>(vmemmap_l, i))};
   assert (hyp_pool_wf (pool_l, P, vmemmap_l, physvirt_offset));
