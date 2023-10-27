@@ -62,12 +62,12 @@ lemma lemma4 (integer p_i, // intptr_t
 
 
 
-lemma order_align_inv_loop (integer __hypvmemmap,
+lemma order_align_inv_loop (pointer __hypvmemmap,
                             map<integer, struct hyp_page> V,
                             struct hyp_pool pool,
                             pointer p) // struct hyp_page* 
- requires let hypvmemmap = (pointer) __hypvmemmap ;
-          let p_i = (((integer) p) - __hypvmemmap) / 4 ;
+ requires let hypvmemmap = __hypvmemmap ;
+          let p_i = ((integer) p - (integer) __hypvmemmap) / 4 ;
           let start_i = (pool).range_start / 4096 ;
           let end_i = (pool).range_end / 4096 ;
           let p_order = (V[p_i]).order ;
@@ -82,8 +82,8 @@ lemma order_align_inv_loop (integer __hypvmemmap,
 
 
 
-lemma page_group_ok_easy (integer __hypvmemmap, struct hyp_pool pool) 
-  requires let hypvmemmap = (pointer) __hypvmemmap ;
+lemma page_group_ok_easy (pointer __hypvmemmap, struct hyp_pool pool)
+  requires let hypvmemmap = __hypvmemmap ;
            pool.range_start >= 0; pool.range_end >= 0; // this used to be implied by the range_start and range_end uint types 
            let start_i = (pool).range_start / 4096 ;
            let end_i = (pool).range_end / 4096 ;
@@ -104,15 +104,15 @@ lemma page_size_of_order ()
 
 
 lemma attach_inc_loop (map<integer, struct hyp_page> V,
-                            integer __hypvmemmap,
+                            pointer __hypvmemmap,
                             struct hyp_pool pool,
                             pointer p, // struct hyp_page* 
                             integer order) // unsigned int 
- requires let hypvmemmap = (pointer) __hypvmemmap ;
+ requires let hypvmemmap = __hypvmemmap ;
           let start_i = (pool).range_start / 4096 ;
           let end_i = (pool).range_end / 4096 ;
           cellPointer(hypvmemmap, 4, start_i, end_i, p) ;
-          let p_i = (((integer) p) - __hypvmemmap) / 4 ;
+          let p_i = ((integer) p - (integer) __hypvmemmap) / 4 ;
           let buddy_i = pfn_buddy(p_i, order) ;
           let buddy_order = (V[buddy_i]).order ;
           start_i <= buddy_i; buddy_i < end_i ;

@@ -9,8 +9,8 @@ function (integer) page_size () { 4096 }
 function (integer) max_order () { 11 }
 function (integer) hyp_no_order () { 255 }
 
-function (integer) cn_hyp_page_to_pfn(integer hypvmemmap, pointer p) {
-  (((integer) p) - hypvmemmap) / sizeof<struct hyp_page>
+function (integer) cn_hyp_page_to_pfn(pointer hypvmemmap, pointer p) {
+  ((integer) p - (integer) hypvmemmap) / sizeof<struct hyp_page>
 }
 
 // copied and adjusted from the corresponding macro definition in memory.h 
@@ -36,7 +36,7 @@ function (integer) cn_hyp_pfn_to_phys(integer pfn) {
 }
 
 // copied and adjusted from the corresponding macro definition in memory.h 
-function (integer) cn_hyp_page_to_phys(integer hypvmemmap, pointer page) {
+function (integer) cn_hyp_page_to_phys(pointer hypvmemmap, pointer page) {
   cn_hyp_pfn_to_phys((cn_hyp_page_to_pfn(hypvmemmap, page)))
 }
 
@@ -47,7 +47,7 @@ function (pointer) cn__hyp_va(integer physvirtoffset, integer phys) {
 
 // copied and adjusted from the corresponding macro definition in memory.h 
 function (pointer) cn_hyp_page_to_virt(integer physvirtoffset, 
-                                       integer hypvmemmap, pointer page) {
+                                       pointer hypvmemmap, pointer page) {
   cn__hyp_va(physvirtoffset, cn_hyp_page_to_phys(hypvmemmap, page))
 }
 
