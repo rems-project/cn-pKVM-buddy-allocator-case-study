@@ -37,8 +37,9 @@ static inline void *hyp_phys_to_virt(phys_addr_t phys)
 /*@ requires let virt = phys - hyp_physvirt_offset @*/
 /*@ requires 0 <= virt; virt < (power(2,64)) @*/
 /*@ ensures {hyp_physvirt_offset} unchanged @*/
-/*@ ensures return == ((pointer) virt) @*/
+/*@ ensures (integer)return == virt @*/
 {
+	// copy_alloc_id
 	return __hyp_va(phys);
 }
 
