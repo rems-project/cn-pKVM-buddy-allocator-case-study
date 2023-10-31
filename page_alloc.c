@@ -42,6 +42,7 @@ void memset(void *b, int c, size_t len)
 
 
 struct hyp_page *__hyp_vmemmap;
+/*CN*/ void *cn_virt_base;
 
 /*
  * Index the hyp_vmemmap to find a potential buddy page, but make no assumption
@@ -148,8 +149,6 @@ static struct hyp_page *__find_buddy_avail(struct hyp_pool *pool,
 
 }
 
-/*CN*/ void *cn_virt_base;
-
 /*
  * Pages that are available for allocation are tracked in free-lists, so we use
  * the pages themselves to store the list nodes to avoid wasting space. As the
@@ -185,7 +184,7 @@ static inline void page_remove_from_list(struct hyp_page *p)
 /*@ ensures (prev == next) || (Node_next2.prev == prev) @*/
 /*@ ensures (prev != next) || ((prev == virt) || (Node_prev2.prev == prev)) @*/
 {
-	struct list_head *node = hyp_page_to_virt(p);
+	struct list_head *node = __cerbvar_copy_alloc_id(hyp_page_to_virt(p), cn_virt_base);
 
 	      /*CN*/if (node->prev != node);
         /*CN*/if (node->prev != node->next);
@@ -216,7 +215,7 @@ static inline void page_remove_from_list_pool(struct hyp_pool *pool, struct hyp_
 /*@ ensures H2.vmemmap == HP.vmemmap @*/
 /*@ ensures H2.pool == {free_area: H2.pool.free_area, ..HP.pool} @*/
 {
-	/*CN*/struct list_head *node = hyp_page_to_virt(p);
+	/*CN*/struct list_head *node = __cerbvar_copy_alloc_id(hyp_page_to_virt(p), cn_virt_base);
 	/*CN*//*@instantiate vmemmap_l_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
 	/*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
 	/*CN*//*@instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
@@ -266,7 +265,7 @@ static inline void page_add_to_list(struct hyp_page *p, struct list_head *head)
 /*@ ensures (prev != next) || ((*next).next == virt) @*/
 /*@ ensures (AP1R.next == head); (AP1R.prev == prev) @*/
 {
-	struct list_head *node = hyp_page_to_virt(p);
+	struct list_head *node = __cerbvar_copy_alloc_id(hyp_page_to_virt(p), cn_virt_base);
 
 	/*CN*/if (head->prev != head) {}
 	/*CN*//*@ apply bytes_to_struct_list_head(node, (*p).order); @*/
@@ -393,7 +392,7 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 
 
         /*CN*//*@ apply page_size_of_order2((*p).order); @*/
-	memset(hyp_page_to_virt(p), 0, PAGE_SIZE << p->order);
+	memset(__cerbvar_copy_alloc_id(hyp_page_to_virt(p), cn_virt_base), 0, PAGE_SIZE << p->order);
 
 	//if (phys < pool->range_start || phys >= pool->range_end)
 	//	goto insert;
@@ -684,7 +683,7 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
         /*CN*//*@ instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,p); @*/ 
 	hyp_set_page_refcounted(p);
 	/* ----- hyp_spin_unlock(&pool->lock); */
-	return hyp_page_to_virt(p);
+	return __cerbvar_copy_alloc_id(hyp_page_to_virt(p), cn_virt_base);
 }
 
 /* NOTE: as above, we add a bogus empty body for this function, to

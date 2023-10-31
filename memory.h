@@ -27,20 +27,21 @@ struct hyp_page {
 
 extern s64 hyp_physvirt_offset;
 extern struct hyp_page *__hyp_vmemmap;
+/*CN*/ extern void *cn_virt_base;
 #define hyp_vmemmap ((struct hyp_page *)__hyp_vmemmap)
 
 #define __hyp_pa(virt)	((phys_addr_t)(virt) + hyp_physvirt_offset)
-#define __hyp_va(phys)	((void *)((phys_addr_t)(phys) - hyp_physvirt_offset))
+#define __hyp_va(phys)	((phys_addr_t)(phys) - hyp_physvirt_offset)
 
 static inline void *hyp_phys_to_virt(phys_addr_t phys)
-/*@ accesses hyp_physvirt_offset @*/
+/*@ accesses hyp_physvirt_offset; cn_virt_base @*/
 /*@ requires let virt = phys - hyp_physvirt_offset @*/
 /*@ requires 0 <= virt; virt < (power(2,64)) @*/
 /*@ ensures {hyp_physvirt_offset} unchanged @*/
 /*@ ensures (integer)return == virt @*/
 {
 	// copy_alloc_id
-	return __hyp_va(phys);
+	return __cerbvar_copy_alloc_id(__hyp_va(phys), cn_virt_base);
 }
 
 static inline phys_addr_t hyp_virt_to_phys(void *addr)
