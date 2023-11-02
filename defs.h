@@ -1,4 +1,8 @@
 /*@
+function (pointer) copy_alloc_id(integer x, pointer p) {
+    array_shift<char>(p, x - (integer) p)
+}
+
 function (integer) pfn_buddy (integer x, integer sz)
 function (boolean) order_aligned (integer x, integer sz)
 function (integer) order_align (integer x, integer sz)
@@ -41,14 +45,14 @@ function (integer) cn_hyp_page_to_phys(pointer hypvmemmap, pointer page) {
 }
 
 // copied and adjusted from the corresponding macro definition in memory.h 
-function (integer) cn__hyp_va(integer physvirtoffset, integer phys) {
-  phys - physvirtoffset
+function (pointer) cn__hyp_va(pointer virt_base, integer physvirtoffset, integer phys) {
+  copy_alloc_id(phys - physvirtoffset, virt_base)
 }
 
 // copied and adjusted from the corresponding macro definition in memory.h 
-function (integer) cn_hyp_page_to_virt(integer physvirtoffset,
+function (pointer) cn_hyp_page_to_virt(pointer virt_base, integer physvirtoffset,
                                        pointer hypvmemmap, pointer page) {
-  cn__hyp_va(physvirtoffset, cn_hyp_page_to_phys(hypvmemmap, page))
+  cn__hyp_va(virt_base, physvirtoffset, cn_hyp_page_to_phys(hypvmemmap, page))
 }
 
 
