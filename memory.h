@@ -73,12 +73,12 @@ static inline phys_addr_t hyp_virt_to_phys(void *addr)
 /* } */
 
 static inline int hyp_page_count(struct hyp_pool *pool, void *addr)
-/*@ accesses hyp_physvirt_offset; __hyp_vmemmap @*/
+/*@ accesses hyp_physvirt_offset; __hyp_vmemmap; cn_virt_base @*/
 /*@ requires let hyp_vmemmap = __hyp_vmemmap @*/
 /*@ requires let phys = ((integer) addr) + hyp_physvirt_offset @*/
-/*@ requires take H = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
+/*@ requires take H = Hyp_pool(pool, hyp_vmemmap, cn_virt_base, hyp_physvirt_offset) @*/
 /*@ requires H.pool.range_start <= phys; phys < H.pool.range_end @*/
-/*@ ensures take H2 = Hyp_pool(pool, hyp_vmemmap, hyp_physvirt_offset) @*/
+/*@ ensures take H2 = Hyp_pool(pool, hyp_vmemmap, cn_virt_base, hyp_physvirt_offset) @*/
 /*@ ensures {hyp_physvirt_offset} unchanged; {hyp_vmemmap} unchanged @*/
 /*@ ensures H2.pool == {H.pool}@start @*/
 /*@ ensures return == ((H2.vmemmap)[phys / 4096]).refcount @*/

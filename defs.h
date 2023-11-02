@@ -335,10 +335,18 @@ predicate struct list_head AllocatorPage
 }
 
 
-predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
-        map <integer, struct list_head> APs}
-    Hyp_pool_ex1 (pointer pool_l, pointer vmemmap_l,
-        integer physvirt_offset, integer ex1)
+predicate {
+    struct hyp_pool pool
+    , map <integer, struct hyp_page> vmemmap
+    , map <integer, struct list_head> APs
+}
+Hyp_pool_ex1 (
+    pointer pool_l
+    , pointer vmemmap_l
+    , pointer virt_base
+    , integer physvirt_offset
+    , integer ex1
+)
 {
   let ex = exclude_one (ex1);
   take pool = Owned<struct hyp_pool>(pool_l);
@@ -352,7 +360,7 @@ predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
                   && ((V[i+off_i]).refcount == 0)
                   && ((V[i+off_i]).order != (hyp_no_order ()))
                   && ((not (excluded (ex, i + off_i)))))
-                 {AllocatorPage(array_shift<PAGE_SIZE_t>(NULL, i), 1, (V[i+off_i]).order)};
+                 {AllocatorPage(array_shift<PAGE_SIZE_t>(copy_alloc_id(0, virt_base), i), 1, (V[i+off_i]).order)};
   assert (each (integer i; (start_i <= i) && (i < end_i))
     {vmemmap_wf (i, V, pool_l, pool)});
   assert (each (integer i; (start_i <= i) && (i < end_i)
@@ -365,10 +373,19 @@ predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
   return {pool: pool, vmemmap: V, APs: APs};
 }
 
-predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
-        map <integer, struct list_head> APs}
-    Hyp_pool_ex2 (pointer pool_l, pointer vmemmap_l,
-        integer physvirt_offset, integer ex1, integer ex2)
+predicate {
+    struct hyp_pool pool
+    , map <integer, struct hyp_page> vmemmap
+    , map <integer, struct list_head> APs
+}
+Hyp_pool_ex2 (
+    pointer pool_l
+    , pointer vmemmap_l
+    , pointer virt_base
+    , integer physvirt_offset
+    , integer ex1
+    , integer ex2
+)
 {
   let ex = exclude_two (ex1, ex2);
   take pool = Owned<struct hyp_pool>(pool_l);
@@ -382,7 +399,7 @@ predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
                 && ((V[i+off_i]).refcount == 0)
                 && ((V[i+off_i]).order != (hyp_no_order ()))
                 && ((not (excluded (ex, i + off_i)))))
-              {AllocatorPage(array_shift<PAGE_SIZE_t>(NULL, i), 1, (V[i+off_i]).order)};
+              {AllocatorPage(array_shift<PAGE_SIZE_t>(copy_alloc_id(0, virt_base), i), 1, (V[i+off_i]).order)};
   assert (each (integer i; (start_i <= i) && (i < end_i))
     {vmemmap_wf (i, V, pool_l, pool)});
   assert (each (integer i; (start_i <= i) && (i < end_i)
@@ -395,9 +412,17 @@ predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
   return {pool: pool, vmemmap: V, APs: APs};
 }
 
-predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
-        map <integer, struct list_head> APs}
-    Hyp_pool (pointer pool_l, pointer vmemmap_l, integer physvirt_offset)
+predicate {
+    struct hyp_pool pool
+    , map <integer, struct hyp_page> vmemmap
+    , map <integer, struct list_head> APs
+}
+Hyp_pool (
+    pointer pool_l
+    , pointer vmemmap_l
+    , pointer virt_base
+    , integer physvirt_offset
+)
 {
   let ex = exclude_none ();
   take P = Owned<struct hyp_pool>(pool_l);
@@ -411,7 +436,7 @@ predicate {struct hyp_pool pool, map <integer, struct hyp_page> vmemmap,
                 && ((V[i+off_i]).refcount == 0)
                 && ((V[i+off_i]).order != (hyp_no_order ()))
                 && ((not (excluded (ex, i + off_i)))))
-              {AllocatorPage(array_shift<PAGE_SIZE_t>(NULL, i), 1, (V[i+off_i]).order)};
+              {AllocatorPage(array_shift<PAGE_SIZE_t>(copy_alloc_id(0, virt_base), i), 1, (V[i+off_i]).order)};
   assert (each (integer i; (start_i <= i) && (i < end_i))
     {vmemmap_wf (i, V, pool_l, P)});
   assert (each (integer i; (start_i <= i) && (i < end_i)
