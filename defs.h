@@ -15,7 +15,7 @@ function (integer) cn_hyp_page_to_pfn(pointer hypvmemmap, pointer p) {
 
 // copied and adjusted from the corresponding macro definition in memory.h 
 function (integer) cn__hyp_pa(integer physvirtoffset, pointer virt) {
-  (((integer)(virt)) + physvirtoffset)
+  (integer)virt + physvirtoffset
 }
 
 
