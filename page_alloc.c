@@ -459,6 +459,7 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 					   struct hyp_page *p,
 					   u8 order)
 /*@ accesses __hyp_vmemmap; hyp_physvirt_offset; cn_virt_base @*/
+/*@ requires (alloc_id) __hyp_vmemmap == (alloc_id) p @*/
 /*@ requires take H = Hyp_pool(pool, __hyp_vmemmap, hyp_physvirt_offset) @*/
 /*@ requires cellPointer(__hyp_vmemmap, sizeof<struct hyp_page>, H.pool.range_start / page_size(), H.pool.range_end / page_size(), p) @*/
 /*@ requires let p_i = cn_hyp_page_to_pfn(__hyp_vmemmap, p) @*/
