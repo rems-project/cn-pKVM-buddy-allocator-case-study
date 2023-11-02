@@ -366,6 +366,7 @@ static inline struct hyp_page *node_to_page(struct list_head *node)
 static void __hyp_attach_page(struct hyp_pool *pool,
 			      struct hyp_page *p)
 /*@ accesses __hyp_vmemmap; hyp_physvirt_offset; cn_virt_base @*/
+/*@ requires (alloc_id) __hyp_vmemmap == (alloc_id) p @*/
 /*@ requires let p_i = cn_hyp_page_to_pfn(__hyp_vmemmap, p) @*/
 /*@ requires take H = Hyp_pool_ex1(pool, __hyp_vmemmap, hyp_physvirt_offset, p_i) @*/
 /*@ requires let start_i = H.pool.range_start / page_size() @*/
@@ -406,6 +407,7 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 		p->order = HYP_NO_ORDER;
 
 		for (; (order + 1) < pool->max_order; order++)
+		/*@ inv (alloc_id) __hyp_vmemmap == (alloc_id) p @*/
 		/*@ inv let p_i2 = cn_hyp_page_to_pfn(__hyp_vmemmap, p) @*/
 		/*@ inv let virt = cn__hyp_va(cn_virt_base, hyp_physvirt_offset, p_i2 * page_size()) @*/
 		/*@ inv take Z = ZeroPage(virt, 1, order) @*/
