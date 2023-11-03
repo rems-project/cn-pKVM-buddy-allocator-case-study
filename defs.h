@@ -147,38 +147,42 @@ function (boolean) vmemmap_wf (integer page_index,
 }
 
 function (boolean) vmemmap_l_wf (integer page_index, integer physvirt_offset,
+        pointer virt_base,
         map <integer, struct hyp_page> vmemmap, map <integer, struct list_head> APs,
         pointer pool_pointer, struct hyp_pool pool, excludes ex)
 {
   let page = vmemmap[page_index];
-  let self_node_pointer = (page_index * page_size ()) - physvirt_offset;
+  let self_node_pointer = copy_alloc_id((page_index * page_size ()) - physvirt_offset, virt_base);
   let pool_free_area_arr_pointer = member_shift<hyp_pool>(pool_pointer, free_area);
   let pool_free_area_pointer = array_shift<struct list_head>(pool_free_area_arr_pointer, page.order);
   let off_i = physvirt_offset / (page_size());
-  let prev = (APs[page_index - off_i]).prev;
-  let next = (APs[page_index - off_i]).next;
-  let free_area_entry = ((pool.free_area)[page.order]);
+  let prev = APs[page_index - off_i].prev;
+  let next = APs[page_index - off_i].next;
+  let free_area_entry = pool.free_area[page.order];
   let prev_page_pointer = prev;
   let prev_page_index = (((integer) prev_page_pointer) + physvirt_offset) / (page_size ());
   let prev_page = vmemmap[prev_page_index];
   let next_page_pointer = next;
   let next_page_index = (((integer) next_page_pointer) + physvirt_offset) / (page_size ());
   let next_page = vmemmap[next_page_index];
+  let prov = (alloc_id) virt_base;
   let prev_clause =
-    ((prev == pool_free_area_pointer) && ((integer) free_area_entry.next == self_node_pointer))
+    ((prev == pool_free_area_pointer) && (free_area_entry.next == self_node_pointer))
     || (vmemmap_good_pointer (physvirt_offset, prev_page_pointer, vmemmap, pool.range_start, pool.range_end, ex)
-        && ((integer)(APs[prev_page_index - off_i]).next == self_node_pointer)
+        && (prov == (alloc_id) prev)
+        && ((APs[prev_page_index - off_i]).next == self_node_pointer)
         && (prev_page.order == page.order)
         && (prev_page.refcount == 0));
   let next_clause =
-    ((next == pool_free_area_pointer) && ((integer)free_area_entry.prev == self_node_pointer))
+    ((next == pool_free_area_pointer) && (free_area_entry.prev == self_node_pointer))
     || (vmemmap_good_pointer (physvirt_offset, next_page_pointer, vmemmap, pool.range_start, pool.range_end, ex)
-        && ((integer)(APs[next_page_index - off_i]).prev == self_node_pointer)
+        && (prov == (alloc_id) next)
+        && ((APs[next_page_index - off_i]).prev == self_node_pointer)
         && (next_page.order == page.order)
         && (next_page.refcount == 0));
   // there is no self-loop case for this node type, as it is cleared unless it is
-  // present in the per-order free list 
-  let nonempty_clause = ((integer)prev != self_node_pointer) && ((integer)next != self_node_pointer);
+  // present in the per-order free list - TODO delete?
+  let nonempty_clause = (prev != self_node_pointer) && (next != self_node_pointer);
   (prev_clause && next_clause)
 }
 
@@ -212,13 +216,14 @@ function (boolean) freeArea_cell_wf (integer cell_index, integer physvirt_offset
   let next_page_index = (((integer) next_page_pointer) + physvirt_offset) / (page_size ());
   let next_page = vmemmap[next_page_index];
   let off_i = physvirt_offset / (page_size());
-    ((alloc_id) prev == (alloc_id) virt_base)
-    && ((prev == cell_pointer) == (next == cell_pointer))
+    ((prev == cell_pointer) == (next == cell_pointer))
     && ((prev == cell_pointer) || (
-        (vmemmap_good_pointer (physvirt_offset, prev_page_pointer, vmemmap, pool.range_start, pool.range_end, ex))
+        ((alloc_id) prev == (alloc_id) virt_base)
+        && (vmemmap_good_pointer (physvirt_offset, prev_page_pointer, vmemmap, pool.range_start, pool.range_end, ex))
         && (prev_page.order == cell_index)
         && (prev_page.refcount == 0)
         && ((APs[prev_page_index - off_i]).next == cell_pointer)
+        && ((alloc_id) next == (alloc_id) virt_base)
         && (vmemmap_good_pointer (physvirt_offset, next_page_pointer, vmemmap, pool.range_start, pool.range_end, ex))
         && (next_page.order == cell_index)
         && (next_page.refcount == 0)
@@ -369,7 +374,7 @@ Hyp_pool_ex1 (
             && ((V[i]).refcount == 0)
             && ((V[i]).order != (hyp_no_order ()))
             && ((not (excluded (ex, i)))))
-    {vmemmap_l_wf (i, physvirt_offset, V, APs, pool_l, pool, ex)});
+    {vmemmap_l_wf (i, physvirt_offset, virt_base, V, APs, pool_l, pool, ex)});
   assert (each(integer i; (0 <= i) && (i < pool.max_order))
               {freeArea_cell_wf (i, physvirt_offset, virt_base, V, APs, pool_l, pool, ex)});
   return {pool: pool, vmemmap: V, APs: APs};
@@ -408,7 +413,7 @@ Hyp_pool_ex2 (
             && ((V[i]).refcount == 0)
             && ((V[i]).order != (hyp_no_order ()))
             && ((not (excluded (ex, i)))))
-    {vmemmap_l_wf (i, physvirt_offset, V, APs, pool_l, pool, ex)});
+    {vmemmap_l_wf (i, physvirt_offset, virt_base, V, APs, pool_l, pool, ex)});
   assert (each(integer i; (0 <= i) && (i < pool.max_order))
               {freeArea_cell_wf (i, physvirt_offset, virt_base, V, APs, pool_l, pool, ex)});
   return {pool: pool, vmemmap: V, APs: APs};
@@ -445,7 +450,7 @@ Hyp_pool (
             && ((V[i]).refcount == 0)
             && ((V[i]).order != (hyp_no_order ()))
             && ((not (excluded (ex, i)))))
-    {vmemmap_l_wf (i, physvirt_offset, V, APs, pool_l, P, ex)});
+    {vmemmap_l_wf (i, physvirt_offset, virt_base, V, APs, pool_l, P, ex)});
   assert (each(integer i; (0 <= i) && (i < P.max_order))
               {freeArea_cell_wf (i, physvirt_offset, virt_base, V, APs, pool_l, P, ex)});
   return {pool: P, vmemmap: V, APs: APs};
