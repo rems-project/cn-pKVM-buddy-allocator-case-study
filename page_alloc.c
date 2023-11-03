@@ -252,7 +252,7 @@ static inline void page_add_to_list(struct hyp_page *p, struct list_head *head)
 /*@ requires (mod(hyp_physvirt_offset, page_size())) == 0 @*/
 /*@ requires phys > hyp_physvirt_offset @*/
 /*@ requires p >= __hyp_vmemmap @*/
-/*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
+/*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged; {cn_virt_base} unchanged @*/
 /*@ ensures take AP1R = AllocatorPage(virt, 1, order) @*/
 /*@ ensures take Hp2 = Owned(p) @*/
 /*@ ensures {*p} unchanged @*/
