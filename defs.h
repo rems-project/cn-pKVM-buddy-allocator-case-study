@@ -212,7 +212,8 @@ function (boolean) freeArea_cell_wf (integer cell_index, integer physvirt_offset
   let next_page_index = (((integer) next_page_pointer) + physvirt_offset) / (page_size ());
   let next_page = vmemmap[next_page_index];
   let off_i = physvirt_offset / (page_size());
-    ((prev == cell_pointer) == (next == cell_pointer))
+    ((alloc_id) prev == (alloc_id) virt_base)
+    && ((prev == cell_pointer) == (next == cell_pointer))
     && ((prev == cell_pointer) || (
         (vmemmap_good_pointer (physvirt_offset, prev_page_pointer, vmemmap, pool.range_start, pool.range_end, ex))
         && (prev_page.order == cell_index)
