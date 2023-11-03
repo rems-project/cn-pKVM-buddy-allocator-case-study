@@ -195,6 +195,7 @@ function (boolean) vmemmap_l_wf (integer page_index, integer physvirt_offset,
 // the vmemmap is indexed by (physical-address / page-size), this is to do with
 // the way they're constructed by iterating conjunction in Hyp_pool. 
 function (boolean) freeArea_cell_wf (integer cell_index, integer physvirt_offset,
+        pointer virt_base,
         map <integer, struct hyp_page> vmemmap, map <integer, struct list_head> APs,
         pointer pool_pointer, struct hyp_pool pool, excludes ex)
 {
@@ -369,7 +370,7 @@ Hyp_pool_ex1 (
             && ((not (excluded (ex, i)))))
     {vmemmap_l_wf (i, physvirt_offset, V, APs, pool_l, pool, ex)});
   assert (each(integer i; (0 <= i) && (i < pool.max_order))
-              {freeArea_cell_wf (i, physvirt_offset, V, APs, pool_l, pool, ex)});
+              {freeArea_cell_wf (i, physvirt_offset, virt_base, V, APs, pool_l, pool, ex)});
   return {pool: pool, vmemmap: V, APs: APs};
 }
 
@@ -408,7 +409,7 @@ Hyp_pool_ex2 (
             && ((not (excluded (ex, i)))))
     {vmemmap_l_wf (i, physvirt_offset, V, APs, pool_l, pool, ex)});
   assert (each(integer i; (0 <= i) && (i < pool.max_order))
-              {freeArea_cell_wf (i, physvirt_offset, V, APs, pool_l, pool, ex)});
+              {freeArea_cell_wf (i, physvirt_offset, virt_base, V, APs, pool_l, pool, ex)});
   return {pool: pool, vmemmap: V, APs: APs};
 }
 
@@ -445,7 +446,7 @@ Hyp_pool (
             && ((not (excluded (ex, i)))))
     {vmemmap_l_wf (i, physvirt_offset, V, APs, pool_l, P, ex)});
   assert (each(integer i; (0 <= i) && (i < P.max_order))
-              {freeArea_cell_wf (i, physvirt_offset, V, APs, pool_l, P, ex)});
+              {freeArea_cell_wf (i, physvirt_offset, virt_base, V, APs, pool_l, P, ex)});
   return {pool: P, vmemmap: V, APs: APs};
 }
 

@@ -513,7 +513,7 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 			&& ((not (excluded (ex, i)))))
 		{vmemmap_l_wf (i, hyp_physvirt_offset, V_I, APs, pool, P_I, ex)} @*/
 	/*@ inv each(integer i; (0 <= i) && (i < P_I.max_order))
-		{freeArea_cell_wf (i, hyp_physvirt_offset, V_I, APs, pool, P_I, ex)} @*/
+		{freeArea_cell_wf (i, hyp_physvirt_offset, cn_virt_base, V_I, APs, pool, P_I, ex)} @*/
 
 	/*@ inv order_aligned(p_i, order) @*/
 	/*@ inv V_I[p_i].refcount == 0 @*/
