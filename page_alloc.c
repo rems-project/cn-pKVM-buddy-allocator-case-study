@@ -276,6 +276,7 @@ static inline void page_add_to_list(struct hyp_page *p, struct list_head *head)
 static inline void page_add_to_list_pool(struct hyp_pool *pool,
                 struct hyp_page *p, struct list_head *head)
 /*@ accesses __hyp_vmemmap; hyp_physvirt_offset; cn_virt_base @*/
+/*@ requires (alloc_id) __hyp_vmemmap == (alloc_id) p @*/
 /*@ requires let p_i = cn_hyp_page_to_pfn(__hyp_vmemmap, p) @*/
 /*@ requires take HP = Hyp_pool_ex1(pool, __hyp_vmemmap, cn_virt_base, hyp_physvirt_offset, p_i) @*/
 /*@ requires let free_area_l = member_shift<hyp_pool>(pool, free_area) @*/
