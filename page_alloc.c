@@ -172,7 +172,7 @@ static inline void page_remove_from_list(struct hyp_page *p)
 /*@ requires 0 <= hyp_physvirt_offset @*/
 /*@ requires hyp_physvirt_offset <= phys; phys < power(2, 63) @*/
 /*@ requires (mod(hyp_physvirt_offset, page_size())) == 0 @*/
-/*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
+/*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged; {cn_virt_base} unchanged @*/
 /*@ ensures take OP2 = Owned(p) @*/
 /*@ ensures {*p} unchanged @*/
 /*@ ensures take ZP = ZeroPage(virt, 1, (*p).order) @*/
@@ -186,8 +186,8 @@ static inline void page_remove_from_list(struct hyp_page *p)
 {
 	struct list_head *node = __cerbvar_copy_alloc_id(hyp_page_to_virt(p), cn_virt_base);
 
-	      /*CN*/if (node->prev != node);
-        /*CN*/if (node->prev != node->next);
+	/*@ split_case (*node).prev != node @*/
+	/*@ split_case (*node).prev != (*node).next @*/
 	__list_del_entry(node);
 	/*CN*//*@ apply struct_list_head_to_bytes(node); @*/
 	memset(node, 0, sizeof(*node));
@@ -198,7 +198,6 @@ static inline void page_remove_from_list(struct hyp_page *p)
 static inline void page_remove_from_list_pool(struct hyp_pool *pool, struct hyp_page *p)
 /*@ accesses __hyp_vmemmap; hyp_physvirt_offset; cn_virt_base @*/
 /*@ requires take HP = Hyp_pool(pool, __hyp_vmemmap, cn_virt_base, hyp_physvirt_offset) @*/
-/*@ requires let free_area_l = member_shift<hyp_pool>(pool, free_area) @*/
 /*@ requires let p_i = cn_hyp_page_to_pfn(__hyp_vmemmap, p) @*/
 /*@ requires let phys = p_i * page_size() @*/
 /*@ requires let virt = cn__hyp_va(cn_virt_base, hyp_physvirt_offset, phys) @*/
@@ -208,7 +207,6 @@ static inline void page_remove_from_list_pool(struct hyp_pool *pool, struct hyp_
 /*@ requires let order = HP.vmemmap[p_i].order @*/
 /*@ requires order != hyp_no_order () @*/
 /*@ requires HP.vmemmap[p_i].refcount == 0 @*/
-/*@ requires let off_i = hyp_physvirt_offset / page_size() @*/
 /*@ ensures take ZP = ZeroPage(virt, 1, order) @*/
 /*@ ensures take H2 = Hyp_pool_ex1(pool, __hyp_vmemmap, cn_virt_base, hyp_physvirt_offset, p_i) @*/
 /*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
@@ -523,7 +521,7 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 		p->order--;
 		buddy = __find_buddy_nocheck(pool, p, p->order);
 		/*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,buddy);@*/
-		            /*CN*//*@extract Owned<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, buddy);@*/
+		/*CN*//*@extract Owned<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, buddy);@*/
 		buddy->order = p->order;
 		/*CN*//*@ apply extract_l(cn_hyp_page_to_pfn(__hyp_vmemmap,p), (*p).order); @*/
 		/*CN*//*@ apply page_size_of_order_inc((*p).order); @*/
