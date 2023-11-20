@@ -584,6 +584,7 @@ static void __hyp_put_page(struct hyp_pool *pool, struct hyp_page *p)
  */
 void hyp_put_page(struct hyp_pool *pool, void *addr)
 /*@ accesses hyp_physvirt_offset; __hyp_vmemmap; cn_virt_base @*/
+/*@ requires (alloc_id) addr == (alloc_id) cn_virt_base @*/
 /*@ requires take H = Hyp_pool(pool, __hyp_vmemmap, cn_virt_base, hyp_physvirt_offset) @*/
 /*@ requires let phys = ((integer) addr) + hyp_physvirt_offset @*/
 /*@ requires H.pool.range_start <= phys; phys < H.pool.range_end @*/
@@ -662,6 +663,7 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 			{__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
 		/*CN*/{
 			/*CN*/ /*@extract Owned<struct list_head>, i;@*/
+			/*CN*/ /*@instantiate freeArea_cell_wf, i;@*/
 			/*CN*/if (!(i < pool->max_order && list_empty(&pool->free_area[i]))) break;
 			i++;
 		/*CN*/}
