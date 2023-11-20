@@ -9,6 +9,7 @@
 
 static inline int list_empty(const struct list_head *head)
 /*@ requires take O = Owned(head) @*/
+/*@ requires ptr_eq(head, (*head).next) || !addr_eq(head, (*head).next) @*/
 /*@ ensures take OR = Owned(head) @*/
 /*@ ensures O == OR @*/
 /*@ ensures return == (((*head).next == head) ? 1 : 0) @*/

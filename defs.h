@@ -209,6 +209,7 @@ function (boolean) freeArea_cell_wf (integer cell_index, integer physvirt_offset
         && (prev_page.refcount == 0)
         && ((APs[prev_page_index]).next == cell_pointer)
         && ((alloc_id) next == (alloc_id) virt_base)
+        && (ptr_eq(next, cell_pointer) || !addr_eq(next, cell_pointer))
         && (vmemmap_good_pointer (physvirt_offset, next_page_pointer, vmemmap, pool.range_start, pool.range_end, ex))
         && (next_page.order == cell_index)
         && (next_page.refcount == 0)
