@@ -5,7 +5,7 @@ function (pointer) copy_alloc_id(u64 x, pointer p) {
 
 function (integer) pfn_buddy (integer x, integer sz)
 function (boolean) order_aligned (integer x, integer sz)
-function (integer) order_align (integer x, integer sz)
+function (u64) order_align (u64 x, u8 sz)
 function (boolean) page_aligned (integer x, integer sz)
 function (integer) page_size_of_order (integer sz)
 
@@ -101,17 +101,17 @@ function (boolean) vmemmap_good_pointer (u64 physvirt_offset, pointer p,
 }
 
 
-function (boolean) page_group_ok (integer page_index,
-        map <integer, struct hyp_page> vmemmap, struct hyp_pool pool)
+function (boolean) page_group_ok (u64 page_index,
+        map <u64, struct hyp_page> vmemmap, struct hyp_pool pool)
 {
   let page = vmemmap[page_index];
   let start_i = (pool.range_start) / (page_size ());
-  ((page.order == (hyp_no_order ()))
-    || (each (i: 1, 10; (not (
-        ((order_align(page_index, i)) < page_index)
-        && (start_i <= (order_align(page_index, i)))
-        && (i <= ((vmemmap[(order_align(page_index, i))]).order))
-        && (((vmemmap[(order_align(page_index, i))]).order) != (hyp_no_order ()))
+  ((page.order == hyp_no_order())
+    || (each (u8 i: 1, 10; (not (
+        (order_align(page_index, i) < page_index)
+        && (start_i <= order_align(page_index, i))
+        && (i <= (vmemmap[(order_align(page_index, i))]).order)
+        && ((vmemmap[(order_align(page_index, i))]).order != hyp_no_order())
     )))))
 }
 
