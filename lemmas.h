@@ -73,7 +73,7 @@ lemma order_align_inv_loop (pointer __hypvmemmap,
           let p_order = (V[p_i]).order ;
           p_order >= 1; p_order < 11 ;
           order_aligned(p_i, p_order) ;
-          cellPointer(hypvmemmap, 4, start_i, end_i, p) ;
+          cellPointer(hypvmemmap, 4u64, start_i, end_i, p) ;
           let buddy_i = pfn_buddy(p_i, p_order - 1) ;
           each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V, pool) }
  ensures let p_new_page = {order: (p_order - 1), ..V[p_i]} ;
@@ -111,7 +111,7 @@ lemma attach_inc_loop (map<integer, struct hyp_page> V,
  requires let hypvmemmap = __hypvmemmap ;
           let start_i = (pool).range_start / page_size() ;
           let end_i = (pool).range_end / page_size() ;
-          cellPointer(hypvmemmap, 4, start_i, end_i, p) ;
+          cellPointer(hypvmemmap, 4u64, start_i, end_i, p) ;
           let p_i = ((integer) p - (integer) __hypvmemmap) / 4 ;
           let buddy_i = pfn_buddy(p_i, order) ;
           let buddy_order = (V[buddy_i]).order ;
