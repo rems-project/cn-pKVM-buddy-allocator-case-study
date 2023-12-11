@@ -10,7 +10,7 @@ function (boolean) page_aligned (integer x, integer sz)
 function (u64) page_size_of_order (u8 sz)
 
 function (u64) page_size () { 4096u64 }
-function (integer) max_order () { 11 }
+function (u8) max_order () { 11u8 }
 function (u8) hyp_no_order () { 255u8 }
 
 function (u64) cn_hyp_page_to_pfn(pointer hypvmemmap, pointer p) {
@@ -129,20 +129,19 @@ function (boolean) init_vmemmap_page (u64 page_index,
     && (((page_index * (page_size ())) + page_size_of_order(page.order)) <= pool.range_end)
 }
 
-function (boolean) vmemmap_normal_order_wf (integer page_index, struct hyp_page page, struct hyp_pool pool) {
-    (0 <= page.order && ((page.order < pool.max_order) && (page.order < (max_order()))))
+function (boolean) vmemmap_normal_order_wf (u64 page_index, struct hyp_page page, struct hyp_pool pool) {
+    (0u8 <= page.order && ((page.order < pool.max_order) && (page.order < max_order())))
     && order_aligned(page_index, page.order)
     && (((page_index * (page_size ())) + page_size_of_order(page.order)) <= pool.range_end)
 }
 
 
-function (boolean) vmemmap_wf (integer page_index,
-        map <integer, struct hyp_page> vmemmap, pointer pool_pointer, struct hyp_pool pool)
+function (boolean) vmemmap_wf (u64 page_index,
+        map <u64, struct hyp_page> vmemmap, pointer pool_pointer, struct hyp_pool pool)
 {
   let page = vmemmap[page_index];
-    (0 <= page.refcount) && (page.refcount < power(2, 16))
-    && ((page.order == (hyp_no_order ())) || vmemmap_normal_order_wf(page_index, page, pool))
-    && ((page.order != (hyp_no_order ())) || (page.refcount == 0))
+    ((page.order == (hyp_no_order ())) || vmemmap_normal_order_wf(page_index, page, pool))
+    && ((page.order != hyp_no_order()) || (page.refcount == 0u16))
     && (page_group_ok(page_index, vmemmap, pool))
 }
 
