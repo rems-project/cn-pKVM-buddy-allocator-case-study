@@ -1,6 +1,6 @@
 /*@
-function (pointer) copy_alloc_id(integer x, pointer p) {
-    array_shift<char>(p, x - (integer) p)
+function (pointer) copy_alloc_id(u64 x, pointer p) {
+    array_shift<char>(p, x - (u64) p)
 }
 
 function (integer) pfn_buddy (integer x, integer sz)
@@ -9,56 +9,56 @@ function (integer) order_align (integer x, integer sz)
 function (boolean) page_aligned (integer x, integer sz)
 function (integer) page_size_of_order (integer sz)
 
-function (integer) page_size () { 4096 }
+function (u64) page_size () { 4096u64 }
 function (integer) max_order () { 11 }
-function (integer) hyp_no_order () { 255 }
+function (u8) hyp_no_order () { 255u8 }
 
-function (integer) cn_hyp_page_to_pfn(pointer hypvmemmap, pointer p) {
-  ((integer) p - (integer) hypvmemmap) / sizeof<struct hyp_page>
+function (u64) cn_hyp_page_to_pfn(pointer hypvmemmap, pointer p) {
+  ((u64) p - (u64) hypvmemmap) / (u64) (sizeof<struct hyp_page>)
 }
 
 // copied and adjusted from the corresponding macro definition in memory.h 
-function (integer) cn__hyp_pa(integer physvirtoffset, pointer virt) {
-  (integer)virt + physvirtoffset
+function (u64) cn__hyp_pa(u64 physvirtoffset, pointer virt) {
+  (u64) virt + physvirtoffset
 }
 
 
 
 // copied and adjusted from the corresponding macro definition in memory.h 
-function (integer) cn_hyp_phys_to_pfn(integer phys) {
+function (u64) cn_hyp_phys_to_pfn(u64 phys) {
   phys / page_size()
 }
 
 // copied and adjusted from the corresponding macro definition in memory.h 
-function (integer) cn_hyp_virt_to_pfn (integer physvirtoffset, pointer virt) {
+function (u64) cn_hyp_virt_to_pfn (u64 physvirtoffset, pointer virt) {
   cn_hyp_phys_to_pfn(cn__hyp_pa(physvirtoffset, virt))
 }
 
 
-function (integer) cn_hyp_pfn_to_phys(integer pfn) {
+function (u64) cn_hyp_pfn_to_phys(u64 pfn) {
   pfn*page_size()
 }
 
 // copied and adjusted from the corresponding macro definition in memory.h 
-function (integer) cn_hyp_page_to_phys(pointer hypvmemmap, pointer page) {
+function (u64) cn_hyp_page_to_phys(pointer hypvmemmap, pointer page) {
   cn_hyp_pfn_to_phys((cn_hyp_page_to_pfn(hypvmemmap, page)))
 }
 
 // copied and adjusted from the corresponding macro definition in memory.h 
-function (pointer) cn__hyp_va(pointer virt_ptr, integer physvirtoffset, integer phys) {
+function (pointer) cn__hyp_va(pointer virt_ptr, u64 physvirtoffset, u64 phys) {
   copy_alloc_id(phys - physvirtoffset, virt_ptr)
 }
 
 // copied and adjusted from the corresponding macro definition in memory.h 
-function (pointer) cn_hyp_page_to_virt(pointer virt_ptr, integer physvirtoffset,
+function (pointer) cn_hyp_page_to_virt(pointer virt_ptr, u64 physvirtoffset,
                                        pointer hypvmemmap, pointer page) {
   cn__hyp_va(virt_ptr, physvirtoffset, cn_hyp_page_to_phys(hypvmemmap, page))
 }
 
 
-type_synonym excludes = {boolean any, boolean do_ex1, integer ex1, boolean do_ex2, integer ex2}
+type_synonym excludes = {boolean any, boolean do_ex1, u64 ex1, boolean do_ex2, u64 ex2}
 
-function (boolean) excluded (excludes ex, integer i)
+function (boolean) excluded (excludes ex, u64 i)
 {
   ex.any && (
       (ex.do_ex1 && (i == ex.ex1))
@@ -68,15 +68,15 @@ function (boolean) excluded (excludes ex, integer i)
 
 function (excludes) exclude_none ()
 {
-  {any: 0 < 0, do_ex1: 0 < 0, ex1: 0, do_ex2: 0 < 0, ex2: 0}
+  {any: 0 < 0, do_ex1: 0 < 0, ex1: 0u64, do_ex2: 0 < 0, ex2: 0u64}
 }
 
-function (excludes) exclude_one (integer ex1)
+function (excludes) exclude_one (u64 ex1)
 {
-  {any: 0 < 1, do_ex1: 0 < 1, ex1: ex1, do_ex2: 0 < 0, ex2: 0}
+  {any: 0 < 1, do_ex1: 0 < 1, ex1: ex1, do_ex2: 0 < 0, ex2: 0u64}
 }
 
-function (excludes) exclude_two (integer ex1, integer ex2)
+function (excludes) exclude_two (u64 ex1, u64 ex2)
 {
   {any: 0 < 1, do_ex1: 0 < 1, ex1: ex1, do_ex2: 0 < 1, ex2: ex2}
 }
@@ -85,18 +85,18 @@ function (excludes) exclude_two (integer ex1, integer ex2)
 // Check a pointer (to the struct list_head embedded in a free page) is a valid
 // pointer, which includes knowing that its matching vmemmap entry has the
 // refcount/order settings that indicate that the struct is present. 
-function (boolean) vmemmap_good_pointer (integer physvirt_offset, pointer p,
-        map <integer, struct hyp_page> vmemmap,
-        integer range_start, integer range_end, excludes ex)
+function (boolean) vmemmap_good_pointer (u64 physvirt_offset, pointer p,
+        map <u64, struct hyp_page> vmemmap,
+        u64 range_start, u64 range_end, excludes ex)
 {
   let start_i = range_start / (page_size ());
   let end_i = range_end / (page_size ());
-  let offs = ((integer) p) + physvirt_offset;
+  let offs = ((u64) p) + physvirt_offset;
   let idx = offs / (page_size ());
     (((offs / (page_size ())) * (page_size ())) == offs)
     && (start_i <= idx)
     && (idx < end_i)
-    && (vmemmap[idx].refcount == 0)
+    && (vmemmap[idx].refcount == 0u16)
     && (vmemmap[idx].order != (hyp_no_order ()))
     && (not (excluded (ex, idx)))
 }
