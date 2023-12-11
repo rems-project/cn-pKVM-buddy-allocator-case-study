@@ -4,10 +4,10 @@ function (pointer) copy_alloc_id(u64 x, pointer p) {
 }
 
 function (integer) pfn_buddy (integer x, integer sz)
-function (boolean) order_aligned (integer x, integer sz)
+function (boolean) order_aligned (u64 x, u8 sz)
 function (u64) order_align (u64 x, u8 sz)
 function (boolean) page_aligned (integer x, integer sz)
-function (integer) page_size_of_order (integer sz)
+function (u64) page_size_of_order (u8 sz)
 
 function (u64) page_size () { 4096u64 }
 function (integer) max_order () { 11 }
@@ -118,14 +118,14 @@ function (boolean) page_group_ok (u64 page_index,
 
 // There are no `AllocatorPage`s outputs to pass as arguments in `hyp_pool_init`
 // Also a different invariant handles checking prev/next
-function (boolean) init_vmemmap_page (integer page_index,
-        map <integer, struct hyp_page> vmemmap,
+function (boolean) init_vmemmap_page (u64 page_index,
+        map <u64, struct hyp_page> vmemmap,
         pointer pool_pointer, struct hyp_pool pool)
 {
   let page = vmemmap[page_index];
-    (page.order == 0)
-    && (page.refcount == 1)
-    && (order_aligned(page_index, 0))
+    (page.order == 0u8)
+    && (page.refcount == 1u16)
+    && (order_aligned(page_index, 0u8))
     && (((page_index * (page_size ())) + page_size_of_order(page.order)) <= pool.range_end)
 }
 
