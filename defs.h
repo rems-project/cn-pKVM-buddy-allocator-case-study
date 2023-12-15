@@ -247,7 +247,6 @@ function (boolean) hyp_pool_wf (pointer pool_pointer, struct hyp_pool pool,
 function (integer) get_order_uf (integer size)
 
 function (pointer) virt (pointer phys, u64 physvirt_offset) {
-  // this feels very suspicious
   array_shift<char>(phys, (0i64- (i64) physvirt_offset))
 }
 
@@ -279,43 +278,40 @@ predicate void Page (pointer vbase, integer guard, u8 order)
   }
 }
 
-predicate void ZeroPage (pointer vbase, integer guard, integer order)
+predicate void ZeroPage (pointer vbase, integer guard, u8 order)
 {
   if (guard == 0) {
     return;
   }
   else {
-    assert(((integer) vbase) >= 0);
-    let length = (page_size_of_order(order));
-    let vbaseI = ((integer) vbase);
-    take Bytes = each (integer i; (vbaseI <= i) && (i < (vbaseI + length)))
-         {ByteV(array_shift<char>(NULL, i), 0)};
+    let length = page_size_of_order(order);
+    let vbaseI = ((u64) vbase);
+    take Bytes = each (u64 i; (vbaseI <= i) && (i < (vbaseI + length)))
+         {ByteV(array_shift<char>(NULL, i), 0u8)};
     return;
   }
 }
 
-predicate void AllocatorPageZeroPart (pointer zero_start, integer order)
+predicate void AllocatorPageZeroPart (pointer zero_start, u8 order)
 {
-  let start = (integer) zero_start;
-  assert (start >= 0);
-  let region_length = (page_size_of_order(order));
-  let length = (region_length - (sizeof <struct list_head>));
-  take Bytes = each (integer i; (start <= i) && (i < (start + length)))
-       {ByteV(array_shift<char>(NULL, i), 0)};
+  let start = (u64) zero_start;
+  let region_length = page_size_of_order(order);
+  let length = region_length - sizeof<struct list_head>;
+  take Bytes = each (u64 i; (start <= i) && (i < (start + length)))
+       {ByteV(array_shift<char>(NULL, i), 0u8)};
   return;
 }
 
 function (struct list_head) todo_default_list_head ()
 
 predicate struct list_head AllocatorPage
-    (pointer vbase, integer guard, integer order)
+    (pointer vbase, integer guard, u8 order)
 {
   if (guard == 0) {
     return (todo_default_list_head ());
   }
   else {
-    assert(((integer) vbase) > 0);
-    let zero_start = array_shift<struct list_head>(vbase, 1);
+    let zero_start = array_shift<struct list_head>(vbase, 1u8);
     take ZeroPart = AllocatorPageZeroPart (zero_start, order);
     take Node = Owned<struct list_head>(vbase);
     return Node;
