@@ -246,8 +246,9 @@ function (boolean) hyp_pool_wf (pointer pool_pointer, struct hyp_pool pool,
 
 function (integer) get_order_uf (integer size)
 
-function (pointer) virt (pointer phys, integer physvirt_offset) {
-  array_shift<char>(phys, (0-physvirt_offset))
+function (pointer) virt (pointer phys, u64 physvirt_offset) {
+  // this feels very suspicious
+  array_shift<char>(phys, (0i64- (i64) physvirt_offset))
 }
 
 
@@ -257,23 +258,22 @@ predicate void Byte (pointer virt)
   return;
 }
 
-predicate void ByteV (pointer virt, integer the_value)
+predicate void ByteV (pointer virt, u8 the_value)
 {
   take B = Owned<char>(virt);
   assert (B == the_value);
   return;
 }
 
-predicate void Page (pointer vbase, integer guard, integer order)
+predicate void Page (pointer vbase, integer guard, u8 order)
 {
   if (guard == 0) {
     return;
   }
   else {
-    assert(((integer) vbase) >= 0);
-    let length = (page_size_of_order(order));
-    let vbaseI = ((integer) vbase);
-    take Bytes = each (integer i; (vbaseI <= i) && (i < (vbaseI + length)))
+    let length = page_size_of_order(order);
+    let vbaseI = (u64) vbase;
+    take Bytes = each (u64 i; (vbaseI <= i) && (i < (vbaseI + length)))
          {Byte(array_shift<char>(NULL, i))};
     return;
   }
