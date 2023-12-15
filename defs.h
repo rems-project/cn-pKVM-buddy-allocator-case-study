@@ -218,35 +218,30 @@ function (boolean) freeArea_cell_wf (u8 cell_index, u64 physvirt_offset,
 }
 
 function (boolean) hyp_pool_wf (pointer pool_pointer, struct hyp_pool pool,
-        pointer vmemmap_pointer, integer physvirt_offset)
+        pointer vmemmap_pointer, u64 physvirt_offset)
 {
   let range_start = pool.range_start;
   let range_end = pool.range_end;
   let start_i = range_start / (page_size ());
   let end_i = range_end / (page_size ());
-  let hp_sz = (sizeof <struct hyp_page>);
-  let pool_sz = (sizeof <struct hyp_pool>);
+  let hp_sz = sizeof <struct hyp_page>;
+  let pool_sz = sizeof <struct hyp_pool>;
   let vmemmap_start_pointer = array_shift<struct hyp_page>(vmemmap_pointer,  start_i);
   let vmemmap_boundary_pointer = array_shift<struct hyp_page>(vmemmap_pointer, end_i);
   let range_start_virt = range_start - physvirt_offset;
   let range_end_virt = range_end - physvirt_offset;
-    (0 <= range_start)
-    && (range_start < range_end)
-    && (range_end < power(2, 52))
-    && (0 <= physvirt_offset)
+    (range_start < range_end)
+    && (range_end < power(2u64, 52u64))
     && (physvirt_offset < range_start) // use '<=' 
-    && (mod(physvirt_offset, (page_size ())) == 0)
+    && (mod(physvirt_offset, (page_size ())) == 0u64)
     && (((range_start / (page_size ())) * (page_size ())) == range_start)
     && (((range_end / (page_size ())) * (page_size ())) == range_end)
-    && (0 <= ((integer) vmemmap_boundary_pointer))
-    && (((integer) vmemmap_boundary_pointer) < power(2, 64))
-    && (0 <= pool.max_order)
     && (pool.max_order <= (max_order ()))
-    && (mod(((integer) vmemmap_pointer), hp_sz) == 0)
-    && (((((integer) pool_pointer) + pool_sz) <= ((integer) vmemmap_start_pointer))
-        || (((integer) vmemmap_boundary_pointer) <= ((integer) pool_pointer)))
-    && (((((integer) pool_pointer) + pool_sz) <= range_start_virt)
-        || (range_end_virt <= ((integer) pool_pointer)))
+    && (mod(((u64) vmemmap_pointer), hp_sz) == 0u64)
+    && (((((u64) pool_pointer) + pool_sz) <= ((u64) vmemmap_start_pointer))
+        || (((u64) vmemmap_boundary_pointer) <= ((u64) pool_pointer)))
+    && (((((u64) pool_pointer) + pool_sz) <= range_start_virt)
+        || (range_end_virt <= ((u64) pool_pointer)))
 }
 
 function (integer) get_order_uf (integer size)
