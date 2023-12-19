@@ -335,15 +335,15 @@ predicate struct list_head AllocatorPage
 
 predicate {
     struct hyp_pool pool
-    , map <integer, struct hyp_page> vmemmap
-    , map <integer, struct list_head> APs
+    , map <u64, struct hyp_page> vmemmap
+    , map <u64, struct list_head> APs
 }
 Hyp_pool_ex1 (
     pointer pool_l
     , pointer vmemmap_l
     , pointer virt_ptr
-    , integer physvirt_offset
-    , integer ex1
+    , u64 physvirt_offset
+    , u64 ex1
 )
 {
   let ex = exclude_one (ex1);
@@ -352,21 +352,21 @@ Hyp_pool_ex1 (
   let end_i = pool.range_end / page_size();
   let off_i = physvirt_offset / page_size();
   assert (hyp_pool_wf (pool_l, pool, vmemmap_l, physvirt_offset));
-  take V = each(integer i; (start_i <= i) && (i < end_i))
+  take V = each(u64 i; (start_i <= i) && (i < end_i))
                {Owned(array_shift<struct hyp_page>(vmemmap_l, i))};
-  take APs = each(integer i; (start_i <= i + off_i) && (i + off_i < end_i)
-                  && ((V[i+off_i]).refcount == 0)
+  take APs = each(u64 i; (start_i <= i + off_i) && (i + off_i < end_i)
+                  && ((V[i+off_i]).refcount == 0u16)
                   && ((V[i+off_i]).order != (hyp_no_order ()))
                   && ((not (excluded (ex, i + off_i)))))
-                 {AllocatorPage(array_shift<PAGE_SIZE_t>(copy_alloc_id(0, virt_ptr), i), 1, (V[i+off_i]).order)};
-  assert (each (integer i; (start_i <= i) && (i < end_i))
+                 {AllocatorPage(array_shift<PAGE_SIZE_t>(copy_alloc_id(0u64, virt_ptr), i), 1, (V[i+off_i]).order)};
+  assert (each (u64 i; (start_i <= i) && (i < end_i))
     {vmemmap_wf (i, V, pool_l, pool)});
-  assert (each (integer i; (start_i <= i) && (i < end_i)
-            && ((V[i]).refcount == 0)
+  assert (each (u64 i; (start_i <= i) && (i < end_i)
+            && ((V[i]).refcount == 0u16)
             && ((V[i]).order != (hyp_no_order ()))
             && ((not (excluded (ex, i)))))
     {vmemmap_l_wf (i, physvirt_offset, virt_ptr, V, APs, pool_l, pool, ex)});
-  assert (each(integer i; (0 <= i) && (i < pool.max_order))
+  assert (each(u8 i; (0u8 <= i) && (i < pool.max_order))
               {freeArea_cell_wf (i, physvirt_offset, virt_ptr, V, APs, pool_l, pool, ex)});
   return {pool: pool, vmemmap: V, APs: APs};
 }
