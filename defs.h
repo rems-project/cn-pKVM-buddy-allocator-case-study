@@ -398,37 +398,37 @@ Hyp_pool_ex2 (
 
 predicate {
     struct hyp_pool pool
-    , map <integer, struct hyp_page> vmemmap
-    , map <integer, struct list_head> APs
+    , map <u64, struct hyp_page> vmemmap
+    , map <u64, struct list_head> APs
 }
 Hyp_pool (
     pointer pool_l
     , pointer vmemmap_l
     , pointer virt_ptr
-    , integer physvirt_offset
+    , u64 physvirt_offset
 )
 {
   let ex = exclude_none ();
   take P = Owned<struct hyp_pool>(pool_l);
   let start_i = P.range_start / page_size();
   let end_i = P.range_end / page_size();
-  take V = each(integer i; (start_i <= i) && (i < end_i))
+  take V = each(u64 i; (start_i <= i) && (i < end_i))
               {Owned(array_shift<struct hyp_page>(vmemmap_l, i))};
   assert (hyp_pool_wf (pool_l, P, vmemmap_l, physvirt_offset));
-  let ptr_phys_0 = cn__hyp_va(virt_base, physvirt_offset, 0);
-  take APs = each(integer i; (start_i <= i) && (i < end_i)
-                  && ((V[i]).refcount == 0)
+  let ptr_phys_0 = cn__hyp_va(virt_ptr, physvirt_offset, 0u64);
+  take APs = each(u64 i; (start_i <= i) && (i < end_i)
+                  && ((V[i]).refcount == 0u16)
                   && ((V[i]).order != (hyp_no_order ()))
                   && ((not (excluded (ex, i)))))
                  {AllocatorPage(array_shift<PAGE_SIZE_t>(ptr_phys_0, i), 1, (V[i]).order)};
-  assert (each (integer i; (start_i <= i) && (i < end_i))
+  assert (each (u64 i; (start_i <= i) && (i < end_i))
     {vmemmap_wf (i, V, pool_l, P)});
-  assert (each (integer i; (start_i <= i) && (i < end_i)
-            && ((V[i]).refcount == 0)
+  assert (each (u64 i; (start_i <= i) && (i < end_i)
+            && ((V[i]).refcount == 0u16)
             && ((V[i]).order != (hyp_no_order ()))
             && ((not (excluded (ex, i)))))
     {vmemmap_l_wf (i, physvirt_offset, virt_ptr, V, APs, pool_l, P, ex)});
-  assert (each(integer i; (0 <= i) && (i < P.max_order))
+  assert (each(u8 i; i < P.max_order)
               {freeArea_cell_wf (i, physvirt_offset, virt_ptr, V, APs, pool_l, P, ex)});
   return {pool: P, vmemmap: V, APs: APs};
 }
