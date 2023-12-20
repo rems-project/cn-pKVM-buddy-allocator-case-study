@@ -84,48 +84,48 @@ lemma order_align_inv_loop (pointer __hypvmemmap,
 
 lemma page_group_ok_easy (pointer __hypvmemmap, struct hyp_pool pool)
   requires let hypvmemmap = __hypvmemmap ;
-           pool.range_start >= 0; pool.range_end >= 0; // this used to be implied by the range_start and range_end uint types 
+           pool.range_start >= 0u64; pool.range_end >= 0u64; // this used to be implied by the range_start and range_end uint types
            let start_i = (pool).range_start / page_size() ;
            let end_i = (pool).range_end / page_size() ;
-           take V = each (integer i; start_i <= i && i < end_i) { Owned(array_shift<struct hyp_page>(hypvmemmap, i)) } ;
-           each (integer i; start_i <= i && i < end_i) { (V[i]).order == 0 } 
-  ensures take V2 = each (integer i; start_i <= i && i < end_i) { Owned(array_shift<struct hyp_page>(hypvmemmap, i)) } ;
+           take V = each (u64 i; start_i <= i && i < end_i) { Owned(array_shift<struct hyp_page>(hypvmemmap, i)) } ;
+           each (u64 i; start_i <= i && i < end_i) { (V[i]).order == 0u8 }
+  ensures take V2 = each (u64 i; start_i <= i && i < end_i) { Owned(array_shift<struct hyp_page>(hypvmemmap, i)) } ;
           V2 == V ;
-          each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V2, pool) } 
+          each(u64 i; start_i <= i && i < end_i) { page_group_ok(i, V2, pool) }
 
 
-lemma order_aligned_init (integer i) // unsigned long 
+lemma order_aligned_init (u64 i) // unsigned long
   requires 0==0
-  ensures order_aligned(i, 0) 
+  ensures order_aligned(i, 0u8)
 
 lemma page_size_of_order ()
   requires 0==0
-  ensures (page_size_of_order(0)) == page_size()
+  ensures (page_size_of_order(0u8)) == page_size()
 
 
-lemma attach_inc_loop (map<integer, struct hyp_page> V,
+lemma attach_inc_loop (map<u64, struct hyp_page> V,
                             pointer __hypvmemmap,
                             struct hyp_pool pool,
-                            pointer p, // struct hyp_page* 
-                            integer order) // unsigned int 
+                            pointer p, // struct hyp_page*
+                            u8 order) // unsigned int
  requires let hypvmemmap = __hypvmemmap ;
           let start_i = (pool).range_start / page_size() ;
           let end_i = (pool).range_end / page_size() ;
           cellPointer(hypvmemmap, 4u64, start_i, end_i, p) ;
-          let p_i = ((integer) p - (integer) __hypvmemmap) / 4 ;
+          let p_i = ((u64) p - (u64) __hypvmemmap) / 4u64 ;
           let buddy_i = pfn_buddy(p_i, order) ;
           let buddy_order = (V[buddy_i]).order ;
           start_i <= buddy_i; buddy_i < end_i ;
-          0 <= order; order + 1 < 11; buddy_order == order ;
+          0u8 <= order; order + 1u8 < 11u8; buddy_order == order ;
           order_aligned(p_i, order) ;
           order_aligned(buddy_i, order) ;
           (V[p_i]).order == (hyp_no_order ()) ;
           let p_page_tweaked = {order: order, ..V[p_i]} ;
-          each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V[p_i: p_page_tweaked], pool) } ;
+          each(u64 i; start_i <= i && i < end_i) { page_group_ok(i, V[p_i: p_page_tweaked], pool) } ;
           let min_i = (p_i < buddy_i) ? p_i : buddy_i ;
-          let min_page = {order: (order + 1), ..V[min_i]} ;
+          let min_page = {order: (order + 1u8), ..V[min_i]} ;
           let buddy_page = {order: (hyp_no_order ()), ..V[buddy_i]}
- ensures each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V[buddy_i: buddy_page,min_i: min_page], pool) }
+ ensures each(u64 i; start_i <= i && i < end_i) { page_group_ok(i, V[buddy_i: buddy_page,min_i: min_page], pool) }
 
 
 
