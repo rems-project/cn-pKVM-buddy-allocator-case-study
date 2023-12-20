@@ -7,7 +7,7 @@ lemma order_dec_inv (u64 pool_range_end, // phys_addr_t
                      u8 order2) // unsigned int
   requires order_aligned(pfn, order1);
            (pfn*page_size()) + (page_size_of_order(order1)) <= pool_range_end;
-           0u8 <= order2; order2 <= order1
+           order2 <= order1
   ensures order_aligned(pfn, order2);
           (pfn * page_size()) + (page_size_of_order(order2)) <= pool_range_end
 
@@ -15,8 +15,7 @@ lemma order_dec_inv (u64 pool_range_end, // phys_addr_t
 
 lemma lemma2 (u64 p_i, // intptr_t
               u8 order) // unsigned int
-  requires order >= 0u8;
-           let p_phys = p_i * page_size();
+  requires let p_phys = p_i * page_size();
            let buddy_i = pfn_buddy(p_i, order);
            let buddy_phys = buddy_i * page_size();
            order_aligned(p_i, order);
@@ -30,8 +29,7 @@ lemma lemma2 (u64 p_i, // intptr_t
 
 lemma extract_l (u64 p_i, // intptr_t
                  u8 order) // unsigned int
- requires order >= 0u8;
-          let p_phys = p_i * page_size() ;
+ requires let p_phys = p_i * page_size() ;
           let buddy_i = pfn_buddy(p_i, order) ;
           let buddy_phys = buddy_i * page_size() ;
           order_aligned(p_i, order + 1u8)
@@ -41,7 +39,7 @@ lemma extract_l (u64 p_i, // intptr_t
 
 
 lemma page_size_of_order_inc (u8 order) // unsigned int
-  requires order >= 0u8
+  requires 0==0
   ensures (page_size_of_order(order+1u8)) == 2u64*(page_size_of_order(order))
 
 
@@ -84,7 +82,6 @@ lemma order_align_inv_loop (pointer __hypvmemmap,
 
 lemma page_group_ok_easy (pointer __hypvmemmap, struct hyp_pool pool)
   requires let hypvmemmap = __hypvmemmap ;
-           pool.range_start >= 0u64; pool.range_end >= 0u64; // this used to be implied by the range_start and range_end uint types
            let start_i = (pool).range_start / page_size() ;
            let end_i = (pool).range_end / page_size() ;
            take V = each (u64 i; start_i <= i && i < end_i) { Owned(array_shift<struct hyp_page>(hypvmemmap, i)) } ;
@@ -116,7 +113,7 @@ lemma attach_inc_loop (map<u64, struct hyp_page> V,
           let buddy_i = pfn_buddy(p_i, order) ;
           let buddy_order = (V[buddy_i]).order ;
           start_i <= buddy_i; buddy_i < end_i ;
-          0u8 <= order; order + 1u8 < 11u8; buddy_order == order ;
+          order + 1u8 < 11u8; buddy_order == order ;
           order_aligned(p_i, order) ;
           order_aligned(buddy_i, order) ;
           (V[p_i]).order == (hyp_no_order ()) ;
