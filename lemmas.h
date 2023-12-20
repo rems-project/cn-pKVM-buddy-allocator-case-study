@@ -1,31 +1,31 @@
 // define intptr_t a hacky way, for lemmas 
 /*CN*/ typedef u64 intptr_t;
 /*@
-lemma order_dec_inv (integer pool_range_end, // phys_addr_t 
-                     integer pfn, // u64 
-                     integer order1, // unsigned int 
-                     integer order2) // unsigned int 
+lemma order_dec_inv (u64 pool_range_end, // phys_addr_t
+                     u64 pfn, // u64
+                     u8 order1, // unsigned int
+                     u8 order2) // unsigned int
   requires order_aligned(pfn, order1);
            (pfn*page_size()) + (page_size_of_order(order1)) <= pool_range_end;
-           0 <= order2; order2 <= order1
+           0u8 <= order2; order2 <= order1
   ensures order_aligned(pfn, order2);
           (pfn * page_size()) + (page_size_of_order(order2)) <= pool_range_end
 
 
 
-lemma lemma2 (integer p_i, // intptr_t 
-              integer order) // unsigned int 
-  requires order >= 0; 
+lemma lemma2 (u64 p_i, // intptr_t
+              u8 order) // unsigned int
+  requires order >= 0u8;
            let p_phys = p_i * page_size();
-           let buddy_i = pfn_buddy(p_i, order); 
+           let buddy_i = pfn_buddy(p_i, order);
            let buddy_phys = buddy_i * page_size();
-           order_aligned(p_i, order); 
-           order_aligned(buddy_i, order) 
-  ensures let min_i = (p_i < buddy_i) ? p_i : buddy_i; 
+           order_aligned(p_i, order);
+           order_aligned(buddy_i, order)
+  ensures let min_i = (p_i < buddy_i) ? p_i : buddy_i;
           let min_i_phys = min_i * page_size();
-          order_aligned(min_i, order+1); 
-          page_aligned(min_i_phys, order+1); 
-          (p_phys + (page_size_of_order(order)) == buddy_phys) || (p_phys - (page_size_of_order(order)) == buddy_phys) 
+          order_aligned(min_i, order+1u8);
+          page_aligned(min_i_phys, order+1u8);
+          (p_phys + (page_size_of_order(order)) == buddy_phys) || (p_phys - (page_size_of_order(order)) == buddy_phys)
 
 
 lemma extract_l (integer p_i, // intptr_t 

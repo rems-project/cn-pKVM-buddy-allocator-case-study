@@ -3,10 +3,10 @@ function (pointer) copy_alloc_id(u64 x, pointer p) {
     array_shift<char>(p, x - (u64) p)
 }
 
-function (integer) pfn_buddy (integer x, integer sz)
+function (u64) pfn_buddy (u64 x, u8 sz)
 function (boolean) order_aligned (u64 x, u8 sz)
 function (u64) order_align (u64 x, u8 sz)
-function (boolean) page_aligned (integer x, integer sz)
+function (boolean) page_aligned (u64 x, u8 sz)
 function (u64) page_size_of_order (u8 sz)
 
 function (u64) page_size () { 4096u64 }
