@@ -28,21 +28,21 @@ lemma lemma2 (u64 p_i, // intptr_t
           (p_phys + (page_size_of_order(order)) == buddy_phys) || (p_phys - (page_size_of_order(order)) == buddy_phys)
 
 
-lemma extract_l (integer p_i, // intptr_t 
-                 integer order) // unsigned int 
- requires order >= 0 ;
+lemma extract_l (u64 p_i, // intptr_t
+                 u8 order) // unsigned int
+ requires order >= 0u8;
           let p_phys = p_i * page_size() ;
           let buddy_i = pfn_buddy(p_i, order) ;
           let buddy_phys = buddy_i * page_size() ;
-          order_aligned(p_i, order + 1)
+          order_aligned(p_i, order + 1u8)
  ensures p_phys + (page_size_of_order(order)) == buddy_phys ;
          page_aligned(p_phys, order) ;
          page_aligned(buddy_phys, order)
 
 
-lemma page_size_of_order_inc (integer order) // unsigned int 
-  requires order >= 0 
-  ensures (page_size_of_order(order+1)) == 2*(page_size_of_order(order))
+lemma page_size_of_order_inc (u8 order) // unsigned int
+  requires order >= 0u8
+  ensures (page_size_of_order(order+1u8)) == 2u64*(page_size_of_order(order))
 
 
 lemma lemma4 (integer p_i, // intptr_t 
