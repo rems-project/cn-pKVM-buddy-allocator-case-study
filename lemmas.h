@@ -45,40 +45,40 @@ lemma page_size_of_order_inc (u8 order) // unsigned int
   ensures (page_size_of_order(order+1u8)) == 2u64*(page_size_of_order(order))
 
 
-lemma lemma4 (integer p_i, // intptr_t 
-              integer order) // unsigned int 
-  requires order >= 1 ;
+lemma lemma4 (u64 p_i, // intptr_t
+              u8 order) // unsigned int
+  requires order >= 1u8 ;
            let p_phys = p_i * page_size() ;
            order_aligned(p_i, order)
-  ensures let buddy_i = pfn_buddy(p_i, order - 1) ;
+  ensures let buddy_i = pfn_buddy(p_i, order - 1u8) ;
           let buddy_phys = buddy_i * page_size() ;
           !(order_aligned(buddy_i, order)) ;
-          buddy_phys == p_phys + (page_size_of_order(order - 1)) ;
-          0 < (page_size_of_order(order)) ;
-          0 < (page_size_of_order(order - 1)) ;
-          (page_size_of_order(order - 1)) * 2 == (page_size_of_order(order)) ;
+          buddy_phys == p_phys + (page_size_of_order(order - 1u8)) ;
+          0u64 < (page_size_of_order(order)) ;
+          0u64 < (page_size_of_order(order - 1u8)) ;
+          (page_size_of_order(order - 1u8)) * 2u64 == (page_size_of_order(order)) ;
           (order_align(buddy_i, order)) == p_i
 
 
 
 
 lemma order_align_inv_loop (pointer __hypvmemmap,
-                            map<integer, struct hyp_page> V,
+                            map<u64, struct hyp_page> V,
                             struct hyp_pool pool,
                             pointer p) // struct hyp_page* 
  requires let hypvmemmap = __hypvmemmap ;
-          let p_i = ((integer) p - (integer) __hypvmemmap) / 4 ;
+          let p_i = ((u64) p - (u64) __hypvmemmap) / 4u64 ;
           let start_i = (pool).range_start / page_size() ;
           let end_i = (pool).range_end / page_size() ;
           let p_order = (V[p_i]).order ;
-          p_order >= 1; p_order < 11 ;
+          p_order >= 1u8; p_order < 11u8 ;
           order_aligned(p_i, p_order) ;
           cellPointer(hypvmemmap, 4u64, start_i, end_i, p) ;
-          let buddy_i = pfn_buddy(p_i, p_order - 1) ;
-          each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V, pool) }
- ensures let p_new_page = {order: (p_order - 1), ..V[p_i]} ;
-         let buddy_new_page = {order: (p_order - 1), ..V[buddy_i]} ;
-         each(integer i; start_i <= i && i < end_i) { page_group_ok(i, V[p_i: p_new_page, buddy_i: buddy_new_page], pool) }
+          let buddy_i = pfn_buddy(p_i, p_order - 1u8) ;
+          each(u64 i; start_i <= i && i < end_i) { page_group_ok(i, V, pool) }
+ ensures let p_new_page = {order: (p_order - 1u8), ..V[p_i]} ;
+         let buddy_new_page = {order: (p_order - 1u8), ..V[buddy_i]} ;
+         each(u64 i; start_i <= i && i < end_i) { page_group_ok(i, V[p_i: p_new_page, buddy_i: buddy_new_page], pool) }
 
 
 
