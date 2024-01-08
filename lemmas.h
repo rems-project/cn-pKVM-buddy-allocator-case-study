@@ -126,19 +126,17 @@ lemma attach_inc_loop (map<u64, struct hyp_page> V,
 
 
 
-lemma find_buddy_xor(integer addr_i, // intptr_t 
-                     integer order) // unsigned int 
+lemma find_buddy_xor(u64 addr_i, // intptr_t
+                     u8 order) // unsigned int
   requires order_aligned(addr_i, order) ;
-           0 <= order; order < 11 ;
-           0 <= addr_i; addr_i * page_size() < power(2, 64)
-  ensures 0 < power_uf(2, order) ;
-          power_uf(2, order) < power(2, 11) ;
-          0 <= (xor_uf(addr_i * page_size(), page_size() * power_uf(2, order))) ;
-          (xor_uf(addr_i * page_size(), page_size() * power_uf(2, order))) < power(2, 64) ;
-          let buddy_addr = (xor_uf(addr_i * page_size(), page_size() * power_uf(2, order))) ;
+           order < 11u8
+  ensures let two_to_order = power_uf(2u64, (u64) order);
+          0u64 < two_to_order ;
+          two_to_order < power(2u64, 11u64) ;
+          let buddy_addr = (xor_uf(addr_i * page_size(), page_size() * two_to_order)) ;
           let buddy_i = (buddy_addr / page_size()) ;
           buddy_i == (pfn_buddy (addr_i, order)) ;
-          (mod(buddy_addr, page_size())) == 0 ;
+          (mod(buddy_addr, page_size())) == 0u64 ;
           order_aligned(buddy_i, order) ;
           addr_i != buddy_i
 
