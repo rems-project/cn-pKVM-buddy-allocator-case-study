@@ -150,18 +150,16 @@ lemma page_size_of_order2(u8 order) // unsigned int
 
 
 lemma struct_list_head_to_bytes(pointer node) // struct list_head * 
-  requires take Node = Owned<struct list_head>(node) ;
-           (integer) node >= 0  // this should maybe not be necessary to say 
-  ensures take B = each (integer i; ((integer) node) <= i && i < (((integer) node) + (sizeof<struct list_head>))){Byte(array_shift<char>(NULL, i))}
+  requires take Node = Owned<struct list_head>(node)
+  ensures take B = each (u64 i; ((u64) node) <= i && i < (((u64) node) + (sizeof<struct list_head>))){Byte(array_shift<char>(NULL, i))}
 
 
-lemma bytes_to_struct_list_head(pointer node, // struct list_head * 
-                                integer order) // u8 
-  requires ((integer) node) >= 0 ; // this should maybe not be necessary to say 
-           let length = page_size_of_order(order) ;
-           let nodeI = ((integer) node) ;
-           take B = each (integer i; (nodeI <= i) && (i < (nodeI + length))) {ByteV(array_shift<char>(NULL, i), 0)} 
+lemma bytes_to_struct_list_head(pointer node, // struct list_head *
+                                u8 order)
+  requires let length = page_size_of_order(order) ;
+           let nodeI = ((u64) node) ;
+           take B = each (u64 i; (nodeI <= i) && (i < (nodeI + length))) {ByteV(array_shift<char>(NULL, i), 0u8)}
   ensures take Node = Owned<struct list_head>(node) ;
-          take BR = each (integer i; (nodeI + (sizeof<struct list_head>)) <= i && i < (nodeI + length)){ByteV(array_shift<char>(NULL, i), 0)}
+          take BR = each (u64 i; (nodeI + (sizeof<struct list_head>)) <= i && i < (nodeI + length)){ByteV(array_shift<char>(NULL, i), 0u8)}
 
 @*/
