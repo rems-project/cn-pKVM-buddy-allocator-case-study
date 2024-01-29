@@ -143,13 +143,13 @@ function (boolean) vmemmap_wf (u64 page_index,
     && (page_group_ok(page_index, vmemmap, pool))
 }
 
-function (boolean) vmemmap_l_wf (u64 page_index, u64 physvirt_offset,
+function (boolean) vmemmap_l_wf (u64 page_index, i64 physvirt_offset,
         pointer virt_ptr,
         map <u64, struct hyp_page> vmemmap, map <u64, struct list_head> APs,
         pointer pool_pointer, struct hyp_pool pool, excludes ex)
 {
   let page = vmemmap[page_index];
-  let self_node_pointer = copy_alloc_id((page_index * page_size ()) - physvirt_offset, virt_ptr);
+  let self_node_pointer = cn__hyp_va(virt_ptr, physvirt_offset, cn_hyp_pfn_to_phys(page_index));
   let pool_free_area_arr_pointer = member_shift<hyp_pool>(pool_pointer, free_area);
   let pool_free_area_pointer = array_shift<struct list_head>(pool_free_area_arr_pointer, page.order);
   let prev = (APs[page_index]).prev;
