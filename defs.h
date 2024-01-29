@@ -184,7 +184,7 @@ function (boolean) vmemmap_l_wf (u64 page_index, i64 physvirt_offset,
 
 
 
-function (boolean) freeArea_cell_wf (u8 cell_index, u64 physvirt_offset,
+function (boolean) freeArea_cell_wf (u8 cell_index, i64 physvirt_offset,
         pointer virt_ptr,
         map <u64, struct hyp_page> vmemmap, map <u64, struct list_head> APs,
         pointer pool_pointer, struct hyp_pool pool, excludes ex)
