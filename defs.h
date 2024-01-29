@@ -18,8 +18,8 @@ function (u64) cn_hyp_page_to_pfn(pointer hypvmemmap, pointer p) {
 }
 
 // copied and adjusted from the corresponding macro definition in memory.h 
-function (u64) cn__hyp_pa(u64 physvirtoffset, pointer virt) {
-  (u64) virt + physvirtoffset
+function (u64) cn__hyp_pa(i64 physvirtoffset, pointer virt) {
+  (u64) ((i64) virt + physvirtoffset)
 }
 
 
@@ -30,7 +30,7 @@ function (u64) cn_hyp_phys_to_pfn(u64 phys) {
 }
 
 // copied and adjusted from the corresponding macro definition in memory.h 
-function (u64) cn_hyp_virt_to_pfn (u64 physvirtoffset, pointer virt) {
+function (u64) cn_hyp_virt_to_pfn (i64 physvirtoffset, pointer virt) {
   cn_hyp_phys_to_pfn(cn__hyp_pa(physvirtoffset, virt))
 }
 
@@ -45,12 +45,12 @@ function (u64) cn_hyp_page_to_phys(pointer hypvmemmap, pointer page) {
 }
 
 // copied and adjusted from the corresponding macro definition in memory.h 
-function (pointer) cn__hyp_va(pointer virt_ptr, u64 physvirtoffset, u64 phys) {
-  copy_alloc_id(phys - physvirtoffset, virt_ptr)
+function (pointer) cn__hyp_va(pointer virt_ptr, i64 physvirtoffset, u64 phys) {
+  copy_alloc_id((u64) ((i64) phys - physvirtoffset), virt_ptr)
 }
 
 // copied and adjusted from the corresponding macro definition in memory.h 
-function (pointer) cn_hyp_page_to_virt(pointer virt_ptr, u64 physvirtoffset,
+function (pointer) cn_hyp_page_to_virt(pointer virt_ptr, i64 physvirtoffset,
                                        pointer hypvmemmap, pointer page) {
   cn__hyp_va(virt_ptr, physvirtoffset, cn_hyp_page_to_phys(hypvmemmap, page))
 }
@@ -85,14 +85,14 @@ function (excludes) exclude_two (u64 ex1, u64 ex2)
 // Check a pointer (to the struct list_head embedded in a free page) is a valid
 // pointer, which includes knowing that its matching vmemmap entry has the
 // refcount/order settings that indicate that the struct is present. 
-function (boolean) vmemmap_good_pointer (u64 physvirt_offset, pointer p,
+function (boolean) vmemmap_good_pointer (i64 physvirt_offset, pointer p,
         map <u64, struct hyp_page> vmemmap,
         u64 range_start, u64 range_end, excludes ex)
 {
-  let start_i = range_start / (page_size ());
-  let end_i = range_end / (page_size ());
-  let offs = ((u64) p) + physvirt_offset;
-  let idx = offs / (page_size ());
+  let start_i = cn_hyp_phys_to_pfn(range_start);
+  let end_i = cn_hyp_phys_to_pfn(range_end);
+  let offs = cn__hyp_pa(physvirt_offset, p);
+  let idx = cn_hyp_phys_to_pfn(offs);
     (((offs / (page_size ())) * (page_size ())) == offs)
     && (start_i <= idx)
     && (idx < end_i)
