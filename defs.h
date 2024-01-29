@@ -145,38 +145,38 @@ function (boolean) vmemmap_wf (u64 page_index,
     && (page_group_ok(page_index, vmemmap, pool))
 }
 
-function (boolean) vmemmap_l_wf (u64 page_index, u64 physvirt_offset,
+function (boolean) vmemmap_l_wf (u64 page_index, i64 physvirt_offset,
         pointer virt_ptr,
         map <u64, struct hyp_page> vmemmap, map <u64, struct list_head> APs,
         pointer pool_pointer, struct hyp_pool pool, excludes ex)
 {
   let page = vmemmap[page_index];
-  let self_node_pointer = copy_alloc_id((page_index * page_size ()) - physvirt_offset, virt_ptr);
+  let self_node_pointer = cn__hyp_va(virt_ptr, physvirt_offset, cn_hyp_pfn_to_phys(page_index));
   let pool_free_area_arr_pointer = member_shift<hyp_pool>(pool_pointer, free_area);
   let pool_free_area_pointer = array_shift<struct list_head>(pool_free_area_arr_pointer, page.order);
-  let off_i = physvirt_offset / page_size();
-  let prev = APs[page_index - off_i].prev;
-  let next = APs[page_index - off_i].next;
+  let off_i = physvirt_offset / (i64) page_size();
+  let prev = APs[(u64) ((i64) page_index - off_i)].prev;
+  let next = APs[(u64) ((i64) page_index - off_i)].next;
   let free_area_entry = pool.free_area[(u64) page.order];
   let prev_page_pointer = prev;
-  let prev_page_index = (((u64) prev_page_pointer) + physvirt_offset) / (page_size ());
+  let prev_page_index = cn_hyp_virt_to_pfn(physvirt_offset, prev_page_pointer);
   let prev_page = vmemmap[prev_page_index];
   let next_page_pointer = next;
-  let next_page_index = (((u64) next_page_pointer) + physvirt_offset) / (page_size ());
+  let next_page_index = cn_hyp_virt_to_pfn(physvirt_offset, next_page_pointer);
   let next_page = vmemmap[next_page_index];
   let prov = (alloc_id) virt_ptr;
   let prev_clause =
     ((prev == pool_free_area_pointer) && (free_area_entry.next == self_node_pointer))
     || (vmemmap_good_pointer (physvirt_offset, prev_page_pointer, vmemmap, pool.range_start, pool.range_end, ex)
         && (prov == (alloc_id) prev)
-        && ((APs[prev_page_index - off_i]).next == self_node_pointer)
+        && ((APs[(u64) ((i64) prev_page_index - off_i)]).next == self_node_pointer)
         && (prev_page.order == page.order)
         && (prev_page.refcount == 0u16));
   let next_clause =
     ((next == pool_free_area_pointer) && (free_area_entry.prev == self_node_pointer))
     || (vmemmap_good_pointer (physvirt_offset, next_page_pointer, vmemmap, pool.range_start, pool.range_end, ex)
         && (prov == (alloc_id) next)
-        && ((APs[next_page_index - off_i]).prev == self_node_pointer)
+        && ((APs[(u64) ((i64) next_page_index - off_i)]).prev == self_node_pointer)
         && (next_page.order == page.order)
         && (next_page.refcount == 0u16));
   // there is no self-loop case for this node type, as it is cleared unless it is
