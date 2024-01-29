@@ -197,7 +197,7 @@ function (boolean) vmemmap_l_wf (u64 page_index, i64 physvirt_offset,
 // Note prevs & nexts are indexed by (virtual-address / page-size), whereas
 // the vmemmap is indexed by (physical-address / page-size), this is to do with
 // the way they're constructed by iterating conjunction in Hyp_pool. 
-function (boolean) freeArea_cell_wf (u8 cell_index, u64 physvirt_offset,
+function (boolean) freeArea_cell_wf (u8 cell_index, i64 physvirt_offset,
         pointer virt_ptr,
         map <u64, struct hyp_page> vmemmap, map <u64, struct list_head> APs,
         pointer pool_pointer, struct hyp_pool pool, excludes ex)
@@ -208,26 +208,25 @@ function (boolean) freeArea_cell_wf (u8 cell_index, u64 physvirt_offset,
   let prev = cell.prev;
   let next = cell.next;
   let prev_page_pointer = prev;
-  // hyp_virt_to_page
-  let prev_page_index = (((u64) prev_page_pointer) + physvirt_offset) / (page_size ());
+  let prev_page_index = cn_hyp_virt_to_pfn(physvirt_offset, prev_page_pointer);
   let prev_page = vmemmap[prev_page_index];
   let next_page_pointer = next;
-  let next_page_index = (((u64) next_page_pointer) + physvirt_offset) / (page_size ());
+  let next_page_index = cn_hyp_virt_to_pfn(physvirt_offset, next_page_pointer);
   let next_page = vmemmap[next_page_index];
-  let off_i = physvirt_offset / (page_size());
+  let off_i = physvirt_offset / (i64) page_size();
     ((prev == cell_pointer) == (next == cell_pointer))
     && ((prev == cell_pointer) || (
         ((alloc_id) prev == (alloc_id) virt_ptr)
         && (vmemmap_good_pointer (physvirt_offset, prev_page_pointer, vmemmap, pool.range_start, pool.range_end, ex))
         && (prev_page.order == cell_index)
         && (prev_page.refcount == 0u16)
-        && ((APs[prev_page_index - off_i]).next == cell_pointer)
+        && ((APs[(u64) ((i64) prev_page_index - off_i)]).next == cell_pointer)
         && ((alloc_id) next == (alloc_id) virt_ptr)
         && (ptr_eq(next, cell_pointer) || !addr_eq(next, cell_pointer))
         && (vmemmap_good_pointer (physvirt_offset, next_page_pointer, vmemmap, pool.range_start, pool.range_end, ex))
         && (next_page.order == cell_index)
         && (next_page.refcount == 0u16)
-        && ((APs[next_page_index - off_i]).prev == cell_pointer)
+        && ((APs[(u64) ((i64) next_page_index - off_i)]).prev == cell_pointer)
     ))
 }
 
