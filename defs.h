@@ -359,13 +359,13 @@ Hyp_pool_ex1 (
 predicate {
     struct hyp_pool pool
     , map <u64, struct hyp_page> vmemmap
-    , map <u64, struct list_head> APs
+    , map <i64, struct list_head> APs
 }
 Hyp_pool_ex2 (
     pointer pool_l
     , pointer vmemmap_l
     , pointer virt_ptr
-    , u64 physvirt_offset
+    , i64 physvirt_offset
     , u64 ex1
     , u64 ex2
 )
