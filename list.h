@@ -12,7 +12,7 @@ static inline int list_empty(const struct list_head *head)
 /*@ requires ptr_eq(head, (*head).next) || !addr_eq(head, (*head).next) @*/
 /*@ ensures take OR = Owned(head) @*/
 /*@ ensures O == OR @*/
-/*@ ensures return == (((*head).next == head) ? 1 : 0) @*/
+/*@ ensures return == (((*head).next == head) ? 1i32 : 0i32) @*/
 {
 	/* return READ_ONCE(head->next) == head; */
 	return head->next == head;
@@ -30,7 +30,7 @@ static inline void INIT_LIST_HEAD(struct list_head *llist)
 }
 
 static inline bool __list_del_entry_valid(struct list_head *entry)
-/*@ ensures return == 1 @*/
+/*@ ensures return == 1u8 @*/
 {
 	return true;
 }
@@ -101,7 +101,7 @@ static inline void list_del_init(struct list_head *entry)
 static inline bool __list_add_valid(struct list_head *new,
 				struct list_head *prev,
 				struct list_head *next)
-/*@ ensures return == 1 @*/
+/*@ ensures return == 1u8 @*/
 {
 	return true;
 }
