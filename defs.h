@@ -217,7 +217,7 @@ function (boolean) freeArea_cell_wf (u8 cell_index, i64 physvirt_offset,
 }
 
 function (boolean) hyp_pool_wf (pointer pool_pointer, struct hyp_pool pool,
-        pointer vmemmap_pointer, u64 physvirt_offset)
+        pointer vmemmap_pointer, i64 physvirt_offset)
 {
   let range_start = pool.range_start;
   let range_end = pool.range_end;
@@ -227,12 +227,12 @@ function (boolean) hyp_pool_wf (pointer pool_pointer, struct hyp_pool pool,
   let pool_sz = sizeof <struct hyp_pool>;
   let vmemmap_start_pointer = array_shift<struct hyp_page>(vmemmap_pointer,  start_i);
   let vmemmap_boundary_pointer = array_shift<struct hyp_page>(vmemmap_pointer, end_i);
-  let range_start_virt = range_start - physvirt_offset;
-  let range_end_virt = range_end - physvirt_offset;
+  let range_start_virt = (u64) (((i64) range_start) - physvirt_offset);
+  let range_end_virt = (u64) (((i64) range_end) - physvirt_offset);
     (range_start < range_end)
     && (range_end < power(2u64, 52u64))
-    && (physvirt_offset < range_start) // use '<=' 
-    && (mod(physvirt_offset, (page_size ())) == 0u64)
+    && (physvirt_offset < (i64) range_start) // use '<='
+    && (mod((u64) physvirt_offset, (page_size ())) == 0u64)
     && (((range_start / (page_size ())) * (page_size ())) == range_start)
     && (((range_end / (page_size ())) * (page_size ())) == range_end)
     && (pool.max_order <= (max_order ()))
