@@ -373,13 +373,13 @@ Hyp_pool_ex1 (
 predicate {
     struct hyp_pool pool
     , map <u64, struct hyp_page> vmemmap
-    , map <u64, struct list_head> APs
+    , map <i64, struct list_head> APs
 }
 Hyp_pool_ex2 (
     pointer pool_l
     , pointer vmemmap_l
     , pointer virt_ptr
-    , u64 physvirt_offset
+    , i64 physvirt_offset
     , u64 ex1
     , u64 ex2
 )
@@ -388,15 +388,15 @@ Hyp_pool_ex2 (
   take pool = Owned<struct hyp_pool>(pool_l);
   let start_i = pool.range_start / page_size();
   let end_i = pool.range_end / page_size();
-  let off_i = physvirt_offset / page_size();
+  let off_i = physvirt_offset / (i64) (page_size());
   assert (hyp_pool_wf (pool_l, pool, vmemmap_l, physvirt_offset));
   take V = each(u64 i; (start_i <= i) && (i < end_i))
               {Owned(array_shift<struct hyp_page>(vmemmap_l,  i))};
-  take APs = each(u64 i; (start_i <= i + off_i) && (i + off_i < end_i)
-                && ((V[i+off_i]).refcount == 0u16)
-                && ((V[i+off_i]).order != (hyp_no_order ()))
-                && ((not (excluded (ex, i + off_i)))))
-              {AllocatorPage(array_shift<PAGE_SIZE_t>(copy_alloc_id(0u64, virt_ptr), i), 1, (V[i+off_i]).order)};
+  take APs = each(i64 i; (start_i <= (u64) (i + off_i)) && ((u64) (i + off_i) < end_i)
+                && ((V[(u64) (i+off_i)]).refcount == 0u16)
+                && ((V[(u64) (i+off_i)]).order != (hyp_no_order ()))
+                && ((not (excluded (ex, (u64) (i + off_i))))))
+              {AllocatorPage(array_shift<PAGE_SIZE_t>(copy_alloc_id(0u64, virt_ptr), i), 1, (V[(u64) (i+off_i)]).order)};
   assert (each (u64 i; (start_i <= i) && (i < end_i))
     {vmemmap_wf (i, V, pool_l, pool)});
   assert (each (u64 i; (start_i <= i) && (i < end_i)
