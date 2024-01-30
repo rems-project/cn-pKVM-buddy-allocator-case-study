@@ -398,13 +398,13 @@ Hyp_pool_ex2 (
 predicate {
     struct hyp_pool pool
     , map <u64, struct hyp_page> vmemmap
-    , map <u64, struct list_head> APs
+    , map <i64, struct list_head> APs
 }
 Hyp_pool (
     pointer pool_l
     , pointer vmemmap_l
     , pointer virt_ptr
-    , u64 physvirt_offset
+    , i64 physvirt_offset
 )
 {
   let ex = exclude_none ();
