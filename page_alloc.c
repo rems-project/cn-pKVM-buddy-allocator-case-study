@@ -82,7 +82,7 @@ static struct hyp_page *__find_buddy_nocheck(struct hyp_pool *pool,
 /*@ requires cellPointer(__hyp_vmemmap, (u64) (sizeof<struct hyp_page>), start_i, end_i, p) @*/
 /*@ requires let p_i = cn_hyp_page_to_pfn(__hyp_vmemmap, p) @*/
 /*@ requires order_aligned(p_i, order) @*/
-/*@ requires 0 <= order; order < (*pool).max_order @*/
+/*@ requires 0u8 <= order; order < (*pool).max_order @*/
 /*@ ensures take OR = Owned(pool) @*/
 /*@ ensures hyp_pool_wf(pool, *pool, __hyp_vmemmap, hyp_physvirt_offset) @*/
 /*@ ensures {hyp_physvirt_offset} unchanged; {__hyp_vmemmap} unchanged @*/
@@ -122,18 +122,18 @@ static struct hyp_page *__find_buddy_avail(struct hyp_pool *pool,
 /*@ requires cellPointer(__hyp_vmemmap, (u64) (sizeof<struct hyp_page>), start_i, end_i, p) @*/
 /*@ requires let p_i = cn_hyp_page_to_pfn(__hyp_vmemmap, p) @*/
 /*@ requires order_aligned(p_i, order) @*/
-/*@ requires 0 <= order; order < (*pool).max_order @*/
-/*@ requires take V = each (integer i; start_i <= i && i < end_i){Owned(array_shift<struct hyp_page>(__hyp_vmemmap, i)) } @*/
+/*@ requires 0u8 <= order; order < (*pool).max_order @*/
+/*@ requires take V = each (u64 i; start_i <= i && i < end_i){Owned(array_shift<struct hyp_page>(__hyp_vmemmap, i)) } @*/
 /*@ ensures take OR = Owned(pool) @*/
 /*@ ensures hyp_pool_wf(pool, *pool, __hyp_vmemmap, hyp_physvirt_offset) @*/
-/*@ ensures take V2 = each (integer i; start_i <= i && i < end_i){Owned(array_shift<struct hyp_page>(__hyp_vmemmap, i)) } @*/
+/*@ ensures take V2 = each (u64 i; start_i <= i && i < end_i){Owned(array_shift<struct hyp_page>(__hyp_vmemmap, i)) } @*/
 /*@ ensures V2 == V @*/
 /*@ ensures {hyp_physvirt_offset} unchanged; {__hyp_vmemmap} unchanged @*/
 /*@ ensures {*pool} unchanged @*/
 /*@ ensures let buddy_i = pfn_buddy(p_i, order) @*/
 /*@ ensures let addr = buddy_i * page_size () @*/
 /*@ ensures let same_order = V2[buddy_i].order == order @*/
-/*@ ensures let zero_refcount = V2[buddy_i].refcount == 0 @*/
+/*@ ensures let zero_refcount = V2[buddy_i].refcount == 0u16 @*/
 /*@ ensures let buddy = array_shift<struct hyp_page>(__hyp_vmemmap, buddy_i) @*/
 /*@ ensures let in_range_buddy = addr >= (*pool).range_start && addr < (*pool).range_end @*/
 /*@ ensures let good_buddy = in_range_buddy && same_order && zero_refcount @*/
@@ -165,15 +165,15 @@ static inline void page_remove_from_list(struct hyp_page *p)
 /*@ requires let virt = cn__hyp_va(cn_virt_ptr, hyp_physvirt_offset, phys) @*/
 /*@ requires take OP = Owned(p) @*/
 /*@ requires let order = (*p).order @*/
-/*@ requires 0 <= order; order < 11 @*/
+/*@ requires 0u8 <= order; order < 11u8 @*/
 /*@ requires take AP = AllocatorPage(virt, 1, order) @*/
 /*@ requires let prev = AP.prev; let next = AP.next @*/
 /*@ requires take Node_prev = O_struct_list_head(prev, prev != virt) @*/
 /*@ requires take Node_next = O_struct_list_head(next, prev != next) @*/
 /*@ requires (prev != virt) || (next == virt) @*/
-/*@ requires 0 <= hyp_physvirt_offset @*/
-/*@ requires hyp_physvirt_offset <= phys; phys < power(2, 63) @*/
-/*@ requires (mod(hyp_physvirt_offset, page_size())) == 0 @*/
+/*@ requires 0i64 <= hyp_physvirt_offset @*/
+/*@ requires (u64) hyp_physvirt_offset <= phys; phys < power(2u64, 63u64) @*/
+/*@ requires (mod((u64) hyp_physvirt_offset, page_size())) == 0u64 @*/
 /*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged; {cn_virt_ptr} unchanged @*/
 /*@ ensures take OP2 = Owned(p) @*/
 /*@ ensures {*p} unchanged @*/
@@ -208,7 +208,7 @@ static inline void page_remove_from_list_pool(struct hyp_pool *pool, struct hyp_
 /*@ requires cellPointer(__hyp_vmemmap, (u64) (sizeof<struct hyp_page>), start_i, end_i, p) @*/
 /*@ requires let order = HP.vmemmap[p_i].order @*/
 /*@ requires order != hyp_no_order () @*/
-/*@ requires HP.vmemmap[p_i].refcount == 0 @*/
+/*@ requires HP.vmemmap[p_i].refcount == 0u16 @*/
 /*@ ensures take ZP = ZeroPage(virt, 1, order) @*/
 /*@ ensures take H2 = Hyp_pool_ex1(pool, __hyp_vmemmap, cn_virt_ptr, hyp_physvirt_offset, p_i) @*/
 /*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
