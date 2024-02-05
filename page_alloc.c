@@ -703,26 +703,25 @@ static inline const int get_order(unsigned long size)
 int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
 		  unsigned int reserved_pages)
 /*@ accesses __hyp_vmemmap; hyp_physvirt_offset; cn_virt_ptr @*/
-/*@ requires nr_pages > 0 @*/
+/*@ requires nr_pages > 0u32 @*/
 /*@ requires take O = Owned<struct hyp_pool>(pool) @*/
 /*@ requires let start_i = pfn; let start = start_i * page_size() @*/
-/*@ requires start_i >= 0 @*/
-/*@ requires let end_i = start_i + nr_pages; let end = end_i * page_size() @*/
-/*@ requires let off_i = hyp_physvirt_offset / page_size() @*/
-/*@ requires (nr_pages + 1) * page_size() < power(2,32) @*/ /* because of (nr_pages + 1) << PAGE_SHIFT */
+/*@ requires let end_i = start_i + ((u64) nr_pages); let end = end_i * page_size() @*/
+/*@ requires let off_i = hyp_physvirt_offset / (i64) page_size() @*/
+/*@ requires (((u64) nr_pages) + 1u64) * page_size() < power(2u64,32u64) @*/ /* because of (nr_pages + 1) << PAGE_SHIFT; TODO revisit */
 /*@ requires reserved_pages < nr_pages @*/
 /* The hyp_pool_wf below does not mention the free area. So the
    hyp_pool_wf constraint is just a short-hand for asking start,
    end, and others to have sensible values. */
-/*@ requires let poolv = {range_start: start, range_end: end, max_order: 11, ..*pool} @*/
+/*@ requires let poolv = {range_start: start, range_end: end, max_order: 11u8, ..*pool} @*/
 /*@ requires hyp_pool_wf(pool, poolv, __hyp_vmemmap, hyp_physvirt_offset) @*/
-/*@ requires take V = each (integer i; start_i <= i && i < end_i){Owned(array_shift<struct hyp_page>(__hyp_vmemmap, i)) } @*/
-/*@ requires take P = each (integer i; start_i + reserved_pages <= (i+off_i) && (i+off_i) < end_i){ Page(array_shift<PAGE_SIZE_t>(NULL, i), 1, 0) } @*/
+/*@ requires take V = each (u64 i; start_i <= i && i < end_i){Owned(array_shift<struct hyp_page>(__hyp_vmemmap, i)) } @*/
+/*@ requires take P = each (u64 i; start_i + ((u64) reserved_pages) <= (u64) (((i64) i)+off_i) && (u64) (((i64) i)+off_i) < end_i){ Page(array_shift<PAGE_SIZE_t>(NULL, i), 1, 0u8) } @*/
 /*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
 /*@ ensures take H2 = Hyp_pool(pool, __hyp_vmemmap, cn_virt_ptr, hyp_physvirt_offset) @*/
 /*@ ensures (H2.pool).range_start == start @*/
 /*@ ensures (H2.pool).range_end == end @*/
-/*@ ensures (H2.pool).max_order <= 11 @*/
+/*@ ensures (H2.pool).max_order <= 11u8 @*/
 {
 	phys_addr_t phys = hyp_pfn_to_phys(pfn);
 	struct hyp_page *p = NULL;
