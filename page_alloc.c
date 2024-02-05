@@ -733,14 +733,15 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
 	assert(pool->max_order <= 11);
 	for (i = 0; i < pool->max_order; i++)
 	/*@ inv take OI = Owned(pool) @*/
-	/*@ inv take V2 = each (integer j; start_i <= j && j < end_i){Owned(array_shift<struct hyp_page>(__hyp_vmemmap, j))} @*/
-	/*@ inv 0 <= off_i; off_i < start_i @*/
-	/*@ inv take PI = each (integer j; start_i + reserved_pages <= (j+off_i) && (j+off_i) < end_i){ Page(array_shift<PAGE_SIZE_t>(NULL, j), 1, 0) } @*/
-	/*@ inv each(integer j; 0 <= j && j < i){((*pool).free_area[j]).prev == array_shift<struct list_head>(pool, j) } @*/
-	/*@ inv each(integer j; 0 <= j && j < i){((*pool).free_area[j]).next == array_shift<struct list_head>(pool, j) } @*/
+	/*@ inv take V2 = each (u64 j; start_i <= j && j < end_i){Owned(array_shift<struct hyp_page>(__hyp_vmemmap, j))} @*/
+	/*@ inv 0i64 <= off_i; (u64) off_i < start_i @*/
+	/*@ inv take PI = each (u64 j; start_i + (u64) reserved_pages <= (j+ (u64) off_i) && (j+ (u64) off_i) < end_i){ Page(array_shift<PAGE_SIZE_t>(NULL, j), 1, 0u8) } @*/
+	/*@ inv each(u64 j; j < (u64) i){((*pool).free_area[j]).prev == array_shift<struct list_head>(pool, j) } @*/
+	/*@ inv each(u64 j; j < (u64) i){((*pool).free_area[j]).next == array_shift<struct list_head>(pool, j) } @*/
 	/*@ inv {__hyp_vmemmap} unchanged; {pool} unchanged; {hyp_physvirt_offset} unchanged; {pfn} unchanged; {nr_pages} unchanged; {reserved_pages} unchanged @*/
-	/*@ inv 0 <= i; i <= (*pool).max_order; (*pool).max_order > 0; (*pool).max_order <= 11 @*/
-	/*@ inv (*pool).max_order == ((11 < (get_order_uf((nr_pages + 1)*page_size()))) ? 11 : (get_order_uf((nr_pages + 1)*page_size()))) @*/
+	/*@ inv 0i32 <= i; i <= (i32) (*pool).max_order; (*pool).max_order > 0u8; (*pool).max_order <= 11u8 @*/
+	/*@ inv let order = get_order_uf((nr_pages + 1u32)*((u32) page_size())) @*/
+	/*@ inv (*pool).max_order == (11u8 < order ? 11u8 : order) @*/
 	/*@ inv phys == pfn * page_size() @*/
 	{
 		/*CN*/ /*@ extract Owned<struct list_head>, i; @*/
@@ -772,11 +773,11 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
 	/*@ inv p == array_shift<struct hyp_page>(__hyp_vmemmap, pfn) @*/
 	{
 		/*CN*//*@instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, array_shift<struct hyp_page>(p, i)); @*/
-		/*CN*//*@extract Owned<struct hyp_page>, pfn+i; @*/
+		/*CN*//*@extract Owned<struct hyp_page>, pfn+((u64) i); @*/
 		p[i].refcount = 0; /* added for formalisation */
 		p[i].order = 0;    /* added for formalisation */
 		hyp_set_page_refcounted(&p[i]);
-		/*CN*//*@ apply order_aligned_init(pfn+i); @*/
+		/*CN*//*@ apply order_aligned_init(pfn+((u64) i)); @*/
 		/*CN*//*@ apply page_size_of_order (); @*/
 	}
 
@@ -799,9 +800,9 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
 	/*@ inv (H.pool).range_end == end @*/
 	/*@ inv (H.pool).max_order <= 11u8 @*/
 	{
-		/*CN*//*@instantiate i+pfn;@*/
+		/*CN*//*@instantiate ((u64) i)+pfn;@*/
 		// p[i].refcount = 0; /* added for formalisation */
-		/*CN*/ /*@extract Page, start_i+i-off_i;@*/
+		/*CN*/ /*@extract Page, start_i+((u64) i)-((u64) off_i);@*/
 		__hyp_put_page(pool, &p[i]);
 	}
 	assert(i == nr_pages);
