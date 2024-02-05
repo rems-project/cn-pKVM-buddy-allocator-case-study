@@ -588,13 +588,13 @@ void hyp_put_page(struct hyp_pool *pool, void *addr)
 /*@ accesses hyp_physvirt_offset; __hyp_vmemmap; cn_virt_ptr @*/
 /*@ requires (alloc_id) addr == (alloc_id) cn_virt_ptr @*/
 /*@ requires take H = Hyp_pool(pool, __hyp_vmemmap, cn_virt_ptr, hyp_physvirt_offset) @*/
-/*@ requires let phys = ((integer) addr) + hyp_physvirt_offset @*/
+/*@ requires let phys = cn__hyp_pa(hyp_physvirt_offset, addr)@*/
 /*@ requires H.pool.range_start <= phys; phys < H.pool.range_end @*/
-/*@ requires (mod(phys,page_size())) == 0; addr != NULL @*/
+/*@ requires (mod(phys,page_size())) == 0u64; addr != NULL @*/
 /*@ requires let page_i = phys / page_size() @*/
 /*@ requires let refcount = (H.vmemmap[page_i]).refcount @*/
-/*@ requires refcount > 0 @*/
-/*@ requires take P = Page(addr, (refcount == 1) ? 1 : 0, H.vmemmap[page_i].order) @*/
+/*@ requires refcount > 0u16 @*/
+/*@ requires take P = Page(addr, (refcount == 1u16) ? 1 : 0, H.vmemmap[page_i].order) @*/
 /*@ ensures take H2 = Hyp_pool(pool, __hyp_vmemmap, cn_virt_ptr, hyp_physvirt_offset) @*/
 /*@ ensures {hyp_physvirt_offset} unchanged; {__hyp_vmemmap} unchanged @*/
 /*@ ensures H2.pool == {free_area: H2.pool.free_area,.. H.pool} @*/
@@ -610,11 +610,11 @@ void hyp_put_page(struct hyp_pool *pool, void *addr)
 void hyp_get_page(struct hyp_pool *pool, void *addr)
 /*@ accesses hyp_physvirt_offset; __hyp_vmemmap; cn_virt_ptr @*/
 /*@ requires take H = Hyp_pool(pool, __hyp_vmemmap, cn_virt_ptr, hyp_physvirt_offset) @*/
-/*@ requires let phys = ((integer) addr) + hyp_physvirt_offset @*/
+/*@ requires let phys = cn__hyp_pa(hyp_physvirt_offset, addr)@*/
 /*@ requires let page_i = phys / page_size() @*/
 /*@ requires H.pool.range_start <= phys; phys < H.pool.range_end @*/
-/*@ requires (H.vmemmap[page_i]).refcount > 0 @*/
-/*@ requires (H.vmemmap[page_i]).refcount <= power(2,16) - 2 @*/
+/*@ requires (H.vmemmap[page_i]).refcount > 0u16 @*/
+/*@ requires (H.vmemmap[page_i]).refcount <= power(2u16,16u16) - 2u16 @*/
 /*@ ensures take H2 = Hyp_pool(pool, __hyp_vmemmap, cn_virt_ptr, hyp_physvirt_offset) @*/
 /*@ ensures {hyp_physvirt_offset} unchanged; {__hyp_vmemmap} unchanged @*/
 /*@ ensures H2.pool == H.pool @*/
@@ -660,7 +660,7 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 	while /*CN(i < pool->max_order && list_empty(&pool->free_area[i]))*/ (1)
 		/*@ inv take H_I = Hyp_pool(pool, __hyp_vmemmap, cn_virt_ptr, hyp_physvirt_offset);
 			H_I.vmemmap == H.vmemmap; H_I.pool == H.pool;
-			order <= i; H.pool.max_order <= 11;
+			order <= i; H.pool.max_order <= 11u8;
 			{pool} unchanged; {order} unchanged;
 			{__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
 		/*CN*/{
