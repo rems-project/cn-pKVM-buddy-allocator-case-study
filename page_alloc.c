@@ -34,11 +34,11 @@
    the current CN frontend (function declarations without body loose
    the variable name information that we rely on in the
    specifications).) */
-void memset(void *b, int c, size_t len)
+void memset(void *b, char c, size_t len)
 /*@ trusted @*/
-/*@ requires let b_i = (integer) b @*/
-/*@ requires take B = each (integer i; b_i <= i && i < b_i+len){Byte(array_shift<char>(NULL, i))} @*/
-/*@ ensures take BR = each (integer i; b_i <= i && i < b_i+len){ByteV(array_shift<char>(NULL,i), c)} @*/
+/*@ requires let b_i = (u64) b @*/
+/*@ requires take B = each (u64 i; b_i <= i && i < b_i+len){Byte(array_shift<char>(NULL, i))} @*/
+/*@ ensures take BR = each (u64 i; b_i <= i && i < b_i+len){ByteV(array_shift<char>(NULL,i), c)} @*/
 {}
 
 
