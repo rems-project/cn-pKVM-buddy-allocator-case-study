@@ -257,7 +257,7 @@ function (boolean) hyp_pool_wf (pointer pool_pointer, struct hyp_pool pool,
         || (range_end_virt <= ((u64) pool_pointer)))
 }
 
-function (integer) get_order_uf (integer size)
+function (u8) get_order_uf (u32 size)
 
 function (pointer) virt (pointer phys, i64 physvirt_offset) {
   array_shift<char>(phys, (0i64 - physvirt_offset))
