@@ -784,19 +784,19 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
 	/* Attach the unused pages to the buddy tree */
 	for (i = reserved_pages; i < nr_pages; i++)
 	/*@ inv take H = Hyp_pool(pool, __hyp_vmemmap, cn_virt_ptr, hyp_physvirt_offset) @*/
-	/*@ inv i >= 0 @*/
-	/*@ inv 0 <= off_i; off_i < start_i @*/
-	/*@ inv take PI3 = each(integer j; start_i + i <= (j+off_i) && (j+off_i) < end_i){ Page(array_shift<PAGE_SIZE_t>(NULL, j), 1, 0) } @*/
-	/*@ inv each(integer j; start_i + i <= j && j < end_i){H.vmemmap[j].order == 0} @*/
-	/*@ inv each(integer j; start_i + i <= j && j < end_i){H.vmemmap[j].refcount == 1} @*/
+	/*@ inv i >= 0i32 @*/
+	/*@ inv 0i64 <= off_i; (u64) off_i < start_i @*/
+	/*@ inv take PI3 = each(u64 j; start_i + (u64) i <= (u64) ((i64)j+off_i) && (u64) ((i64)j+off_i) < end_i){ Page(array_shift<PAGE_SIZE_t>(NULL, j), 1, 0u8) } @*/
+	/*@ inv each(u64 j; start_i + (u64) i <= j && j < end_i){H.vmemmap[j].order == 0u8} @*/
+	/*@ inv each(u64 j; start_i + (u64) i <= j && j < end_i){H.vmemmap[j].refcount == 1u16} @*/
 	/*@ inv (H.pool).range_start == start @*/
 	/*@ inv (H.pool).range_end == end @*/
 	/*@ inv p == array_shift<struct hyp_page>(__hyp_vmemmap, pfn) @*/
-	/*@ inv reserved_pages <= i; i <= nr_pages @*/
+	/*@ inv reserved_pages <= (u32) i; (u32) i <= nr_pages @*/
 	/*@ inv {__hyp_vmemmap} unchanged; {pool} unchanged; {hyp_physvirt_offset} unchanged; {pfn} unchanged; {nr_pages} unchanged; {reserved_pages} unchanged @*/
 	/*@ inv (H.pool).range_start == start @*/
 	/*@ inv (H.pool).range_end == end @*/
-	/*@ inv (H.pool).max_order <= 11 @*/
+	/*@ inv (H.pool).max_order <= 11u8 @*/
 	{
 		/*CN*//*@instantiate i+pfn;@*/
 		// p[i].refcount = 0; /* added for formalisation */
