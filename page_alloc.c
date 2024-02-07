@@ -241,16 +241,16 @@ static inline void page_add_to_list(struct hyp_page *p, struct list_head *head)
 /*@ requires let virt = cn__hyp_va(cn_virt_ptr, hyp_physvirt_offset, phys) @*/
 /*@ requires take Hp = Owned(p) @*/
 /*@ requires let order = (*p).order @*/
-/*@ requires 0 <= order; order < 11 @*/
+/*@ requires 0u8 <= order; order < 11u8 @*/
 /*@ requires take AP1 = ZeroPage(virt, 1, order) @*/
 /*@ requires let next = head @*/
 /*@ requires take Node_head = Owned<struct list_head>(next) @*/
 /*@ requires let prev = (*next).prev @*/
 /*@ requires take Node_prev = O_struct_list_head(prev, prev != next) @*/
-/*@ requires 0 <= hyp_physvirt_offset @*/
-/*@ requires hyp_physvirt_offset <= phys; phys < power(2, 63) @*/
-/*@ requires (mod(hyp_physvirt_offset, page_size())) == 0 @*/
-/*@ requires phys > hyp_physvirt_offset @*/
+/*@ requires 0i64 <= hyp_physvirt_offset @*/
+/*@ requires (u64) hyp_physvirt_offset <= phys; phys < power(2u64, 63u64) @*/
+/*@ requires (mod((u64) hyp_physvirt_offset, page_size())) == 0u64 @*/
+/*@ requires phys > (u64) hyp_physvirt_offset @*/
 /*@ requires p >= __hyp_vmemmap @*/
 /*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged; {cn_virt_ptr} unchanged @*/
 /*@ ensures take AP1R = AllocatorPage(virt, 1, order) @*/
@@ -287,7 +287,7 @@ static inline void page_add_to_list_pool(struct hyp_pool *pool,
 /*@ requires cellPointer(__hyp_vmemmap, (u64) (sizeof<struct hyp_page>), start_i, end_i, p) @*/
 /*@ requires let order = (HP.vmemmap[p_i]).order @*/
 /*@ requires order != (hyp_no_order ()) @*/
-/*@ requires HP.vmemmap[p_i].refcount == 0 @*/
+/*@ requires HP.vmemmap[p_i].refcount == 0u16 @*/
 /*@ requires take ZP = ZeroPage(virt, 1, order) @*/
 /*@ requires head == array_shift<struct list_head>(&(pool->free_area), order) @*/
 /*@ ensures take H2 = Hyp_pool(pool, __hyp_vmemmap, cn_virt_ptr, hyp_physvirt_offset) @*/
@@ -325,7 +325,7 @@ static inline void page_add_to_list_pool_ex1(struct hyp_pool *pool,
 /*@ requires cellPointer(__hyp_vmemmap, (u64) (sizeof<struct hyp_page>), start_i, end_i, p_ex) @*/
 /*@ requires let order = (HP.vmemmap[p_i]).order @*/
 /*@ requires order != hyp_no_order () @*/
-/*@ requires (HP.vmemmap[p_i]).refcount == 0 @*/
+/*@ requires (HP.vmemmap[p_i]).refcount == 0u16 @*/
 /*@ requires take ZP = ZeroPage(virt, 1, order) @*/
 /*@ requires head == array_shift<struct list_head>(&(pool->free_area), order) @*/
 /*@ requires p_i != p_i2 @*/
@@ -351,14 +351,13 @@ static inline void page_add_to_list_pool_ex1(struct hyp_pool *pool,
 
 static inline struct hyp_page *node_to_page(struct list_head *node)
 /*@ accesses __hyp_vmemmap; hyp_physvirt_offset @*/
-/*@ requires let phys = ((integer)node) + hyp_physvirt_offset @*/
-/*@ requires phys < power(2, 64) @*/
+/*@ requires 0i64 <= hyp_physvirt_offset @*/
+/*@ requires let phys = (u64) node + (u64) hyp_physvirt_offset @*/
 /*@ requires let p_i = phys / page_size() @*/
 /*@ requires let page = array_shift<struct hyp_page>(__hyp_vmemmap, p_i) @*/
-/*@ requires ((integer) page) < power(2, 64) - 4 @*/
-/*@ requires mod(hyp_physvirt_offset, page_size ()) == 0 @*/
-/*@ requires mod((integer) __hyp_vmemmap, 4) == 0 @*/
-/*@ requires 0 <= hyp_physvirt_offset @*/
+/*@ requires (u64) page < power(2u64, 64u64) - 4u64 @*/
+/*@ requires mod((u64) hyp_physvirt_offset, page_size ()) == 0u64 @*/
+/*@ requires mod((u64) __hyp_vmemmap, (u64) (sizeof<struct hyp_page>)) == 0u64 @*/
 /*@ ensures return == page @*/
 /*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
 {
