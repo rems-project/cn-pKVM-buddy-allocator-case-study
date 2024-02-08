@@ -560,13 +560,13 @@ static void __hyp_put_page(struct hyp_pool *pool, struct hyp_page *p)
 /*@ requires H.pool.range_start <= phys; phys < H.pool.range_end @*/
 /*@ requires let refcount = (H.vmemmap[p_i]).refcount @*/
 /*@ requires cellPointer(__hyp_vmemmap, (u64) (sizeof<struct hyp_page>), start_i, end_i, p) @*/
-/*@ requires refcount > 0 @*/
+/*@ requires refcount > 0u16 @*/
 /*@ requires let virt = cn__hyp_va(cn_virt_ptr, hyp_physvirt_offset, phys) @*/
-/*@ requires take P = Page(virt, (refcount == 1) ? 1 : 0, H.vmemmap[p_i].order) @*/
+/*@ requires take P = Page(virt, (refcount == 1u16) ? 1 : 0, H.vmemmap[p_i].order) @*/
 /*@ ensures take H2 = Hyp_pool(pool, __hyp_vmemmap, cn_virt_ptr, hyp_physvirt_offset) @*/
 /*@ ensures {hyp_physvirt_offset} unchanged; {__hyp_vmemmap} unchanged @*/
 /*@ ensures H2.pool == {free_area:H2.pool.free_area, .. H.pool} @*/
-/*@ ensures each (integer i; p_i < i && i < end_i){(H.vmemmap[i].refcount == 0) || (H2.vmemmap[i] == H.vmemmap[i])} @*/
+/*@ ensures each (u64 i; p_i < i && i < end_i){(H.vmemmap[i].refcount == 0u16) || (H2.vmemmap[i] == H.vmemmap[i])} @*/
 {
 	/*CN*//*@ instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap, p); @*/
 	/*CN*//*@ instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap, p); @*/
@@ -691,12 +691,11 @@ void *hyp_alloc_pages(struct hyp_pool *pool, u8 order)
 
 /* NOTE: as above, we add a bogus empty body for this function, to
    work around a frontend limitation. */
-static inline const int get_order(unsigned long size)
+static inline const int get_order(unsigned int size)
 /*@ trusted @*/
-/*@ requires size >= page_size() @*/
-/*@ ensures return == (get_order_uf(size)) @*/
-/*@ ensures return > 0 @*/
-/*@ ensures return < power(2,32) @*/
+/*@ requires (u64) size >= page_size() @*/
+/*@ ensures return == (i32) get_order_uf(size) @*/
+/*@ ensures return > 0i32 @*/
 {}
 
 int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
