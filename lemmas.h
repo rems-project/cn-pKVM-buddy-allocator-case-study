@@ -125,7 +125,11 @@ lemma attach_inc_loop (map<u64, struct hyp_page> V,
  ensures each(u64 i; start_i <= i && i < end_i) { page_group_ok(i, V[buddy_i: buddy_page,min_i: min_page], pool) }
 
 
+function (u64) calc_buddy(u64 addr, u8 order) {
+       xor_uf(addr, shift_left(page_size(), (u64) order))
+}
 
+// TODO: is this (and other) lemma even useful anymore?
 lemma find_buddy_xor(u64 addr_i, // intptr_t
                      u8 order) // unsigned int
   requires order_aligned(addr_i, order) ;
@@ -133,7 +137,7 @@ lemma find_buddy_xor(u64 addr_i, // intptr_t
   ensures let two_to_order = power_uf(2u64, (u64) order);
           0u64 < two_to_order ;
           two_to_order < power(2u64, 11u64) ;
-          let buddy_addr = (xor_uf(addr_i * page_size(), page_size() * two_to_order)) ;
+          let buddy_addr = calc_buddy(addr_i * page_size(), order) ;
           let buddy_i = (buddy_addr / page_size()) ;
           buddy_i == (pfn_buddy (addr_i, order)) ;
           (mod(buddy_addr, page_size())) == 0u64 ;

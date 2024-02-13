@@ -235,8 +235,8 @@ function (boolean) hyp_pool_wf (pointer pool_pointer, struct hyp_pool pool,
 {
   let range_start = pool.range_start;
   let range_end = pool.range_end;
-  let start_i = range_start / (page_size ());
-  let end_i = range_end / (page_size ());
+  let start_i = range_start / page_size ();
+  let end_i = range_end / page_size ();
   let hp_sz = sizeof <struct hyp_page>;
   let pool_sz = sizeof <struct hyp_pool>;
   let vmemmap_start_pointer = array_shift<struct hyp_page>(vmemmap_pointer,  start_i);
