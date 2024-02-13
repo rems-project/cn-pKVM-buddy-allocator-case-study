@@ -82,15 +82,15 @@ static struct hyp_page *__find_buddy_nocheck(struct hyp_pool *pool,
 /*@ requires cellPointer(__hyp_vmemmap, (u64) (sizeof<struct hyp_page>), start_i, end_i, p) @*/
 /*@ requires let p_i = cn_hyp_page_to_pfn(__hyp_vmemmap, p) @*/
 /*@ requires order_aligned(p_i, order) @*/
-/*@ requires 0u8 <= order; order < (*pool).max_order @*/
+/*@ requires order < (*pool).max_order @*/
+/*@ requires let buddy_i = pfn_buddy(p_i, order) @*/
+/*@ requires let buddy = array_shift<struct hyp_page>(__hyp_vmemmap, buddy_i) @*/
+/*@ requires let in_range_buddy = buddy_i >= start_i && buddy_i < end_i @*/
+/*@ requires let good_buddy = in_range_buddy @*/
 /*@ ensures take OR = Owned(pool) @*/
 /*@ ensures hyp_pool_wf(pool, *pool, __hyp_vmemmap, hyp_physvirt_offset) @*/
 /*@ ensures {hyp_physvirt_offset} unchanged; {__hyp_vmemmap} unchanged @*/
 /*@ ensures {*pool} unchanged @*/
-/*@ ensures let buddy_i = pfn_buddy(p_i, order) @*/
-/*@ ensures let buddy = array_shift<struct hyp_page>(__hyp_vmemmap, buddy_i) @*/
-/*@ ensures let in_range_buddy = buddy_i >= start_i && buddy_i < end_i @*/
-/*@ ensures let good_buddy = in_range_buddy @*/
 /*@ ensures return == (good_buddy ? buddy : NULL) @*/
 /*@ ensures (return == NULL) || (cellPointer(__hyp_vmemmap, (u64) (sizeof<struct hyp_page>), start_i, end_i, buddy) && order_aligned(buddy_i, order) && p != buddy) @*/
 {
@@ -99,6 +99,7 @@ static struct hyp_page *__find_buddy_nocheck(struct hyp_pool *pool,
 	/*CN*/ /*@ apply find_buddy_xor(cn_hyp_page_to_pfn(__hyp_vmemmap,p), order); @*/
 
 	addr ^= (PAGE_SIZE << order);
+	/*@ assert (addr == calc_buddy(cn_hyp_page_to_pfn(__hyp_vmemmap,p) * page_size(), order)); @*/
 
 	/*
 	 * Don't return a page outside the pool range -- it belongs to
