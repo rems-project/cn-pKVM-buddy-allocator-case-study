@@ -83,16 +83,16 @@ static struct hyp_page *__find_buddy_nocheck(struct hyp_pool *pool,
 /*@ requires let p_i = cn_hyp_page_to_pfn(__hyp_vmemmap, p) @*/
 /*@ requires order_aligned(p_i, order) @*/
 /*@ requires order < (*pool).max_order @*/
-/*@ requires let buddy_i = pfn_buddy(p_i, order) @*/
-/*@ requires let buddy = array_shift<struct hyp_page>(__hyp_vmemmap, buddy_i) @*/
-/*@ requires let in_range_buddy = buddy_i >= start_i && buddy_i < end_i @*/
-/*@ requires let good_buddy = in_range_buddy @*/
 /*@ ensures take OR = Owned(pool) @*/
 /*@ ensures hyp_pool_wf(pool, *pool, __hyp_vmemmap, hyp_physvirt_offset) @*/
 /*@ ensures {hyp_physvirt_offset} unchanged; {__hyp_vmemmap} unchanged @*/
 /*@ ensures {*pool} unchanged @*/
+/*@ ensures let buddy_i = pfn_buddy(p_i, order) @*/
+/*@ ensures let buddy = array_shift<struct hyp_page>(__hyp_vmemmap, buddy_i) @*/
+/*@ ensures let in_range_buddy = buddy_i >= start_i && buddy_i < end_i @*/
+/*@ ensures let good_buddy = in_range_buddy @*/
 /*@ ensures return == (good_buddy ? buddy : NULL) @*/
-/*@ ensures (return == NULL) || (cellPointer(__hyp_vmemmap, (u64) (sizeof<struct hyp_page>), start_i, end_i, buddy) && order_aligned(buddy_i, order) && p != buddy) @*/
+/*@ ensures is_null(return) || !addr_eq(return, NULL) && (cellPointer(__hyp_vmemmap, (u64) (sizeof<struct hyp_page>), start_i, end_i, buddy) && order_aligned(buddy_i, order) && p != buddy) @*/
 {
 	phys_addr_t addr = hyp_page_to_phys(p);
 
@@ -123,7 +123,7 @@ static struct hyp_page *__find_buddy_avail(struct hyp_pool *pool,
 /*@ requires cellPointer(__hyp_vmemmap, (u64) (sizeof<struct hyp_page>), start_i, end_i, p) @*/
 /*@ requires let p_i = cn_hyp_page_to_pfn(__hyp_vmemmap, p) @*/
 /*@ requires order_aligned(p_i, order) @*/
-/*@ requires 0u8 <= order; order < (*pool).max_order @*/
+/*@ requires order < (*pool).max_order @*/
 /*@ requires take V = each (u64 i; start_i <= i && i < end_i){Owned(array_shift<struct hyp_page>(__hyp_vmemmap, i)) } @*/
 /*@ ensures take OR = Owned(pool) @*/
 /*@ ensures hyp_pool_wf(pool, *pool, __hyp_vmemmap, hyp_physvirt_offset) @*/
@@ -132,14 +132,13 @@ static struct hyp_page *__find_buddy_avail(struct hyp_pool *pool,
 /*@ ensures {hyp_physvirt_offset} unchanged; {__hyp_vmemmap} unchanged @*/
 /*@ ensures {*pool} unchanged @*/
 /*@ ensures let buddy_i = pfn_buddy(p_i, order) @*/
-/*@ ensures let addr = buddy_i * page_size () @*/
 /*@ ensures let same_order = V2[buddy_i].order == order @*/
 /*@ ensures let zero_refcount = V2[buddy_i].refcount == 0u16 @*/
 /*@ ensures let buddy = array_shift<struct hyp_page>(__hyp_vmemmap, buddy_i) @*/
-/*@ ensures let in_range_buddy = addr >= (*pool).range_start && addr < (*pool).range_end @*/
+/*@ ensures let in_range_buddy = buddy_i >= start_i && buddy_i < end_i @*/
 /*@ ensures let good_buddy = in_range_buddy && same_order && zero_refcount @*/
 /*@ ensures return == (good_buddy ? buddy : NULL) @*/
-/*@ ensures (return == NULL) || (cellPointer(__hyp_vmemmap, (u64) (sizeof<struct hyp_page>), start_i, end_i, buddy) && order_aligned(buddy_i, order) && p != buddy) @*/
+/*@ ensures is_null(return) || !addr_eq(return, NULL) && (cellPointer(__hyp_vmemmap, (u64) (sizeof<struct hyp_page>), start_i, end_i, buddy) && order_aligned(buddy_i, order) && p != buddy) @*/
 {
 	struct hyp_page *buddy = __find_buddy_nocheck(pool, p, order);
 
