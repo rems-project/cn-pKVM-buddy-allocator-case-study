@@ -165,7 +165,7 @@ static inline void page_remove_from_list(struct hyp_page *p)
 /*@ requires let virt = cn__hyp_va(cn_virt_ptr, hyp_physvirt_offset, phys) @*/
 /*@ requires take OP = Owned(p) @*/
 /*@ requires let order = (*p).order @*/
-/*@ requires 0u8 <= order; order < 11u8 @*/
+/*@ requires order < 11u8 @*/
 /*@ requires take AP = AllocatorPage(virt, 1, order) @*/
 /*@ requires let prev = AP.prev; let next = AP.next @*/
 /*@ requires take Node_prev = O_struct_list_head(prev, prev != virt) @*/
@@ -241,7 +241,7 @@ static inline void page_add_to_list(struct hyp_page *p, struct list_head *head)
 /*@ requires let virt = cn__hyp_va(cn_virt_ptr, hyp_physvirt_offset, phys) @*/
 /*@ requires take Hp = Owned(p) @*/
 /*@ requires let order = (*p).order @*/
-/*@ requires 0u8 <= order; order < 11u8 @*/
+/*@ requires order < 11u8 @*/
 /*@ requires take AP1 = ZeroPage(virt, 1, order) @*/
 /*@ requires let next = head @*/
 /*@ requires take Node_head = Owned<struct list_head>(next) @*/
@@ -417,7 +417,7 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 		/*@ inv each (u64 i; (start_i <= i) && (i < end_i))
 			{vmemmap_wf (i, (H_I.vmemmap)[p_i2: {order: order, ..p_page}], pool, H_I.pool)} @*/
 
-		/*@ inv 0u8 <= order; order < H_I.pool.max_order @*/
+		/*@ inv order < H_I.pool.max_order @*/
 		/*@ inv cellPointer(__hyp_vmemmap,(u64) (sizeof<struct hyp_page>),start_i,end_i,p) @*/
 		/*@ inv p_page.refcount == 0u16; p_page.order == hyp_no_order () @*/
 		/*@ inv order_aligned(p_i2,order) @*/
@@ -467,7 +467,7 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 /*@ requires H.vmemmap[p_i].refcount == 0u16 @*/
 /*@ requires let off_i = hyp_physvirt_offset / (i64) page_size() @*/
 /*@ requires (H.APs[(i64) p_i - off_i]).prev == array_shift<struct list_head>(&(pool->free_area), p_order) @*/
-/*@ requires 0u8 <= order; order <= p_order; p_order != (hyp_no_order ()) @*/
+/*@ requires order <= p_order; p_order != (hyp_no_order ()) @*/
 /*@ requires order_aligned(p_i, order) @*/
 /*@ requires let start_i = H.pool.range_start / (page_size()) @*/
 /*@ requires let end_i = H.pool.range_end / page_size() @*/
