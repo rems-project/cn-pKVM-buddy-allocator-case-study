@@ -247,8 +247,7 @@ static inline void page_add_to_list(struct hyp_page *p, struct list_head *head)
 /*@ requires take Node_head = Owned<struct list_head>(next) @*/
 /*@ requires let prev = (*next).prev @*/
 /*@ requires take Node_prev = O_struct_list_head(prev, prev != next) @*/
-/*@ requires 0i64 <= hyp_physvirt_offset @*/
-/*@ requires (u64) hyp_physvirt_offset <= phys; phys < power(2u64, 63u64) @*/
+/*@ requires (u64) hyp_physvirt_offset / page_size() <= p_i; p_i < power(2u64, 63u64) / page_size() @*/
 /*@ requires (mod((u64) hyp_physvirt_offset, page_size())) == 0u64 @*/
 /*@ requires phys > (u64) hyp_physvirt_offset @*/
 /*@ requires p >= __hyp_vmemmap @*/
