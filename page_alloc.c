@@ -188,8 +188,8 @@ static inline void page_remove_from_list(struct hyp_page *p)
 {
 	struct list_head *node = CN_COPY_ALLOC_ID(hyp_page_to_virt(p), cn_virt_ptr);
 
-	/*@ split_case (*node).prev != node @*/
-	/*@ split_case (*node).prev != (*node).next @*/
+	/*@ split_case (*node).prev != node; @*/
+	/*@ split_case (*node).prev != (*node).next; @*/
 	__list_del_entry(node);
 	/*CN*//*@ apply struct_list_head_to_bytes(node); @*/
 	memset(node, 0, sizeof(*node));

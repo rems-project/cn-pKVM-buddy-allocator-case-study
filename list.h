@@ -46,7 +46,7 @@ static inline void __list_del(struct list_head * prev, struct list_head * next)
 /*@ ensures (prev == next) || (O2R.prev == prev) @*/
 /*@ ensures (prev != next) || ((*prev).prev == prev) @*/
 {
-        /*@ split_case prev != next @*/
+        /*@ split_case prev != next; @*/
         next->prev = prev;
         /* WRITE_ONCE (prev->next, next); */
         prev->next = next;
@@ -68,8 +68,8 @@ static inline void __list_del_entry(struct list_head *entry)
 /*@ ensures (prev == next) || (O3R.prev == prev) @*/
 /*@ ensures (prev != next) || ((prev == entry) || (O2R.prev == prev)) @*/
 {
-        /*@ split_case (*entry).prev != entry @*/
-        /*@ split_case (*entry).prev != (*entry).next @*/
+        /*@ split_case (*entry).prev != entry; @*/
+        /*@ split_case (*entry).prev != (*entry).next; @*/
 	if (!__list_del_entry_valid(entry))
 		return;
 
@@ -122,7 +122,7 @@ static inline void __list_add(struct list_head *new,
 	if (!__list_add_valid(new, prev, next))
 		return;
 
-        /*@ split_case prev != next @*/
+        /*@ split_case prev != next; @*/
 	next->prev = new;
 	new->next = next;
 	new->prev = prev;
@@ -145,6 +145,6 @@ static inline void list_add_tail(struct list_head *new, struct list_head *head)
 /*@ ensures (prev != next) || ((*head).next == new) @*/
 /*@ ensures (*new).next == next; (*new).prev == prev @*/
 {
-        /*@ split_case (*head).prev != head @*/
+        /*@ split_case (*head).prev != head; @*/
 	__list_add(new, head->prev, head);
 }
