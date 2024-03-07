@@ -95,7 +95,7 @@ static inline int hyp_page_count(struct hyp_pool *pool, void *addr)
 
 static inline void hyp_page_ref_inc(struct hyp_page *p)
 /*@ requires take O = Owned(p) @*/
-/*@ requires (*p).refcount < (power(2u16,16u16) - 1u16) @*/
+/*@ requires (*p).refcount < (shift_left(1u16,16u16) - 1u16) @*/
 /*@ ensures take OR = Owned(p) @*/
 /*@ ensures {(*p).order} unchanged @*/
 /*@ ensures (*p).refcount == {(*p).refcount}@start + 1u16 @*/

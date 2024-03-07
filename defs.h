@@ -230,7 +230,7 @@ function (boolean) hyp_pool_wf (pointer pool_pointer, struct hyp_pool pool,
   let range_start_virt = (u64) (((i64) range_start) - physvirt_offset);
   let range_end_virt = (u64) (((i64) range_end) - physvirt_offset);
     (range_start < range_end)
-    && (range_end < power(2u64, 52u64))
+    && (range_end < shift_left(1u64, 52u64))
     && (physvirt_offset < (i64) range_start) // use '<='
     && (mod((u64) physvirt_offset, (page_size ())) == 0u64)
     && (((range_start / (page_size ())) * (page_size ())) == range_start)

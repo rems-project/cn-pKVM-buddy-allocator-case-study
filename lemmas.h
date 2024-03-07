@@ -136,7 +136,7 @@ lemma find_buddy_xor(u64 addr_i, // intptr_t
            order < 11u8
   ensures let two_to_order = power_uf(2u64, (u64) order);
           0u64 < two_to_order ;
-          two_to_order < power(2u64, 11u64) ;
+          two_to_order < shift_left(1u64, 11u64) ;
           let buddy_addr = calc_buddy(addr_i * page_size(), order) ;
           let buddy_i = (buddy_addr / page_size()) ;
           buddy_i == (pfn_buddy (addr_i, order)) ;
@@ -148,7 +148,7 @@ lemma find_buddy_xor(u64 addr_i, // intptr_t
 lemma page_size_of_order2(u8 order) // unsigned int
   requires order < 11u8
   ensures 0u64 < power_uf(2u64, (u64) order) ;
-          power_uf(2u64, (u64) order) < power(2u64, 11u64) ;
+          power_uf(2u64, (u64) order) < shift_left(1u64, 11u64) ;
           let size = page_size() * power_uf(2u64, (u64) order) ;
           size == (page_size_of_order(order))
 
