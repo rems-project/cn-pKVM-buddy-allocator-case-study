@@ -219,13 +219,13 @@ static inline void page_remove_from_list_pool(struct hyp_pool *pool, struct hyp_
 	/*CN*//*@instantiate vmemmap_l_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
 	/*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
 	/*CN*//*@instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
-	/*CN*//*@extract AllocatorPage, ((integer) node) / (page_size()); @*/
+	/*CN*//*@extract AllocatorPage, cn_hyp_virt_to_pfn(hyp_physvirt_offset, node); @*/
 	/*CN*//*@extract Owned<struct list_head>, order; @*/
 	/*CN*//*@extract Owned<struct hyp_page>, p_i; @*/
 	/*CN*/void *node_prev = node->prev;
 	/*CN*/void *node_next = node->next;
-	/*CN*//*@extract AllocatorPage, ((integer) node_prev) / (page_size()); @*/
-	/*CN*//*@extract AllocatorPage, ((integer) node_next) / (page_size()); @*/
+	/*CN*//*@extract AllocatorPage, cn_hyp_virt_to_pfn(hyp_physvirt_offset, node_prev); @*/
+	/*CN*//*@extract AllocatorPage, cn_hyp_virt_to_pfn(hyp_physvirt_offset, node_next); @*/
         /*CN*/void *free_node = &pool->free_area[p->order];
 	/*CN*/if (node_prev != node) {
 		/*CN*/if (node_prev != free_node);
@@ -301,8 +301,8 @@ static inline void page_add_to_list_pool(struct hyp_pool *pool,
 	/*CN*//*@instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
 	/*CN*/void *prev = head->prev;
 	/*CN*//*@instantiate freeArea_cell_wf, (*p).order;@*/
-	/*CN*//*@extract AllocatorPage, ((integer) virt) / (page_size()); @*/
-	/*CN*//*@extract AllocatorPage, ((integer) prev) / (page_size()); @*/
+	/*CN*//*@extract AllocatorPage, cn_hyp_virt_to_pfn(hyp_physvirt_offset, virt); @*/
+	/*CN*//*@extract AllocatorPage, cn_hyp_virt_to_pfn(hyp_physvirt_offset, prev); @*/
 	/*CN*/if (prev != head) {
 		/*CN*//*@instantiate vmemmap_l_wf, cn_hyp_virt_to_pfn(hyp_physvirt_offset,prev);@*/
 	/*CN*/};
@@ -339,8 +339,8 @@ static inline void page_add_to_list_pool_ex1(struct hyp_pool *pool,
 	/*CN*//*@instantiate vmemmap_wf, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
 	/*CN*//*@instantiate good<struct hyp_page>, cn_hyp_page_to_pfn(__hyp_vmemmap,p);@*/
 	/*CN*/void *prev = head->prev;
-	/*CN*//*@extract AllocatorPage, ((integer) virt) / (page_size()); @*/
-	/*CN*//*@extract AllocatorPage, ((integer) prev) / (page_size()); @*/
+	/*CN*//*@extract AllocatorPage, cn_hyp_virt_to_pfn(hyp_physvirt_offset, virt); @*/
+	/*CN*//*@extract AllocatorPage, cn_hyp_virt_to_pfn(hyp_physvirt_offset, prev); @*/
 	/*CN*//*@instantiate freeArea_cell_wf, (*p).order;@*/
 	/*CN*/if (prev != head) {
 		/*CN*//*@instantiate vmemmap_l_wf, cn_hyp_virt_to_pfn(hyp_physvirt_offset,prev);@*/
@@ -470,7 +470,7 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 /*@ requires let p_order = (H.vmemmap[p_i]).order @*/
 /*@ requires H.vmemmap[p_i].refcount == 0 @*/
 /*@ requires let off_i = hyp_physvirt_offset / page_size() @*/
-/*@ requires (H.APs[p_i - off_i]).prev == array_shift<struct list_head>(&(pool->free_area), p_order) @*/
+/*@ requires (H.APs[p_i]).prev == array_shift<struct list_head>(&(pool->free_area), p_order) @*/
 /*@ requires 0 <= order; order <= p_order; p_order != (hyp_no_order ()) @*/
 /*@ requires order_aligned(p_i, order) @*/
 /*@ requires let start_i = H.pool.range_start / (page_size()) @*/
@@ -504,11 +504,12 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 	/*@ inv hyp_pool_wf (pool, P_I, vmemmap_l, hyp_physvirt_offset) @*/
 	/*@ inv take V_I = each(integer i; (start_i <= i) && (i < end_i))
 		{Owned(array_shift<struct hyp_page>(vmemmap_l, i))} @*/
-	/*@ inv take APs = each(integer i; (start_i <= i + off_i) && (i + off_i < end_i)
-			&& (V_I[i+off_i].refcount == 0)
-			&& (V_I[i+off_i].order != hyp_no_order ())
-			&& ((not (excluded (ex, i + off_i)))))
-		{AllocatorPage(array_shift<PAGE_SIZE_t>(copy_alloc_id(0, cn_virt_base), i), 1, (V_I[i+off_i]).order)} @*/
+        /*@ inv let ptr_phys_0 = cn__hyp_va(cn_virt_base, hyp_physvirt_offset, 0) @*/
+	/*@ inv take APs = each(integer i; (start_i <= i) && (i < end_i)
+			&& (V_I[i].refcount == 0)
+			&& (V_I[i].order != hyp_no_order ())
+			&& ((not (excluded (ex, i)))))
+		{AllocatorPage(array_shift<PAGE_SIZE_t>(ptr_phys_0, i), 1, (V_I[i]).order)} @*/
 	/*@ inv each (integer i; (start_i <= i) && (i < end_i))
 		{vmemmap_wf (i, V_I, pool, P_I)} @*/
 	/*@ inv each (integer i; (start_i <= i) && (i < end_i)
