@@ -156,10 +156,10 @@ function (boolean) vmemmap_l_wf (integer page_index, integer physvirt_offset,
   let next = (APs[page_index]).next;
   let free_area_entry = ((pool.free_area)[page.order]);
   let prev_page_pointer = prev;
-  let prev_page_index = (((integer) prev_page_pointer) + physvirt_offset) / (page_size ());
+  let prev_page_index = cn_hyp_virt_to_pfn(physvirt_offset, prev_page_pointer);
   let prev_page = vmemmap[prev_page_index];
   let next_page_pointer = next;
-  let next_page_index = (((integer) next_page_pointer) + physvirt_offset) / (page_size ());
+  let next_page_index = cn_hyp_virt_to_pfn(physvirt_offset, next_page_pointer);
   let next_page = vmemmap[next_page_index];
   let prev_clause =
     ((prev == pool_free_area_pointer) && ((integer) free_area_entry.next == self_node_pointer))
@@ -192,11 +192,10 @@ function (boolean) freeArea_cell_wf (integer cell_index, integer physvirt_offset
   let prev = cell.prev;
   let next = cell.next;
   let prev_page_pointer = prev;
-  // hyp_virt_to_page
-  let prev_page_index = (((integer) prev_page_pointer) + physvirt_offset) / (page_size ());
+  let prev_page_index = cn_hyp_virt_to_pfn(physvirt_offset, prev_page_pointer);
   let prev_page = vmemmap[prev_page_index];
   let next_page_pointer = next;
-  let next_page_index = (((integer) next_page_pointer) + physvirt_offset) / (page_size ());
+  let next_page_index = cn_hyp_virt_to_pfn(physvirt_offset, next_page_pointer);
   let next_page = vmemmap[next_page_index];
     ((alloc_id) prev == (alloc_id) virt_base)
     && ((prev == cell_pointer) == (next == cell_pointer))
