@@ -273,20 +273,6 @@ static inline void page_add_to_list(struct hyp_page *p, struct list_head *head)
 	list_add_tail(node, head);
 }
 
-static inline void dummy(struct hyp_page *p)
-/*@ accesses __hyp_vmemmap; hyp_physvirt_offset; cn_virt_ptr @*/
-/*@ requires take Hp = Owned(p) @*/
-/*@ requires let order = (*p).order @*/
-/*@ requires let p_i = cn_hyp_page_to_pfn(__hyp_vmemmap, p) @*/
-/*@ requires let phys = p_i * page_size() @*/
-/*@ requires let virt = cn__hyp_va(cn_virt_ptr, hyp_physvirt_offset, phys) @*/
-/*@ requires take AP = AllocatorPage(virt, 1, order) @*/
-/*@ ensures take HpR = Owned(p) @*/
-/*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged; {*p} unchanged; {cn_virt_ptr} unchanged @*/
-/*@ ensures take APR = AllocatorPage(virt, 1, order) @*/
-{
-}
-
 static inline void page_add_to_list_pool(struct hyp_pool *pool,
                 struct hyp_page *p, struct list_head *head)
 /*@ accesses __hyp_vmemmap; hyp_physvirt_offset; cn_virt_ptr @*/
@@ -327,10 +313,7 @@ static inline void page_add_to_list_pool(struct hyp_pool *pool,
 		*prev;
 	/*CN*/};
 	/*@ assert (ptr_eq(prev, head) || !addr_eq(prev, head)); @*/
-	s64 before = hyp_physvirt_offset;
 	page_add_to_list(p, head);
-	assert(before == hyp_physvirt_offset);
-	dummy(p);
 }
 
 static inline void page_add_to_list_pool_ex1(struct hyp_pool *pool,
