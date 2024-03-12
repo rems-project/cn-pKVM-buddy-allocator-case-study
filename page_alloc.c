@@ -494,33 +494,12 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 	/*while (p->order > order)*/
 	/*CN*/while (1)
 
-/* sigh, copying in Hyp_pool_ex1 */
-
 	/*@ inv let vmemmap_l = __hyp_vmemmap @*/
-	/*@ inv let ex = exclude_one (p_i) @*/
-	/*@ inv take P_I = Owned<struct hyp_pool>(pool) @*/
-	/*@ inv P_I == {free_area: P_I.free_area, ..H.pool} @*/
+	/*@ inv take H_I = Hyp_pool_ex1(pool, vmemmap_l, cn_virt_base, hyp_physvirt_offset, p_i) @*/
+	/*@ inv H_I.pool == {free_area: H_I.pool.free_area, ..H.pool} @*/
 	/*@ inv {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
-	/*@ inv hyp_pool_wf (pool, P_I, vmemmap_l, hyp_physvirt_offset) @*/
-	/*@ inv take V_I = each(integer i; (start_i <= i) && (i < end_i))
-		{Owned(array_shift<struct hyp_page>(vmemmap_l, i))} @*/
-        /*@ inv let ptr_phys_0 = cn__hyp_va(cn_virt_base, hyp_physvirt_offset, 0) @*/
-	/*@ inv take APs = each(integer i; (start_i <= i) && (i < end_i)
-			&& (V_I[i].refcount == 0)
-			&& (V_I[i].order != hyp_no_order ())
-			&& ((not (excluded (ex, i)))))
-		{AllocatorPage(array_shift<PAGE_SIZE_t>(ptr_phys_0, i), 1, (V_I[i]).order)} @*/
-	/*@ inv each (integer i; (start_i <= i) && (i < end_i))
-		{vmemmap_wf (i, V_I, pool, P_I)} @*/
-	/*@ inv each (integer i; (start_i <= i) && (i < end_i)
-			&& (V_I[i].refcount == 0)
-			&& (V_I[i].order != hyp_no_order ())
-			&& ((not (excluded (ex, i)))))
-		{vmemmap_l_wf (i, hyp_physvirt_offset, V_I, APs, pool, P_I, ex)} @*/
-	/*@ inv each(integer i; (0 <= i) && (i < P_I.max_order))
-		{freeArea_cell_wf (i, hyp_physvirt_offset, cn_virt_base, V_I, APs, pool, P_I, ex)} @*/
-
 	/*@ inv order_aligned(p_i, order) @*/
+	/*@ inv let V_I = H_I.vmemmap @*/
 	/*@ inv V_I[p_i].refcount == 0 @*/
 	/*@ inv let virt = cn__hyp_va(cn_virt_base, hyp_physvirt_offset, p_i * page_size()) @*/
 	/*@ inv let i_p_order = V_I[p_i].order @*/
