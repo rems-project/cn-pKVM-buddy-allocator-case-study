@@ -145,7 +145,7 @@ function (boolean) vmemmap_wf (u64 page_index,
 
 function (boolean) vmemmap_l_wf (u64 page_index, i64 physvirt_offset,
         pointer virt_ptr,
-        map <u64, struct hyp_page> vmemmap, map <i64, struct list_head> APs,
+        map <u64, struct hyp_page> vmemmap, map <u64, struct list_head> APs,
         pointer pool_pointer, struct hyp_pool pool, excludes ex)
 {
   let page = vmemmap[page_index];
@@ -186,7 +186,7 @@ function (boolean) vmemmap_l_wf (u64 page_index, i64 physvirt_offset,
 
 function (boolean) freeArea_cell_wf (u8 cell_index, i64 physvirt_offset,
         pointer virt_ptr,
-        map <u64, struct hyp_page> vmemmap, map <i64, struct list_head> APs,
+        map <u64, struct hyp_page> vmemmap, map <u64, struct list_head> APs,
         pointer pool_pointer, struct hyp_pool pool, excludes ex)
 {
   let cell = pool.free_area[(u64) cell_index];
@@ -321,7 +321,7 @@ predicate struct list_head AllocatorPage
 predicate {
     struct hyp_pool pool
     , map <u64, struct hyp_page> vmemmap
-    , map <i64, struct list_head> APs
+    , map <u64, struct list_head> APs
 }
 Hyp_pool_ex1 (
     pointer pool_l
@@ -359,7 +359,7 @@ Hyp_pool_ex1 (
 predicate {
     struct hyp_pool pool
     , map <u64, struct hyp_page> vmemmap
-    , map <i64, struct list_head> APs
+    , map <u64, struct list_head> APs
 }
 Hyp_pool_ex2 (
     pointer pool_l
@@ -398,7 +398,7 @@ Hyp_pool_ex2 (
 predicate {
     struct hyp_pool pool
     , map <u64, struct hyp_page> vmemmap
-    , map <i64, struct list_head> APs
+    , map <u64, struct list_head> APs
 }
 Hyp_pool (
     pointer pool_l
