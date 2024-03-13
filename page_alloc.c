@@ -16,6 +16,9 @@
 #include "const.h"
 
 #define PAGE_SHIFT		12 /* CP: we fix a value for PAGE_SHIFT */
+enum {
+  enum_PAGE_SHIFT = PAGE_SHIFT,
+};
 #include "page-def.h"
 #include "limits.h"
 #include "mmzone.h"
@@ -162,6 +165,7 @@ static struct hyp_page *__find_buddy_avail(struct hyp_pool *pool,
 static inline void page_remove_from_list(struct hyp_page *p)
 /*@ accesses __hyp_vmemmap; hyp_physvirt_offset; cn_virt_ptr @*/
 /*@ requires let p_i = cn_hyp_page_to_pfn(__hyp_vmemmap, p) @*/
+/*@ requires p_i < shift_left (1u64, 64u64 - ((u64) enum_PAGE_SHIFT)) @*/
 /*@ requires let phys = p_i * page_size() @*/
 /*@ requires let virt = cn__hyp_va(cn_virt_ptr, hyp_physvirt_offset, phys) @*/
 /*@ requires take OP = Owned(p) @*/
