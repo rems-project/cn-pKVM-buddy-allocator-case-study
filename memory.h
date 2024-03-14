@@ -51,6 +51,10 @@ static inline phys_addr_t hyp_virt_to_phys(void *addr)
 	return __hyp_pa(addr);
 }
 
+enum {
+  enum_PAGE_SHIFT = PAGE_SHIFT,
+};
+
 #define hyp_phys_to_pfn(phys)	((phys) >> PAGE_SHIFT)
 #define hyp_pfn_to_phys(pfn)	((phys_addr_t)((pfn) << PAGE_SHIFT))
 #define hyp_phys_to_page(phys)	(&hyp_vmemmap[hyp_phys_to_pfn(phys)])
@@ -64,7 +68,7 @@ static inline phys_addr_t hyp_virt_to_phys(void *addr)
 
 static inline u64 hyp_page_to_pfn(struct hyp_page *page)
 /*@ accesses __hyp_vmemmap @*/
-/*@ requires let max_pfn = shift_left(2u64, 64u64 - page_size()) - 1u64 @*/
+/*@ requires let max_pfn = shift_left(1u64, 64u64 - ((u64) enum_PAGE_SHIFT)) - 1u64 @*/
 /*@ requires let offs = ((u64) page) - ((u64) __hyp_vmemmap) @*/
 /*@ requires offs <= max_pfn * (sizeof<struct hyp_page>) @*/
 /*@ requires mod(offs, sizeof<struct hyp_page>) == 0u64 @*/

@@ -16,9 +16,6 @@
 #include "const.h"
 
 #define PAGE_SHIFT		12 /* CP: we fix a value for PAGE_SHIFT */
-enum {
-  enum_PAGE_SHIFT = PAGE_SHIFT,
-};
 #include "page-def.h"
 #include "limits.h"
 #include "mmzone.h"
