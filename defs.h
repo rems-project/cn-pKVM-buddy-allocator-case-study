@@ -68,17 +68,17 @@ function (boolean) excluded (excludes ex, u64 i)
 
 function (excludes) exclude_none ()
 {
-  {any: 0 < 0, do_ex1: 0 < 0, ex1: 0u64, do_ex2: 0 < 0, ex2: 0u64}
+  {any: false, do_ex1: false, ex1: 0u64, do_ex2: false, ex2: 0u64}
 }
 
 function (excludes) exclude_one (u64 ex1)
 {
-  {any: 0 < 1, do_ex1: 0 < 1, ex1: ex1, do_ex2: 0 < 0, ex2: 0u64}
+  {any: true, do_ex1: true, ex1: ex1, do_ex2: false, ex2: 0u64}
 }
 
 function (excludes) exclude_two (u64 ex1, u64 ex2)
 {
-  {any: 0 < 1, do_ex1: 0 < 1, ex1: ex1, do_ex2: 0 < 1, ex2: ex2}
+  {any: true, do_ex1: true, ex1: ex1, do_ex2: true, ex2: ex2}
 }
 
 
@@ -263,9 +263,9 @@ predicate void ByteV (pointer virt, u8 the_value)
   return;
 }
 
-predicate void Page (pointer vbase, integer guard, u8 order)
+predicate void Page (pointer vbase, bool guard, u8 order)
 {
-  if (guard == 0) {
+  if (!guard) {
     return;
   }
   else {
@@ -277,9 +277,9 @@ predicate void Page (pointer vbase, integer guard, u8 order)
   }
 }
 
-predicate void ZeroPage (pointer vbase, integer guard, u8 order)
+predicate void ZeroPage (pointer vbase, bool guard, u8 order)
 {
-  if (guard == 0) {
+  if (!guard) {
     return;
   }
   else {
@@ -304,9 +304,9 @@ predicate void AllocatorPageZeroPart (pointer zero_start, u8 order)
 function (struct list_head) todo_default_list_head ()
 
 predicate struct list_head AllocatorPage
-    (pointer vbase, integer guard, u8 order)
+    (pointer vbase, bool guard, u8 order)
 {
-  if (guard == 0) {
+  if (!guard) {
     return (todo_default_list_head ());
   }
   else {
@@ -343,7 +343,7 @@ Hyp_pool_ex1 (
                   && ((V[i]).refcount == 0u16)
                   && ((V[i]).order != (hyp_no_order ()))
                   && ((not (excluded (ex, i)))))
-                 {AllocatorPage(array_shift<PAGE_SIZE_t>(ptr_phys_0, i), 1, (V[i]).order)};
+                 {AllocatorPage(array_shift<PAGE_SIZE_t>(ptr_phys_0, i), true, (V[i]).order)};
   assert (each (u64 i; (start_i <= i) && (i < end_i))
     {vmemmap_wf (i, V, pool_l, pool)});
   assert (each (u64 i; (start_i <= i) && (i < end_i)
@@ -382,7 +382,7 @@ Hyp_pool_ex2 (
                   && ((V[i]).refcount == 0u16)
                   && ((V[i]).order != (hyp_no_order ()))
                   && ((not (excluded (ex, i)))))
-                 {AllocatorPage(array_shift<PAGE_SIZE_t>(ptr_phys_0, i), 1, (V[i]).order)};
+                 {AllocatorPage(array_shift<PAGE_SIZE_t>(ptr_phys_0, i), true, (V[i]).order)};
   assert (each (u64 i; (start_i <= i) && (i < end_i))
     {vmemmap_wf (i, V, pool_l, pool)});
   assert (each (u64 i; (start_i <= i) && (i < end_i)
@@ -419,7 +419,7 @@ Hyp_pool (
                   && ((V[i]).refcount == 0u16)
                   && ((V[i]).order != (hyp_no_order ()))
                   && ((not (excluded (ex, i)))))
-                 {AllocatorPage(array_shift<PAGE_SIZE_t>(ptr_phys_0, i), 1, (V[i]).order)};
+                 {AllocatorPage(array_shift<PAGE_SIZE_t>(ptr_phys_0, i), true, (V[i]).order)};
   assert (each (u64 i; (start_i <= i) && (i < end_i))
     {vmemmap_wf (i, V, pool_l, P)});
   assert (each (u64 i; (start_i <= i) && (i < end_i)

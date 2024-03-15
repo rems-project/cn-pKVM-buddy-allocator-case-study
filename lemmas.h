@@ -39,7 +39,7 @@ lemma extract_l (u64 p_i, // intptr_t
 
 
 lemma page_size_of_order_inc (u8 order) // unsigned int
-  requires 0==0
+  requires true
   ensures (page_size_of_order(order+1u8)) == 2u64*(page_size_of_order(order))
 
 
@@ -92,11 +92,11 @@ lemma page_group_ok_easy (pointer __hypvmemmap, struct hyp_pool pool)
 
 
 lemma order_aligned_init (u64 i) // unsigned long
-  requires 0==0
+  requires true
   ensures order_aligned(i, 0u8)
 
 lemma page_size_of_order ()
-  requires 0==0
+  requires true
   ensures (page_size_of_order(0u8)) == page_size()
 
 
