@@ -286,7 +286,6 @@ static inline void page_add_to_list_pool(struct hyp_pool *pool,
 /*@ requires let phys = p_i * page_size() @*/
 /*@ requires let virt = cn__hyp_va(cn_virt_ptr, hyp_physvirt_offset, phys) @*/
 /*@ requires let virt_i = (u64) virt / page_size() @*/
-/*@ requires let off_i = hyp_physvirt_offset / (i64) page_size() @*/
 /*@ requires let start_i = HP.pool.range_start / page_size() @*/
 /*@ requires let end_i = HP.pool.range_end / page_size() @*/
 /*@ requires (u64) hyp_physvirt_offset / page_size() <= p_i; p_i < shift_left(1u64, 63u64) / page_size() @*/
@@ -386,8 +385,8 @@ static void __hyp_attach_page(struct hyp_pool *pool,
 /*@ requires ((H.vmemmap[p_i]).order) != (hyp_no_order()) @*/
 /*@ requires let i_order = (H.vmemmap[p_i]).order @*/
 /*@ requires (p_i * page_size()) + (page_size_of_order(i_order)) <= (H.pool).range_end @*/
-/*@ requires let p_offset =  (i64) (p_i * page_size()) - hyp_physvirt_offset - (i64) cn_virt_ptr @*/
-/*@ requires take P = Page(array_shift<char>(cn_virt_ptr, p_offset), true, i_order) @*/
+/*@ requires let ptr_phys_0 = cn__hyp_va(cn_virt_ptr, hyp_physvirt_offset, 0u64) @*/
+/*@ requires take P = Page(array_shift<PAGE_SIZE_t>(ptr_phys_0, p_i), true, i_order) @*/
 /*@ ensures {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
 /*@ ensures take H2 = Hyp_pool(pool, __hyp_vmemmap, cn_virt_ptr, hyp_physvirt_offset) @*/
 /*@ ensures {free_area: H2.pool.free_area, ..H.pool} == H2.pool @*/
@@ -696,7 +695,6 @@ int hyp_pool_init(struct hyp_pool *pool, u64 pfn, unsigned int nr_pages,
 /*@ requires take O = Owned<struct hyp_pool>(pool) @*/
 /*@ requires let start_i = pfn; let start = start_i * page_size() @*/
 /*@ requires let end_i = start_i + ((u64) nr_pages); let end = end_i * page_size() @*/
-/*@ requires let off_i = hyp_physvirt_offset / (i64) page_size() @*/
 /*@ requires reserved_pages < nr_pages @*/
 /* The hyp_pool_wf below does not mention the free area. So the
    hyp_pool_wf constraint is just a short-hand for asking start,
