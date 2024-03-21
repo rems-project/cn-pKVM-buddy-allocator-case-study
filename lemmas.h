@@ -19,9 +19,11 @@ lemma lemma2 (u64 p_i, // intptr_t
            let buddy_i = pfn_buddy(p_i, order);
            let buddy_phys = buddy_i * page_size();
            order_aligned(p_i, order);
-           order_aligned(buddy_i, order)
+           order_aligned(buddy_i, order);
+           p_i <= max_pfn ()
   ensures let min_i = (p_i < buddy_i) ? p_i : buddy_i;
           let min_i_phys = min_i * page_size();
+          buddy_i <= max_pfn ();
           order_aligned(min_i, order+1u8);
           page_aligned(min_i_phys, order+1u8);
           (p_phys + (page_size_of_order(order)) == buddy_phys) || (p_phys - (page_size_of_order(order)) == buddy_phys)
@@ -32,7 +34,8 @@ lemma extract_l (u64 p_i, // intptr_t
  requires let p_phys = p_i * page_size() ;
           let buddy_i = pfn_buddy(p_i, order) ;
           let buddy_phys = buddy_i * page_size() ;
-          order_aligned(p_i, order + 1u8)
+          order_aligned(p_i, order + 1u8) ;
+          p_i <= max_pfn ()
  ensures p_phys + (page_size_of_order(order)) == buddy_phys ;
          page_aligned(p_phys, order) ;
          page_aligned(buddy_phys, order)
@@ -47,14 +50,17 @@ lemma lemma4 (u64 p_i, // intptr_t
               u8 order) // unsigned int
   requires order >= 1u8 ;
            let p_phys = p_i * page_size() ;
-           order_aligned(p_i, order)
+           order_aligned(p_i, order) ;
+           p_i <= max_pfn ()
   ensures let buddy_i = pfn_buddy(p_i, order - 1u8) ;
+          buddy_i <= max_pfn () ;
           let buddy_phys = buddy_i * page_size() ;
           !(order_aligned(buddy_i, order)) ;
           buddy_phys == p_phys + (page_size_of_order(order - 1u8)) ;
           0u64 < (page_size_of_order(order)) ;
           0u64 < (page_size_of_order(order - 1u8)) ;
           (page_size_of_order(order - 1u8)) * 2u64 == (page_size_of_order(order)) ;
+          (page_size_of_order(order - 1u8)) <= (page_size_of_order(order)) ;
           (order_align(buddy_i, order)) == p_i
 
 
@@ -74,7 +80,8 @@ lemma order_align_inv_loop (pointer __hypvmemmap,
           cellPointer(hypvmemmap, 4u64, start_i, end_i, p) ;
           let buddy_i = pfn_buddy(p_i, p_order - 1u8) ;
           each(u64 i; start_i <= i && i < end_i) { page_group_ok(i, V, pool) }
- ensures let p_new_page = {order: (p_order - 1u8), ..V[p_i]} ;
+ ensures buddy_i <= max_pfn () ;
+         let p_new_page = {order: (p_order - 1u8), ..V[p_i]} ;
          let buddy_new_page = {order: (p_order - 1u8), ..V[buddy_i]} ;
          each(u64 i; start_i <= i && i < end_i) { page_group_ok(i, V[p_i: p_new_page, buddy_i: buddy_new_page], pool) }
 

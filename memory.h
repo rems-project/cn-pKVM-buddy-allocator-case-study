@@ -66,11 +66,15 @@ enum {
 #define hyp_page_to_virt(page)	__hyp_va(hyp_page_to_phys(page))
 #define hyp_page_to_pool(page)	(((struct hyp_page *)page)->pool)
 
+/*@
+function (u64) max_pfn ()
+  { shift_right (0u64 - 1u64, (u64) enum_PAGE_SHIFT) }
+@*/
+
 static inline u64 hyp_page_to_pfn(struct hyp_page *page)
 /*@ accesses __hyp_vmemmap @*/
-/*@ requires let max_pfn = shift_left(1u64, 64u64 - ((u64) enum_PAGE_SHIFT)) - 1u64 @*/
 /*@ requires let offs = ((u64) page) - ((u64) __hyp_vmemmap) @*/
-/*@ requires offs <= max_pfn * (sizeof<struct hyp_page>) @*/
+/*@ requires offs <= max_pfn () * (sizeof<struct hyp_page>) @*/
 /*@ requires mod(offs, sizeof<struct hyp_page>) == 0u64 @*/
 /*@ ensures return == offs / (sizeof<struct hyp_page>) @*/
 /*@ ensures {__hyp_vmemmap} unchanged @*/
