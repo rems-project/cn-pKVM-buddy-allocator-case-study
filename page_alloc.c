@@ -506,6 +506,7 @@ static struct hyp_page *__hyp_extract_page(struct hyp_pool *pool,
 	/*@ inv {__hyp_vmemmap} unchanged; {hyp_physvirt_offset} unchanged @*/
 	/*@ inv order_aligned(p_i, order) @*/
 	/*@ inv let V_I = H_I.vmemmap @*/
+	/*@ inv V_I[p_i].refcount == 0u16 @*/
 	/*@ inv let virt = cn__hyp_va(cn_virt_ptr, hyp_physvirt_offset, p_i * page_size()) @*/
 	/*@ inv let i_p_order = V_I[p_i].order @*/
 	/*@ inv take ZI = ZeroPage(virt, true, i_p_order) @*/
