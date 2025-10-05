@@ -28,14 +28,7 @@
  */
 
 
-// CP: adding string.h include
-//#include <string.h>
-long fls64(long x)
-{
-  long flsl(long);
-  return flsl(x);
-}
-//#define fls64 flsl
+#include "fls.h"
 
 static /*__always_inline __attribute_const__*/ int get_order(unsigned long size)
 /*@ trusted; @*/
