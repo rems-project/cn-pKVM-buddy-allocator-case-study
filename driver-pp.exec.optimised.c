@@ -7134,19 +7134,21 @@ static void ZeroPage(cn_pointer* vbase, cn_bool* guard, cn_bits_u8* order, enum 
     cn_bits_u64* vbaseI;
     vbaseI = cast_cn_pointer_to_cn_bits_u64(vbase);
     update_cn_error_message_info("    take Bytes = each (u64 i; (vbaseI <= i) && (i < (vbaseI + length)))\n         ^../../cn-pKVM-buddy-allocator-case-study/driver-pp.c:714:10:");
-    {
-      cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(vbaseI);
-      while (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(cast_cn_bits_u64_to_cn_bits_u64(vbaseI), i), cn_bits_u64_lt(i, cn_bits_u64_add(vbaseI, length))))) {
-        if (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(vbaseI, i), cn_bits_u64_lt(i, cn_bits_u64_add(vbaseI, length))))) {
-          cn_pointer* a_14537 = cn_array_shift(convert_to_cn_pointer(0), sizeof(char), i);
-          ByteV(a_14537, convert_to_cn_bits_u8(0UL), spec_mode, loop_ownership);
-        }
-        else {
-          ;
-        }
-        cn_bits_u64_increment(i);
-      }
-    }
+    owned_char_range(vbase, length, spec_mode, loop_ownership);
+    assert_zero_char_range(vbase, length, spec_mode);
+    // {
+    //   cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(vbaseI);
+    //   while (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(cast_cn_bits_u64_to_cn_bits_u64(vbaseI), i), cn_bits_u64_lt(i, cn_bits_u64_add(vbaseI, length))))) {
+    //     if (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(vbaseI, i), cn_bits_u64_lt(i, cn_bits_u64_add(vbaseI, length))))) {
+    //       cn_pointer* a_14537 = cn_array_shift(convert_to_cn_pointer(0), sizeof(char), i);
+    //       ByteV(a_14537, convert_to_cn_bits_u8(0UL), spec_mode, loop_ownership);
+    //     }
+    //     else {
+    //       ;
+    //     }
+    //     cn_bits_u64_increment(i);
+    //   }
+    // }
     cn_pop_msg_info();
     return;
   }
