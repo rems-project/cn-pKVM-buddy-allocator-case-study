@@ -298,6 +298,13 @@ predicate void ByteV (pointer virt, u8 the_value)
   return;
 }
 
+predicate (u8) NewByteV (pointer virt)
+{
+  take B = Owned<char>(virt);
+  // assert (B == the_value);
+  return B;
+}
+
 predicate void Page (pointer vbase, boolean guard, u8 order)
 {
   if (!guard) {
@@ -321,7 +328,9 @@ predicate void ZeroPage (pointer vbase, boolean guard, u8 order)
     let length = page_size_of_order(order);
     let vbaseI = ((u64) vbase);
     take Bytes = each (u64 i; (vbaseI <= i) && (i < (vbaseI + length)))
-         {ByteV(array_shift<char>(NULL, i), 0u8)};
+         {NewByteV(array_shift<char>(NULL, i))};
+    assert (each (u64 i; (vbaseI <= i) && (i < (vbaseI + length)))
+         {Bytes[i] == 0u8});
     return;
   }
 }
@@ -332,7 +341,9 @@ predicate void AllocatorPageZeroPart (pointer zero_start, u8 order)
   let region_length = page_size_of_order(order);
   let length = region_length - sizeof<struct list_head>;
   take Bytes = each (u64 i; (start <= i) && (i < (start + length)))
-       {ByteV(array_shift<char>(NULL, i), 0u8)};
+       {NewByteV(array_shift<char>(NULL, i))};
+  assert (each (u64 i; (start <= i) && (i < (start + length)))
+      {Bytes[i] == 0u8});
   return;
 }
 
