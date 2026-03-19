@@ -7084,16 +7084,6 @@ static void owned_char_range(cn_pointer* start, cn_bits_u64* length, enum spec_m
 {
   cn_get_or_put_ownership(spec_mode, start->ptr, convert_from_cn_bits_u64(length), loop_ownership);
 }
-static void assert_zero_char_range(cn_pointer* start, cn_bits_u64* length, enum spec_mode spec_mode)
-{
-  unsigned long long len = convert_from_cn_bits_u64(length);
-  unsigned char* bytes = (unsigned char*) start->ptr;
-  for (unsigned long long i = 0ULL; i < len; i++) {
-    if (bytes[i] != 0U) {
-      cn_failure(CN_FAILURE_ASSERT, spec_mode);
-    }
-  }
-}
 
 static void AllocatorPageZeroPart(cn_pointer* zero_start, cn_bits_u8* order, enum spec_mode spec_mode, struct loop_ownership* loop_ownership)
 {
@@ -7106,20 +7096,32 @@ static void AllocatorPageZeroPart(cn_pointer* zero_start, cn_bits_u8* order, enu
   update_cn_error_message_info("  take Bytes = each (u64 i; (start <= i) && (i < (start + length)))\n       ^../../cn-pKVM-buddy-allocator-case-study/driver-pp.c:725:8:");
 
   owned_char_range(zero_start, length, spec_mode, loop_ownership);
-  assert_zero_char_range(zero_start, length, spec_mode);
-  // {
-  //   cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(start);
-  //   while (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(cast_cn_bits_u64_to_cn_bits_u64(start), i), cn_bits_u64_lt(i, cn_bits_u64_add(start, length))))) {
-  //     if (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(start, i), cn_bits_u64_lt(i, cn_bits_u64_add(start, length))))) {
-  //       cn_pointer* a_14586 = cn_array_shift(convert_to_cn_pointer(0), sizeof(char), i);
-  //       ByteV(a_14586, convert_to_cn_bits_u8(0UL), spec_mode, loop_ownership);
-  //     }
-  //     else {
-  //       ;
-  //     }
-  //     cn_bits_u64_increment(i);
-  //   }
-  // }
+  cn_map* V_cn = map_create();
+  {
+    cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(start);
+    while (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(cast_cn_bits_u64_to_cn_bits_u64(start), i), cn_bits_u64_lt(i, cn_bits_u64_add(start, length))))) {
+      if (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(start, i), cn_bits_u64_lt(i, cn_bits_u64_add(start, length))))) {
+        cn_pointer* ptr = cn_array_shift(convert_to_cn_pointer(0), sizeof(char), i);
+        cn_map_set(V_cn, cast_cn_bits_u64_to_cn_integer(i), convert_to_cn_bits_u8((*(char*) ptr->ptr)));
+      }
+      else {
+        ;
+      }
+      cn_bits_u64_increment(i);
+    }
+  }
+  {
+    cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(start);
+    while (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(cast_cn_bits_u64_to_cn_bits_u64(start), i), cn_bits_u64_lt(i, cn_bits_u64_add(start, length))))) {
+      if (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(start, i), cn_bits_u64_lt(i, cn_bits_u64_add(start, length))))) {
+        cn_assert(cn_bits_u8_equality((cn_bits_u8*) cn_map_get_cn_bits_u8(V_cn, cast_cn_bits_u64_to_cn_integer(i)), convert_to_cn_bits_u8(0UL)), spec_mode);
+      }
+      else {
+        ;
+      }
+      cn_bits_u64_increment(i);
+    }
+  }
   cn_pop_msg_info();
   return;
 }
@@ -7135,20 +7137,32 @@ static void ZeroPage(cn_pointer* vbase, cn_bool* guard, cn_bits_u8* order, enum 
     vbaseI = cast_cn_pointer_to_cn_bits_u64(vbase);
     update_cn_error_message_info("    take Bytes = each (u64 i; (vbaseI <= i) && (i < (vbaseI + length)))\n         ^../../cn-pKVM-buddy-allocator-case-study/driver-pp.c:714:10:");
     owned_char_range(vbase, length, spec_mode, loop_ownership);
-    assert_zero_char_range(vbase, length, spec_mode);
-    // {
-    //   cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(vbaseI);
-    //   while (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(cast_cn_bits_u64_to_cn_bits_u64(vbaseI), i), cn_bits_u64_lt(i, cn_bits_u64_add(vbaseI, length))))) {
-    //     if (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(vbaseI, i), cn_bits_u64_lt(i, cn_bits_u64_add(vbaseI, length))))) {
-    //       cn_pointer* a_14537 = cn_array_shift(convert_to_cn_pointer(0), sizeof(char), i);
-    //       ByteV(a_14537, convert_to_cn_bits_u8(0UL), spec_mode, loop_ownership);
-    //     }
-    //     else {
-    //       ;
-    //     }
-    //     cn_bits_u64_increment(i);
-    //   }
-    // }
+    cn_map* V_cn = map_create();
+    {
+      cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(vbaseI);
+      while (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(cast_cn_bits_u64_to_cn_bits_u64(vbaseI), i), cn_bits_u64_lt(i, cn_bits_u64_add(vbaseI, length))))) {
+        if (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(vbaseI, i), cn_bits_u64_lt(i, cn_bits_u64_add(vbaseI, length))))) {
+          cn_pointer* data = cn_array_shift(convert_to_cn_pointer(0), sizeof(char), i);
+          cn_map_set(V_cn, cast_cn_bits_u64_to_cn_integer(i), convert_to_cn_bits_u8((*(char*) data->ptr)));
+        }
+        else {
+          ;
+        }
+        cn_bits_u64_increment(i);
+      }
+    }
+    {
+      cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(vbaseI);
+      while (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(cast_cn_bits_u64_to_cn_bits_u64(vbaseI), i), cn_bits_u64_lt(i, cn_bits_u64_add(vbaseI, length))))) {
+        if (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(vbaseI, i), cn_bits_u64_lt(i, cn_bits_u64_add(vbaseI, length))))) {
+          cn_assert(cn_bits_u8_equality((cn_bits_u8*) cn_map_get_cn_bits_u8(V_cn, cast_cn_bits_u64_to_cn_integer(i)), convert_to_cn_bits_u8(0UL)), spec_mode);
+        }
+        else {
+          ;
+        }
+        cn_bits_u64_increment(i);
+      }
+    }
     cn_pop_msg_info();
     return;
   }
