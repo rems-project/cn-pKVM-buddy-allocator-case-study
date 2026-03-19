@@ -5983,14 +5983,14 @@ int main(void)
   ghost_call_site = EMPTY;
   0;
 })
-, init(2));
+, init(8));
 c_add_to_ghost_state((&pool), sizeof(struct hyp_pool*), get_cn_stack_depth());
 
 
 cn_pointer* pool_addr_cn = convert_to_cn_pointer((&pool));
 
-  void *pages[2];
-c_add_to_ghost_state((&pages), sizeof(void*[2]), get_cn_stack_depth());
+  void *pages[8];
+c_add_to_ghost_state((&pages), sizeof(void*[8]), get_cn_stack_depth());
 
 
 cn_pointer* pages_addr_cn = convert_to_cn_pointer((&pages));
@@ -6001,7 +6001,7 @@ c_add_to_ghost_state((&i), sizeof(signed int), get_cn_stack_depth());
 
 cn_pointer* i_addr_cn = convert_to_cn_pointer((&i));
 
-  while (CN_LOAD(i) < 2) {
+  while (CN_LOAD(i) < 8) {
     CN_STORE(pages[CN_LOAD(i)], (
 ({
   ghost_call_site = EMPTY;
@@ -6011,7 +6011,7 @@ cn_pointer* i_addr_cn = convert_to_cn_pointer((&i));
     CN_POSTFIX(i, ++);
   }
   CN_STORE(i, 0);
-  while (CN_LOAD(i) < 2) {
+  while (CN_LOAD(i) < 8) {
     (
 ({
   ghost_call_site = EMPTY;
@@ -6021,12 +6021,12 @@ cn_pointer* i_addr_cn = convert_to_cn_pointer((&i));
     CN_POSTFIX(i, ++);
   }
   CN_STORE(i, 0);
-  while (CN_LOAD(i) < 2) {
+  while (CN_LOAD(i) < 8) {
     CN_STORE(((char *)CN_LOAD(pages[CN_LOAD(i)]))[1234], 1);
     CN_POSTFIX(i, ++);
   }
   CN_STORE(i, 0);
-  while (CN_LOAD(i) < 2) {
+  while (CN_LOAD(i) < 8) {
     (
 ({
   ghost_call_site = EMPTY;
@@ -6106,7 +6106,7 @@ cn_pointer* i_addr_cn = convert_to_cn_pointer((&i));
 c_remove_from_ghost_state((&pool), sizeof(struct hyp_pool*));
 
 
-c_remove_from_ghost_state((&pages), sizeof(void*[2]));
+c_remove_from_ghost_state((&pages), sizeof(void*[8]));
 
 
 c_remove_from_ghost_state((&i), sizeof(signed int));
@@ -6115,7 +6115,7 @@ goto __cn_epilogue; }
 c_remove_from_ghost_state((&pool), sizeof(struct hyp_pool*));
 
 
-c_remove_from_ghost_state((&pages), sizeof(void*[2]));
+c_remove_from_ghost_state((&pages), sizeof(void*[8]));
 
 
 c_remove_from_ghost_state((&i), sizeof(signed int));
@@ -7098,29 +7098,27 @@ static void AllocatorPageZeroPart(cn_pointer* zero_start, cn_bits_u8* order, enu
   owned_char_range(zero_start, length, spec_mode, loop_ownership);
   cn_map* V_cn = map_create();
   {
-    cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(start);
-    while (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(cast_cn_bits_u64_to_cn_bits_u64(start), i), cn_bits_u64_lt(i, cn_bits_u64_add(start, length))))) {
-      if (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(start, i), cn_bits_u64_lt(i, cn_bits_u64_add(start, length))))) {
-        cn_pointer* ptr = cn_array_shift(convert_to_cn_pointer(0), sizeof(char), i);
-        cn_map_set(V_cn, cast_cn_bits_u64_to_cn_integer(i), convert_to_cn_bits_u8((*(char*) ptr->ptr)));
+      unsigned long long i = start->val;
+      unsigned long long end = start->val + length->val;
+      while (i < end) {
+	 char *ptr_data = (char*)i;
+	 cn_map_set(V_cn, convert_to_cn_bits_i64(i), convert_to_cn_bits_u8(*ptr_data));
+	 i++;
       }
-      else {
-        ;
-      }
-      cn_bits_u64_increment(i);
-    }
+
   }
+
   {
     cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(start);
-    while (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(cast_cn_bits_u64_to_cn_bits_u64(start), i), cn_bits_u64_lt(i, cn_bits_u64_add(start, length))))) {
-      if (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(start, i), cn_bits_u64_lt(i, cn_bits_u64_add(start, length))))) {
+
+      unsigned long long i_aux = start->val;
+      unsigned long long end_aux = start->val + length->val;
+
+     while (i_aux < end_aux) {
         cn_assert(cn_bits_u8_equality((cn_bits_u8*) cn_map_get_cn_bits_u8(V_cn, cast_cn_bits_u64_to_cn_integer(i)), convert_to_cn_bits_u8(0UL)), spec_mode);
+        cn_bits_u64_increment(i);
+	i_aux++;
       }
-      else {
-        ;
-      }
-      cn_bits_u64_increment(i);
-    }
   }
   cn_pop_msg_info();
   return;
@@ -7139,29 +7137,26 @@ static void ZeroPage(cn_pointer* vbase, cn_bool* guard, cn_bits_u8* order, enum 
     owned_char_range(vbase, length, spec_mode, loop_ownership);
     cn_map* V_cn = map_create();
     {
-      cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(vbaseI);
-      while (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(cast_cn_bits_u64_to_cn_bits_u64(vbaseI), i), cn_bits_u64_lt(i, cn_bits_u64_add(vbaseI, length))))) {
-        if (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(vbaseI, i), cn_bits_u64_lt(i, cn_bits_u64_add(vbaseI, length))))) {
-          cn_pointer* data = cn_array_shift(convert_to_cn_pointer(0), sizeof(char), i);
-          cn_map_set(V_cn, cast_cn_bits_u64_to_cn_integer(i), convert_to_cn_bits_u8((*(char*) data->ptr)));
+        unsigned long long i = vbaseI->val;
+        unsigned long long end = vbaseI->val + length->val;
+        while (i < end) {
+           char *ptr_data = (char*)i;
+           cn_map_set(V_cn, convert_to_cn_bits_i64(i), convert_to_cn_bits_u8(*ptr_data));
+           i++;
         }
-        else {
-          ;
-        }
-        cn_bits_u64_increment(i);
-      }
+
     }
     {
       cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(vbaseI);
-      while (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(cast_cn_bits_u64_to_cn_bits_u64(vbaseI), i), cn_bits_u64_lt(i, cn_bits_u64_add(vbaseI, length))))) {
-        if (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(vbaseI, i), cn_bits_u64_lt(i, cn_bits_u64_add(vbaseI, length))))) {
+
+        unsigned long long i_aux = vbaseI->val;
+        unsigned long long end_aux = vbaseI->val + length->val;
+
+       while (i_aux < end_aux) {
           cn_assert(cn_bits_u8_equality((cn_bits_u8*) cn_map_get_cn_bits_u8(V_cn, cast_cn_bits_u64_to_cn_integer(i)), convert_to_cn_bits_u8(0UL)), spec_mode);
+          cn_bits_u64_increment(i);
+          i_aux++;
         }
-        else {
-          ;
-        }
-        cn_bits_u64_increment(i);
-      }
     }
     cn_pop_msg_info();
     return;
