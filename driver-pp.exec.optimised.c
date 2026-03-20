@@ -7099,19 +7099,16 @@ static void AllocatorPageZeroPart(cn_pointer* zero_start, cn_bits_u8* order, enu
   cn_map* V_cn = map_create();
   {
     cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(start);
-    cn_bits_u64 *start_cn = cast_cn_bits_u64_to_cn_bits_u64(start);
     cn_bits_u64 *end_cn = cn_bits_u64_add(start, length);
     while (convert_from_cn_bool(cn_bits_u64_lt(i, end_cn))) {
         cn_pointer* a_14586 = cn_array_shift(convert_to_cn_pointer(0), sizeof(char), i);
         cn_map_set(V_cn, i, convert_to_cn_bits_u8(*(char*)a_14586->ptr));
         i++;
       }
-
   }
 
   {
     cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(start);
-    cn_bits_u64 *start_cn = cast_cn_bits_u64_to_cn_bits_u64(start);
     cn_bits_u64 *end_cn = cn_bits_u64_add(start, length);
     while (convert_from_cn_bool(cn_bits_u64_lt(i, end_cn))) {
         cn_assert(cn_bits_u8_equality((cn_bits_u8*) cn_map_get_cn_bits_u8(V_cn, cast_cn_bits_u64_to_cn_integer(i)), convert_to_cn_bits_u8(0UL)), spec_mode);
@@ -7135,26 +7132,21 @@ static void ZeroPage(cn_pointer* vbase, cn_bool* guard, cn_bits_u8* order, enum 
     owned_char_range(vbase, length, spec_mode, loop_ownership);
     cn_map* V_cn = map_create();
     {
-        unsigned long long i = vbaseI->val;
-        unsigned long long end = vbaseI->val + length->val;
-        while (i < end) {
-           char *ptr_data = (char*)i;
-           cn_map_set(V_cn, convert_to_cn_bits_i64(i), convert_to_cn_bits_u8(*ptr_data));
-           i++;
-        }
-
+    cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(vbaseI);
+    cn_bits_u64 *end_cn = cn_bits_u64_add(vbaseI, length);
+    while (convert_from_cn_bool(cn_bits_u64_lt(i, end_cn))) {
+        cn_pointer* a_14586 = cn_array_shift(convert_to_cn_pointer(0), sizeof(char), i);
+        cn_map_set(V_cn, i, convert_to_cn_bits_u8(*(char*)a_14586->ptr));
+        cn_bits_u64_increment(i);
+      }
     }
     {
-      cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(vbaseI);
-
-        unsigned long long i_aux = vbaseI->val;
-        unsigned long long end_aux = vbaseI->val + length->val;
-
-       while (i_aux < end_aux) {
+    cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(vbaseI);
+    cn_bits_u64 *end_cn = cn_bits_u64_add(vbaseI, length);
+    while (convert_from_cn_bool(cn_bits_u64_lt(i, end_cn))) {
           cn_assert(cn_bits_u8_equality((cn_bits_u8*) cn_map_get_cn_bits_u8(V_cn, cast_cn_bits_u64_to_cn_integer(i)), convert_to_cn_bits_u8(0UL)), spec_mode);
           cn_bits_u64_increment(i);
-          i_aux++;
-        }
+      }
     }
     cn_pop_msg_info();
     return;
