@@ -12,3 +12,4 @@ coq_lemmas/Makefile.coq*
 coq_lemmas/CoqMakefile.conf
 coq_lemmas/.Makefile.coq.d
 
+/build
