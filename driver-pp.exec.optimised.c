@@ -5983,14 +5983,14 @@ int main(void)
   ghost_call_site = EMPTY;
   0;
 })
-, init(2));
+, init(8));
 c_add_to_ghost_state((&pool), sizeof(struct hyp_pool*), get_cn_stack_depth());
 
 
 cn_pointer* pool_addr_cn = convert_to_cn_pointer((&pool));
 
-  void *pages[2];
-c_add_to_ghost_state((&pages), sizeof(void*[2]), get_cn_stack_depth());
+  void *pages[8];
+c_add_to_ghost_state((&pages), sizeof(void*[8]), get_cn_stack_depth());
 
 
 cn_pointer* pages_addr_cn = convert_to_cn_pointer((&pages));
@@ -6001,7 +6001,7 @@ c_add_to_ghost_state((&i), sizeof(signed int), get_cn_stack_depth());
 
 cn_pointer* i_addr_cn = convert_to_cn_pointer((&i));
 
-  while (CN_LOAD(i) < 2) {
+  while (CN_LOAD(i) < 8) {
     CN_STORE(pages[CN_LOAD(i)], (
 ({
   ghost_call_site = EMPTY;
@@ -6011,7 +6011,7 @@ cn_pointer* i_addr_cn = convert_to_cn_pointer((&i));
     CN_POSTFIX(i, ++);
   }
   CN_STORE(i, 0);
-  while (CN_LOAD(i) < 2) {
+  while (CN_LOAD(i) < 8) {
     (
 ({
   ghost_call_site = EMPTY;
@@ -6021,12 +6021,12 @@ cn_pointer* i_addr_cn = convert_to_cn_pointer((&i));
     CN_POSTFIX(i, ++);
   }
   CN_STORE(i, 0);
-  while (CN_LOAD(i) < 2) {
+  while (CN_LOAD(i) < 8) {
     CN_STORE(((char *)CN_LOAD(pages[CN_LOAD(i)]))[1234], 1);
     CN_POSTFIX(i, ++);
   }
   CN_STORE(i, 0);
-  while (CN_LOAD(i) < 2) {
+  while (CN_LOAD(i) < 8) {
     (
 ({
   ghost_call_site = EMPTY;
@@ -6106,7 +6106,7 @@ cn_pointer* i_addr_cn = convert_to_cn_pointer((&i));
 c_remove_from_ghost_state((&pool), sizeof(struct hyp_pool*));
 
 
-c_remove_from_ghost_state((&pages), sizeof(void*[2]));
+c_remove_from_ghost_state((&pages), sizeof(void*[8]));
 
 
 c_remove_from_ghost_state((&i), sizeof(signed int));
@@ -6115,7 +6115,7 @@ goto __cn_epilogue; }
 c_remove_from_ghost_state((&pool), sizeof(struct hyp_pool*));
 
 
-c_remove_from_ghost_state((&pages), sizeof(void*[2]));
+c_remove_from_ghost_state((&pages), sizeof(void*[8]));
 
 
 c_remove_from_ghost_state((&i), sizeof(signed int));
@@ -7079,6 +7079,12 @@ static struct list_head_cn* AllocatorPage(cn_pointer* vbase, cn_bool* guard, cn_
     return Node;
   }
 }
+
+static void owned_char_range(cn_pointer* start, cn_bits_u64* length, enum spec_mode spec_mode, struct loop_ownership* loop_ownership)
+{
+  cn_get_or_put_ownership(spec_mode, start->ptr, convert_from_cn_bits_u64(length), loop_ownership);
+}
+
 static void AllocatorPageZeroPart(cn_pointer* zero_start, cn_bits_u8* order, enum spec_mode spec_mode, struct loop_ownership* loop_ownership)
 {
   cn_bits_u64* start;
@@ -7088,18 +7094,26 @@ static void AllocatorPageZeroPart(cn_pointer* zero_start, cn_bits_u8* order, enu
   cn_bits_u64* length;
   length = cn_bits_u64_sub(region_length, convert_to_cn_bits_u64(sizeof(struct list_head)));
   update_cn_error_message_info("  take Bytes = each (u64 i; (start <= i) && (i < (start + length)))\n       ^../../cn-pKVM-buddy-allocator-case-study/driver-pp.c:725:8:");
+  // ownership
+  owned_char_range(zero_start, length, spec_mode, loop_ownership);
+  cn_map* V_cn = map_create();
   {
     cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(start);
-    while (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(cast_cn_bits_u64_to_cn_bits_u64(start), i), cn_bits_u64_lt(i, cn_bits_u64_add(start, length))))) {
-      if (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(start, i), cn_bits_u64_lt(i, cn_bits_u64_add(start, length))))) {
+    cn_bits_u64 *end_cn = cn_bits_u64_add(start, length);
+    while (convert_from_cn_bool(cn_bits_u64_lt(i, end_cn))) {
         cn_pointer* a_14586 = cn_array_shift(convert_to_cn_pointer(0), sizeof(char), i);
-        ByteV(a_14586, convert_to_cn_bits_u8(0UL), spec_mode, loop_ownership);
+        cn_map_set(V_cn, i, convert_to_cn_bits_u8(*(char*)a_14586->ptr));
+        i++;
       }
-      else {
-        ;
+  }
+
+  {
+    cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(start);
+    cn_bits_u64 *end_cn = cn_bits_u64_add(start, length);
+    while (convert_from_cn_bool(cn_bits_u64_lt(i, end_cn))) {
+        cn_assert(cn_bits_u8_equality((cn_bits_u8*) cn_map_get_cn_bits_u8(V_cn, cast_cn_bits_u64_to_cn_integer(i)), convert_to_cn_bits_u8(0UL)), spec_mode);
+        cn_bits_u64_increment(i);
       }
-      cn_bits_u64_increment(i);
-    }
   }
   cn_pop_msg_info();
   return;
@@ -7115,17 +7129,23 @@ static void ZeroPage(cn_pointer* vbase, cn_bool* guard, cn_bits_u8* order, enum 
     cn_bits_u64* vbaseI;
     vbaseI = cast_cn_pointer_to_cn_bits_u64(vbase);
     update_cn_error_message_info("    take Bytes = each (u64 i; (vbaseI <= i) && (i < (vbaseI + length)))\n         ^../../cn-pKVM-buddy-allocator-case-study/driver-pp.c:714:10:");
+    owned_char_range(vbase, length, spec_mode, loop_ownership);
+    cn_map* V_cn = map_create();
     {
-      cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(vbaseI);
-      while (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(cast_cn_bits_u64_to_cn_bits_u64(vbaseI), i), cn_bits_u64_lt(i, cn_bits_u64_add(vbaseI, length))))) {
-        if (convert_from_cn_bool(cn_bool_and(cn_bits_u64_le(vbaseI, i), cn_bits_u64_lt(i, cn_bits_u64_add(vbaseI, length))))) {
-          cn_pointer* a_14537 = cn_array_shift(convert_to_cn_pointer(0), sizeof(char), i);
-          ByteV(a_14537, convert_to_cn_bits_u8(0UL), spec_mode, loop_ownership);
-        }
-        else {
-          ;
-        }
+    cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(vbaseI);
+    cn_bits_u64 *end_cn = cn_bits_u64_add(vbaseI, length);
+    while (convert_from_cn_bool(cn_bits_u64_lt(i, end_cn))) {
+        cn_pointer* a_14586 = cn_array_shift(convert_to_cn_pointer(0), sizeof(char), i);
+        cn_map_set(V_cn, i, convert_to_cn_bits_u8(*(char*)a_14586->ptr));
         cn_bits_u64_increment(i);
+      }
+    }
+    {
+    cn_bits_u64* i = cast_cn_bits_u64_to_cn_bits_u64(vbaseI);
+    cn_bits_u64 *end_cn = cn_bits_u64_add(vbaseI, length);
+    while (convert_from_cn_bool(cn_bits_u64_lt(i, end_cn))) {
+          cn_assert(cn_bits_u8_equality((cn_bits_u8*) cn_map_get_cn_bits_u8(V_cn, cast_cn_bits_u64_to_cn_integer(i)), convert_to_cn_bits_u8(0UL)), spec_mode);
+          cn_bits_u64_increment(i);
       }
     }
     cn_pop_msg_info();
