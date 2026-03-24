@@ -315,7 +315,7 @@ predicate void Page (pointer vbase, boolean guard, u8 order)
     let vbaseI = (u64) vbase;
     // FULM_OPT
     take Bytes = each (u64 i; (vbaseI <= i) && (i < (vbaseI + length)))
-         {Byte(array_shift<char>(NULL, i))};
+         {Block(array_shift<char>(NULL, i))};
     return;
   }
 }
