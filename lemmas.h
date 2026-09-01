@@ -91,9 +91,9 @@ lemma page_group_ok_easy (pointer __hypvmemmap, struct hyp_pool pool)
   requires let hypvmemmap = __hypvmemmap ;
            let start_i = (pool).range_start / page_size() ;
            let end_i = (pool).range_end / page_size() ;
-           take V = each (u64 i; start_i <= i && i < end_i) { Owned(array_shift<struct hyp_page>(hypvmemmap, i)) } ;
+           take V = each (u64 i; start_i <= i && i < end_i) { RW(array_shift<struct hyp_page>(hypvmemmap, i)) } ;
            each (u64 i; start_i <= i && i < end_i) { (V[i]).order == 0u8 };
-  ensures take V2 = each (u64 i; start_i <= i && i < end_i) { Owned(array_shift<struct hyp_page>(hypvmemmap, i)) } ;
+  ensures take V2 = each (u64 i; start_i <= i && i < end_i) { RW(array_shift<struct hyp_page>(hypvmemmap, i)) } ;
           V2 == V ;
           each(u64 i; start_i <= i && i < end_i) { page_group_ok(i, V2, pool) };
 
@@ -139,7 +139,7 @@ lemma find_buddy_xor(u64 addr_i, // intptr_t
                      u8 order) // unsigned int
   requires order_aligned(addr_i, order) ;
            order < 11u8;
-  ensures let two_to_order = power_uf(2u64, (u64) order);
+  ensures let two_to_order = shift_left(1u64,(u64) order);
           0u64 < two_to_order ;
           two_to_order < shift_left(1u64, 11u64) ;
           let buddy_addr = calc_buddy(addr_i * page_size(), order) ;
@@ -152,14 +152,14 @@ lemma find_buddy_xor(u64 addr_i, // intptr_t
 
 lemma page_size_of_order2(u8 order) // unsigned int
   requires order < 11u8;
-  ensures 0u64 < power_uf(2u64, (u64) order) ;
-          power_uf(2u64, (u64) order) < shift_left(1u64, 11u64) ;
-          let size = page_size() * power_uf(2u64, (u64) order) ;
+  ensures 0u64 < shift_left(1u64, (u64) order) ;
+          shift_left(1u64, (u64) order) < shift_left(1u64, 11u64) ;
+          let size = shift_left (page_size(), (u64) order) ;
           size == (page_size_of_order(order));
 
 
 lemma struct_list_head_to_bytes(pointer node) // struct list_head * 
-  requires take Node = Owned<struct list_head>(node);
+  requires take Node = RW<struct list_head>(node);
   ensures take B = each (u64 i; ((u64) node) <= i && i < (((u64) node) + (sizeof<struct list_head>))){Byte(array_shift<char>(NULL, i))};
 
 
@@ -168,7 +168,7 @@ lemma bytes_to_struct_list_head(pointer node, // struct list_head *
   requires let length = page_size_of_order(order) ;
            let nodeI = ((u64) node) ;
            take B = each (u64 i; (nodeI <= i) && (i < (nodeI + length))) {ByteV(array_shift<char>(NULL, i), 0u8)};
-  ensures take Node = Owned<struct list_head>(node) ;
+  ensures take Node = RW<struct list_head>(node) ;
           take BR = each (u64 i; (nodeI + (sizeof<struct list_head>)) <= i && i < (nodeI + length)){ByteV(array_shift<char>(NULL, i), 0u8)};
 
 @*/

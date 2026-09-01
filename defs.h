@@ -50,7 +50,7 @@ function (pointer) cn_hyp_page_to_virt(pointer virt_ptr, i64 physvirtoffset,
 }
 
 function (u64) calc_buddy(u64 addr, u8 order) {
-       xor_uf(addr, shift_left(page_size(), (u64) order))
+       addr ^ (shift_left(page_size(), (u64) order))
 }
 
 function (u64) pfn_buddy (u64 x, u8 order) {
@@ -277,7 +277,7 @@ function (boolean) hyp_pool_wf (pointer pool_pointer, struct hyp_pool pool,
 }
 
 function (u8) get_order_uf (u64 size) {
-  (u8) bw_fls_uf(shift_right(size - 1u64, 12u64))
+  (u8) bw_fls(shift_right(size - 1u64, 12u64))
 }
 
 function (pointer) virt (pointer phys, i64 physvirt_offset) {
@@ -287,13 +287,13 @@ function (pointer) virt (pointer phys, i64 physvirt_offset) {
 
 predicate void Byte (pointer virt)
 {
-  take B = Block<char>(virt);
+  take B = W<char>(virt);
   return;
 }
 
 predicate void ByteV (pointer virt, u8 the_value)
 {
-  take B = Owned<char>(virt);
+  take B = RW<char>(virt);
   assert (B == the_value);
   return;
 }
@@ -349,7 +349,7 @@ predicate struct list_head AllocatorPage
   else {
     let zero_start = array_shift<struct list_head>(vbase, 1u8);
     take ZeroPart = AllocatorPageZeroPart (zero_start, order);
-    take Node = Owned<struct list_head>(vbase);
+    take Node = RW<struct list_head>(vbase);
     return Node;
   }
 }
@@ -369,12 +369,12 @@ Hyp_pool_ex1 (
 )
 {
   let ex = exclude_one (ex1);
-  take pool = Owned<struct hyp_pool>(pool_l);
+  take pool = RW<struct hyp_pool>(pool_l);
   let start_i = pool.range_start / page_size();
   let end_i = pool.range_end / page_size();
   assert (hyp_pool_wf (pool_l, pool, vmemmap_l, physvirt_offset));
   take V = each(u64 i; (start_i <= i) && (i < end_i))
-               {Owned(array_shift<struct hyp_page>(vmemmap_l, i))};
+               {RW(array_shift<struct hyp_page>(vmemmap_l, i))};
   let ptr_phys_0 = cn__hyp_va(virt_ptr, physvirt_offset, 0u64);
   take APs = each(u64 i; (start_i <= i) && (i < end_i)
                   && ((V[i]).refcount == 0u16)
@@ -408,12 +408,12 @@ Hyp_pool_ex2 (
 )
 {
   let ex = exclude_two (ex1, ex2);
-  take pool = Owned<struct hyp_pool>(pool_l);
+  take pool = RW<struct hyp_pool>(pool_l);
   let start_i = pool.range_start / page_size();
   let end_i = pool.range_end / page_size();
   assert (hyp_pool_wf (pool_l, pool, vmemmap_l, physvirt_offset));
   take V = each(u64 i; (start_i <= i) && (i < end_i))
-              {Owned(array_shift<struct hyp_page>(vmemmap_l,  i))};
+              {RW(array_shift<struct hyp_page>(vmemmap_l,  i))};
   let ptr_phys_0 = cn__hyp_va(virt_ptr, physvirt_offset, 0u64);
   take APs = each(u64 i; (start_i <= i) && (i < end_i)
                   && ((V[i]).refcount == 0u16)
@@ -445,11 +445,11 @@ Hyp_pool (
 )
 {
   let ex = exclude_none ();
-  take P = Owned<struct hyp_pool>(pool_l);
+  take P = RW<struct hyp_pool>(pool_l);
   let start_i = P.range_start / page_size();
   let end_i = P.range_end / page_size();
   take V = each(u64 i; (start_i <= i) && (i < end_i))
-              {Owned(array_shift<struct hyp_page>(vmemmap_l, i))};
+              {RW(array_shift<struct hyp_page>(vmemmap_l, i))};
   assert (hyp_pool_wf (pool_l, P, vmemmap_l, physvirt_offset));
   let ptr_phys_0 = cn__hyp_va(virt_ptr, physvirt_offset, 0u64);
   take APs = each(u64 i; (start_i <= i) && (i < end_i)
@@ -475,7 +475,7 @@ Hyp_pool (
 predicate (struct list_head) O_struct_list_head(pointer p, boolean condition) 
 {
   if (condition) {
-    take v = Owned<struct list_head>(p);
+    take v = RW<struct list_head>(p);
     return v;
   }
   else {
